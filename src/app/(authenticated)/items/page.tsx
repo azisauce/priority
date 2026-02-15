@@ -357,11 +357,10 @@ export default function ItemsPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                showFilters || hasActiveFilters
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-              }`}
+              className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${showFilters || hasActiveFilters
+                ? "bg-blue-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                }`}
             >
               <Filter className="h-4 w-4" />
               Filters
@@ -561,13 +560,12 @@ export default function ItemsPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <div
-                              className={`h-2 w-2 rounded-full ${
-                                item.priority >= 4
-                                  ? "bg-red-500"
-                                  : item.priority >= 3
-                                    ? "bg-yellow-500"
-                                    : "bg-green-500"
-                              }`}
+                              className={`h-2 w-2 rounded-full ${item.priority >= 4
+                                ? "bg-red-500"
+                                : item.priority >= 3
+                                  ? "bg-yellow-500"
+                                  : "bg-green-500"
+                                }`}
                             />
                             <span className="text-gray-100">{item.priority.toFixed(2)}</span>
                           </div>
@@ -615,8 +613,8 @@ export default function ItemsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={closeModal} />
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-gray-900 p-6 shadow-2xl">
-            <div className="mb-6 flex items-center justify-between">
+          <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-gray-900 shadow-2xl">
+            <div className="flex items-center justify-between p-6 pb-2 shrink-0">
               <h2 className="text-xl font-bold text-gray-100">
                 {editingItem ? "Edit Item" : "Add New Item"}
               </h2>
@@ -628,181 +626,183 @@ export default function ItemsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                  Item Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.itemName}
-                  onChange={(e) => setFormData({ ...formData, itemName: e.target.value })}
-                  className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Enter item name"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                  Group <span className="text-red-500">*</span>
-                </label>
-                <select
-                  required
-                  value={formData.groupId}
-                  onChange={(e) => setFormData({ ...formData, groupId: e.target.value })}
-                  className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="">Select a group</option>
-                  {groups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.groupName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                  Price <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0.01"
-                  step="0.01"
-                  value={formData.pricing}
-                  onChange={(e) => setFormData({ ...formData, pricing: e.target.value })}
-                  className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Priority Mode Toggle */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-300">
-                  Priority Input Mode
-                </label>
-                <div className="flex rounded-lg bg-gray-800 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setPriorityMode("guided")}
-                    className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${
-                      priorityMode === "guided"
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:text-gray-200"
-                    }`}
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                    Guided
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPriorityMode("manual")}
-                    className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${
-                      priorityMode === "manual"
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:text-gray-200"
-                    }`}
-                  >
-                    <Calculator className="h-4 w-4" />
-                    Manual
-                  </button>
-                </div>
-              </div>
-
-              {/* Priority Input */}
-              {priorityMode === "guided" ? (
-                <div className="space-y-4 rounded-lg bg-gray-800/50 p-4">
-                  {[
-                    { key: "urgency", label: "Urgency", weight: 30 },
-                    { key: "impact", label: "Impact", weight: 30 },
-                    { key: "risk", label: "Risk", weight: 25 },
-                    { key: "frequency", label: "Frequency", weight: 15 },
-                  ].map((dim) => (
-                    <div key={dim.key}>
-                      <div className="mb-1 flex items-center justify-between">
-                        <label className="text-sm font-medium text-gray-300">
-                          {dim.label} ({dim.weight}%)
-                        </label>
-                        <span className="text-sm font-semibold text-blue-400">
-                          {formData[dim.key as keyof ItemFormData] as number}
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min="1"
-                        max="5"
-                        step="1"
-                        value={formData[dim.key as keyof ItemFormData] as number}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            [dim.key]: parseInt(e.target.value),
-                          })
-                        }
-                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700 accent-blue-500"
-                      />
-                      <div className="mt-1 flex justify-between text-xs text-gray-500">
-                        <span>1</span>
-                        <span>2</span>
-                        <span>3</span>
-                        <span>4</span>
-                        <span>5</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <form id="item-form" onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Priority (1-5)
+                    Item Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.itemName}
+                    onChange={(e) => setFormData({ ...formData, itemName: e.target.value })}
+                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="Enter item name"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                    Group <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formData.groupId}
+                    onChange={(e) => setFormData({ ...formData, groupId: e.target.value })}
+                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="">Select a group</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.groupName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                    Price <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
-                    min="1"
-                    max="5"
+                    required
+                    min="0.01"
                     step="0.01"
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="3.00"
+                    value={formData.pricing}
+                    onChange={(e) => setFormData({ ...formData, pricing: e.target.value })}
+                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="0.00"
                   />
                 </div>
-              )}
 
-              {/* Calculated Priority Display */}
-              <div className="rounded-lg bg-blue-600/10 border border-blue-600/20 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-300">Calculated Priority Score</span>
-                  <span className="text-2xl font-bold text-blue-400">
-                    {calculatedPriority.toFixed(2)}
-                  </span>
+                {/* Priority Mode Toggle */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                    Priority Input Mode
+                  </label>
+                  <div className="flex rounded-lg bg-gray-800 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setPriorityMode("guided")}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${priorityMode === "guided"
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-400 hover:text-gray-200"
+                        }`}
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Guided
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPriorityMode("manual")}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${priorityMode === "manual"
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-400 hover:text-gray-200"
+                        }`}
+                    >
+                      <Calculator className="h-4 w-4" />
+                      Manual
+                    </button>
+                  </div>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  {priorityMode === "guided"
-                    ? "Based on urgency (30%) + impact (30%) + risk (25%) + frequency (15%)"
-                    : "Manually entered priority value"}
-                </p>
-              </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex-1 rounded-lg bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {isSubmitting ? "Saving..." : editingItem ? "Save Changes" : "Add Item"}
-                </button>
-              </div>
-            </form>
+                {/* Priority Input */}
+                {priorityMode === "guided" ? (
+                  <div className="space-y-4 rounded-lg bg-gray-800/50 p-4">
+                    {[
+                      { key: "urgency", label: "Urgency", weight: 30 },
+                      { key: "impact", label: "Impact", weight: 30 },
+                      { key: "risk", label: "Risk", weight: 25 },
+                      { key: "frequency", label: "Frequency", weight: 15 },
+                    ].map((dim) => (
+                      <div key={dim.key}>
+                        <div className="mb-1 flex items-center justify-between">
+                          <label className="text-sm font-medium text-gray-300">
+                            {dim.label} ({dim.weight}%)
+                          </label>
+                          <span className="text-sm font-semibold text-blue-400">
+                            {formData[dim.key as keyof ItemFormData] as number}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max="5"
+                          step="1"
+                          value={formData[dim.key as keyof ItemFormData] as number}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              [dim.key]: parseInt(e.target.value),
+                            })
+                          }
+                          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700 accent-blue-500"
+                        />
+                        <div className="mt-1 flex justify-between text-xs text-gray-500">
+                          <span>1</span>
+                          <span>2</span>
+                          <span>3</span>
+                          <span>4</span>
+                          <span>5</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                      Priority (1-5)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="5"
+                      step="0.01"
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                      className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      placeholder="3.00"
+                    />
+                  </div>
+                )}
+
+                {/* Calculated Priority Display */}
+                <div className="rounded-lg bg-blue-600/10 border border-blue-600/20 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-300">Calculated Priority Score</span>
+                    <span className="text-2xl font-bold text-blue-400">
+                      {calculatedPriority.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {priorityMode === "guided"
+                      ? "Based on urgency (30%) + impact (30%) + risk (25%) + frequency (15%)"
+                      : "Manually entered priority value"}
+                  </p>
+                </div>
+
+              </form>
+            </div>
+
+            <div className="p-6 pt-2 shrink-0 flex gap-3 bg-gray-900 rounded-b-xl border-t border-gray-800/50">
+              <button
+                type="button"
+                onClick={closeModal}
+                className="flex-1 rounded-lg bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="item-form"
+                disabled={isSubmitting}
+                className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isSubmitting ? "Saving..." : editingItem ? "Save Changes" : "Add Item"}
+              </button>
+            </div>
           </div>
         </div>
       )}

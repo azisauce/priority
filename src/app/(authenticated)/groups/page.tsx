@@ -69,10 +69,17 @@ export default function GroupsPage() {
         return;
       }
 
-      setShowForm(false);
-      setEditingId(null);
-      setFormName("");
       await fetchGroups();
+
+      if (isEdit) {
+        setShowForm(false);
+        setEditingId(null);
+        setFormName("");
+      } else {
+        // Keep form open but clear name for next entry
+        setFormName("");
+        // Focus will automatically return to input because it has autoFocus
+      }
     } catch {
       setFormError("Failed to save group");
     } finally {
