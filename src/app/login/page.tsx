@@ -21,8 +21,8 @@ export default function LoginPage() {
 
   if (status === "loading" || status === "authenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <div className="text-gray-400">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-muted-foreground">Loading...</div>
       </div>
     );
   }
@@ -52,15 +52,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-8">
-          <h1 className="text-3xl font-bold text-gray-100 text-center mb-8">
+        <div className="bg-card rounded-xl border border-border p-8">
+          <h1 className="text-3xl font-bold text-foreground text-center mb-8">
             Priority.
           </h1>
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-600/10 border border-red-600/20 text-red-400 text-sm text-center">
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
               {error}
             </div>
           )}
@@ -69,7 +69,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="username"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-muted-foreground mb-1.5"
               >
                 Username
               </label>
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 placeholder="Enter your username"
               />
             </div>
@@ -87,7 +87,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-muted-foreground mb-1.5"
               >
                 Password
               </label>
@@ -97,7 +97,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 placeholder="Enter your password"
               />
             </div>
@@ -105,17 +105,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2.5 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-400">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="text-blue-400 hover:text-blue-300 font-medium"
+              className="text-primary hover:text-primary/80 font-medium"
             >
               Register
             </Link>

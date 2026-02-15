@@ -95,11 +95,11 @@ export default function GroupDetailPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-gray-800 rounded animate-pulse" />
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+        <div className="h-8 w-48 bg-muted rounded animate-pulse" />
+        <div className="bg-card border border-border rounded-lg p-6">
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-6 bg-gray-800 rounded animate-pulse" />
+              <div key={i} className="h-6 bg-muted rounded animate-pulse" />
             ))}
           </div>
         </div>
@@ -112,13 +112,13 @@ export default function GroupDetailPage() {
       <div className="space-y-6">
         <button
           onClick={() => router.push("/groups")}
-          className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Groups
         </button>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-12 text-center">
-          <p className="text-gray-400">{error || "Group not found"}</p>
+        <div className="bg-card border border-border rounded-lg p-12 text-center">
+          <p className="text-muted-foreground">{error || "Group not found"}</p>
         </div>
       </div>
     );
@@ -136,7 +136,7 @@ export default function GroupDetailPage() {
       {/* Back button */}
       <button
         onClick={() => router.push("/groups")}
-        className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors text-sm"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Groups
@@ -155,26 +155,26 @@ export default function GroupDetailPage() {
                   if (e.key === "Enter") handleSaveEdit();
                   if (e.key === "Escape") setEditing(false);
                 }}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-gray-100 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="bg-input border border-border rounded-lg px-3 py-1.5 text-foreground text-xl font-bold focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 autoFocus
               />
               <button
                 onClick={handleSaveEdit}
                 disabled={saving}
-                className="p-1.5 text-green-400 hover:bg-gray-800 rounded-lg transition-colors"
+                className="p-1.5 text-green-500 hover:bg-muted rounded-lg transition-colors"
               >
                 <Check className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setEditing(false)}
-                className="p-1.5 text-gray-400 hover:bg-gray-800 rounded-lg transition-colors"
+                className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-gray-100">
+              <h1 className="text-2xl font-bold text-foreground">
                 {group.groupName}
               </h1>
               <button
@@ -183,7 +183,7 @@ export default function GroupDetailPage() {
                   setEditing(true);
                   setEditError("");
                 }}
-                className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-gray-800 rounded-lg transition-colors"
+                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
                 title="Edit group name"
               >
                 <Pencil className="w-4 h-4" />
@@ -193,7 +193,7 @@ export default function GroupDetailPage() {
         </div>
         <button
           onClick={() => router.push(`/items?groupId=${groupId}`)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />
           Add Item
@@ -201,14 +201,14 @@ export default function GroupDetailPage() {
       </div>
 
       {editError && (
-        <p className="text-red-400 text-sm">{editError}</p>
+        <p className="text-destructive text-sm">{editError}</p>
       )}
 
       {/* Items Table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
         {sortedItems.length === 0 ? (
           <div className="p-12 text-center">
-            <p className="text-gray-400">
+            <p className="text-muted-foreground">
               No items in this group yet. Add your first item to get started.
             </p>
           </div>
@@ -216,7 +216,7 @@ export default function GroupDetailPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-400 border-b border-gray-800">
+                <tr className="text-left text-muted-foreground border-b border-border">
                   <th className="px-6 py-3 font-medium">Item Name</th>
                   <th className="px-6 py-3 font-medium">Priority</th>
                   <th className="px-6 py-3 font-medium">Price</th>
@@ -227,18 +227,18 @@ export default function GroupDetailPage() {
                 {sortedItems.map((item) => (
                   <tr
                     key={item.id}
-                    className="border-b border-gray-800 last:border-0 hover:bg-gray-800/50"
+                    className="border-b border-border last:border-0 hover:bg-accent/50"
                   >
-                    <td className="px-6 py-3 text-gray-100 font-medium">
+                    <td className="px-6 py-3 text-foreground font-medium">
                       {item.itemName}
                     </td>
-                    <td className="px-6 py-3 text-gray-300">
+                    <td className="px-6 py-3 text-muted-foreground">
                       {item.priority.toFixed(2)}
                     </td>
-                    <td className="px-6 py-3 text-gray-300">
+                    <td className="px-6 py-3 text-muted-foreground">
                       ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="px-6 py-3 text-blue-400 font-medium">
+                    <td className="px-6 py-3 text-primary font-medium">
                       {isFinite(item.valueScore)
                         ? item.valueScore.toFixed(4)
                         : "∞"}

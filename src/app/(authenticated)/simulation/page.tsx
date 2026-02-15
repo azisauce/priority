@@ -174,25 +174,25 @@ export default function SimulationPage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gray-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-100">Simulation</h1>
-          <p className="mt-1 text-gray-400">Plan your purchases over time</p>
+          <h1 className="text-3xl font-bold text-foreground">Simulation</h1>
+          <p className="mt-1 text-muted-foreground">Plan your purchases over time</p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-1">
-            <div className="rounded-xl bg-gray-900 p-6">
-              <h2 className="mb-6 text-lg font-semibold text-gray-100">Configuration</h2>
+            <div className="rounded-xl bg-card border border-border p-6">
+              <h2 className="mb-6 text-lg font-semibold text-foreground">Configuration</h2>
 
               <form onSubmit={handleRunSimulation} className="space-y-5">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Initial Budget <span className="text-red-500">*</span>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    Initial Budget <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                    <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="number"
                       required
@@ -202,18 +202,18 @@ export default function SimulationPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, initialBudget: e.target.value })
                       }
-                      className="w-full rounded-lg bg-gray-800 border border-gray-700 pl-10 pr-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded-lg bg-input border border-border pl-10 pr-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                       placeholder="0.00"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Monthly Income <span className="text-red-500">*</span>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    Monthly Income <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                    <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="number"
                       required
@@ -223,14 +223,14 @@ export default function SimulationPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, monthlyIncome: e.target.value })
                       }
-                      className="w-full rounded-lg bg-gray-800 border border-gray-700 pl-10 pr-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded-lg bg-input border border-border pl-10 pr-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                       placeholder="0.00"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
                     Deadline (months)
                   </label>
                   <input
@@ -241,52 +241,52 @@ export default function SimulationPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, deadlineMonths: e.target.value })
                     }
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                     placeholder="No limit"
                   />
                 </div>
 
                 <div>
                   <div className="mb-3 flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-300">
+                    <label className="text-sm font-medium text-foreground">
                       Filter by Groups
                     </label>
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={selectAllGroups}
-                        className="text-xs text-blue-400 hover:text-blue-300"
+                        className="text-xs text-primary hover:text-primary/80"
                       >
                         Select All
                       </button>
-                      <span className="text-gray-600">|</span>
+                      <span className="text-muted-foreground">|</span>
                       <button
                         type="button"
                         onClick={deselectAllGroups}
-                        className="text-xs text-gray-400 hover:text-gray-300"
+                        className="text-xs text-muted-foreground hover:text-foreground"
                       >
                         Clear
                       </button>
                     </div>
                   </div>
-                  <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg bg-gray-800/50 p-3">
+                  <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg bg-muted/50 p-3">
                     {groups.length === 0 ? (
-                      <p className="py-2 text-sm text-gray-500">No groups available</p>
+                      <p className="py-2 text-sm text-muted-foreground">No groups available</p>
                     ) : (
                       groups.map((group) => (
                         <label
                           key={group.id}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-800"
+                          className="flex cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-muted"
                         >
                           <input
                             type="checkbox"
                             checked={selectedGroupIds.includes(group.id)}
                             onChange={() => toggleGroup(group.id)}
-                            className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                            className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-ring focus:ring-offset-0"
                           />
                           <div className="flex-1">
-                            <span className="text-sm text-gray-200">{group.groupName}</span>
-                            <span className="ml-2 text-xs text-gray-500">
+                            <span className="text-sm text-foreground">{group.groupName}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">
                               ({group._count?.items || 0} items)
                             </span>
                           </div>
@@ -299,11 +299,11 @@ export default function SimulationPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   {loading ? (
                     <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                       Running...
                     </>
                   ) : (
@@ -319,22 +319,22 @@ export default function SimulationPage() {
 
           <div className="lg:col-span-2">
             {!hasRun ? (
-              <div className="flex h-full min-h-[400px] items-center justify-center rounded-xl bg-gray-900">
+              <div className="flex h-full min-h-[400px] items-center justify-center rounded-xl bg-card border border-border">
                 <div className="text-center">
-                  <div className="mb-4 inline-flex rounded-full bg-gray-800 p-4">
-                    <BarChart3 className="h-8 w-8 text-gray-500" />
+                  <div className="mb-4 inline-flex rounded-full bg-muted p-4">
+                    <BarChart3 className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-300">No simulation run yet</h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <h3 className="text-lg font-medium text-foreground">No simulation run yet</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Configure your budget and run a simulation to see results
                   </p>
                 </div>
               </div>
             ) : loading ? (
-              <div className="flex h-full min-h-[400px] items-center justify-center rounded-xl bg-gray-900">
+              <div className="flex h-full min-h-[400px] items-center justify-center rounded-xl bg-card border border-border">
                 <div className="flex flex-col items-center gap-4">
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                  <p className="text-gray-400">Running simulation...</p>
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <p className="text-muted-foreground">Running simulation...</p>
                 </div>
               </div>
             ) : (
@@ -342,42 +342,42 @@ export default function SimulationPage() {
                 {simulation && (
                   <>
                     <div className="grid gap-4 sm:grid-cols-3">
-                      <div className="rounded-xl bg-gray-900 p-5">
+                      <div className="rounded-xl bg-card border border-border p-5">
                         <div className="flex items-center gap-3">
                           <div className="rounded-lg bg-blue-600/10 p-2">
-                            <Calendar className="h-5 w-5 text-blue-400" />
+                            <Calendar className="h-5 w-5 text-blue-500" />
                           </div>
                           <div>
-                            <p className="text-sm text-gray-400">Total Months</p>
-                            <p className="text-2xl font-bold text-gray-100">
+                            <p className="text-sm text-muted-foreground">Total Months</p>
+                            <p className="text-2xl font-bold text-foreground">
                               {simulation.totalMonths}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-gray-900 p-5">
+                      <div className="rounded-xl bg-card border border-border p-5">
                         <div className="flex items-center gap-3">
                           <div className="rounded-lg bg-green-600/10 p-2">
-                            <DollarSign className="h-5 w-5 text-green-400" />
+                            <DollarSign className="h-5 w-5 text-green-500" />
                           </div>
                           <div>
-                            <p className="text-sm text-gray-400">Total Spent</p>
-                            <p className="text-2xl font-bold text-gray-100">
+                            <p className="text-sm text-muted-foreground">Total Spent</p>
+                            <p className="text-2xl font-bold text-foreground">
                               {formatCurrency(simulation.totalSpent)}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-gray-900 p-5">
+                      <div className="rounded-xl bg-card border border-border p-5">
                         <div className="flex items-center gap-3">
                           <div className="rounded-lg bg-purple-600/10 p-2">
-                            <ShoppingCart className="h-5 w-5 text-purple-400" />
+                            <ShoppingCart className="h-5 w-5 text-purple-500" />
                           </div>
                           <div>
-                            <p className="text-sm text-gray-400">Items Purchased</p>
-                            <p className="text-2xl font-bold text-gray-100">
+                            <p className="text-sm text-muted-foreground">Items Purchased</p>
+                            <p className="text-2xl font-bold text-foreground">
                               {purchasedItemsCount} / {totalItems}
                             </p>
                           </div>
@@ -386,8 +386,8 @@ export default function SimulationPage() {
                     </div>
 
                     {simulation.monthlyPurchases.length > 0 && (
-                      <div className="rounded-xl bg-gray-900 p-5">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-100">
+                      <div className="rounded-xl bg-card border border-border p-5">
+                        <h3 className="mb-4 text-lg font-semibold text-foreground">
                           Spending Timeline
                         </h3>
                         <div className="flex h-24 items-end gap-2">
@@ -399,13 +399,13 @@ export default function SimulationPage() {
                                 className="group relative flex-1"
                               >
                                 <div
-                                  className="mx-auto h-full min-h-[4px] w-full max-w-[60px] rounded-t-md bg-blue-600 transition-colors hover:bg-blue-500"
+                                  className="mx-auto h-full min-h-[4px] w-full max-w-[60px] rounded-t-md bg-primary transition-colors hover:bg-primary/80"
                                   style={{ height: `${Math.max(width, 4)}%` }}
                                 />
-                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-500">
+                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
                                   M{month.month}
                                 </div>
-                                <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-800 px-2 py-1 text-xs text-gray-200 opacity-0 transition-opacity group-hover:opacity-100">
+                                <div className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-popover text-popover-foreground px-2 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 shadow-lg border border-border">
                                   {formatCurrency(month.spent)}
                                 </div>
                               </div>
@@ -417,49 +417,49 @@ export default function SimulationPage() {
 
                     {simulation.monthlyPurchases.length > 0 && (
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-gray-100">Monthly Breakdown</h3>
+                        <h3 className="text-lg font-semibold text-foreground">Monthly Breakdown</h3>
                         {simulation.monthlyPurchases.map((month) => (
-                          <div key={month.month} className="rounded-xl bg-gray-900 overflow-hidden">
-                            <div className="flex items-center justify-between bg-gray-800/50 px-5 py-3">
-                              <h4 className="font-medium text-gray-100">Month {month.month}</h4>
+                          <div key={month.month} className="rounded-xl bg-card border border-border overflow-hidden">
+                            <div className="flex items-center justify-between bg-muted/50 px-5 py-3">
+                              <h4 className="font-medium text-foreground">Month {month.month}</h4>
                               <div className="flex items-center gap-4 text-sm">
-                                <span className="text-gray-400">
-                                  Spent: <span className="font-medium text-gray-200">{formatCurrency(month.spent)}</span>
+                                <span className="text-muted-foreground">
+                                  Spent: <span className="font-medium text-foreground">{formatCurrency(month.spent)}</span>
                                 </span>
-                                <span className="text-gray-400">
-                                  Remaining: <span className="font-medium text-green-400">{formatCurrency(month.remaining)}</span>
+                                <span className="text-muted-foreground">
+                                  Remaining: <span className="font-medium text-green-500">{formatCurrency(month.remaining)}</span>
                                 </span>
                               </div>
                             </div>
                             <div className="overflow-x-auto">
                               <table className="w-full">
                                 <thead>
-                                  <tr className="border-b border-gray-800">
-                                    <th className="px-5 py-3 text-left text-sm font-medium text-gray-400">
+                                  <tr className="border-b border-border">
+                                    <th className="px-5 py-3 text-left text-sm font-medium text-muted-foreground">
                                       Item Name
                                     </th>
-                                    <th className="px-5 py-3 text-left text-sm font-medium text-gray-400">
+                                    <th className="px-5 py-3 text-left text-sm font-medium text-muted-foreground">
                                       Priority
                                     </th>
-                                    <th className="px-5 py-3 text-right text-sm font-medium text-gray-400">
+                                    <th className="px-5 py-3 text-right text-sm font-medium text-muted-foreground">
                                       Price
                                     </th>
                                   </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-800">
+                                <tbody className="divide-y divide-border">
                                   {month.items.map((item) => (
-                                    <tr key={item.id} className="transition-colors hover:bg-gray-800/30">
+                                    <tr key={item.id} className="transition-colors hover:bg-muted/50">
                                       <td className="px-5 py-3">
                                         <div className="flex items-center gap-2">
                                           <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                          <span className="text-gray-200">{item.itemName}</span>
+                                          <span className="text-foreground">{item.itemName}</span>
                                         </div>
                                       </td>
                                       <td className="px-5 py-3">
-                                        <span className="text-gray-300">{item.priority.toFixed(2)}</span>
+                                        <span className="text-muted-foreground">{item.priority.toFixed(2)}</span>
                                       </td>
                                       <td className="px-5 py-3 text-right">
-                                        <span className="text-gray-200">{formatCurrency(item.pricing)}</span>
+                                        <span className="text-foreground">{formatCurrency(item.pricing)}</span>
                                       </td>
                                     </tr>
                                   ))}
@@ -496,10 +496,10 @@ export default function SimulationPage() {
                             </thead>
                             <tbody className="divide-y divide-red-900/20">
                               {simulation.unpurchased.map((item) => (
-                                <tr key={item.id} className="transition-colors hover:bg-red-900/10">
-                                  <td className="px-5 py-3 text-gray-300">{item.itemName}</td>
-                                  <td className="px-5 py-3 text-gray-300">{item.priority.toFixed(2)}</td>
-                                  <td className="px-5 py-3 text-right text-gray-300">
+                                <tr key={item.id} className="transition-colors hover:bg-destructive/10">
+                                  <td className="px-5 py-3 text-destructive-foreground">{item.itemName}</td>
+                                  <td className="px-5 py-3 text-destructive-foreground">{item.priority.toFixed(2)}</td>
+                                  <td className="px-5 py-3 text-right text-destructive-foreground">
                                     {formatCurrency(item.pricing)}
                                   </td>
                                 </tr>
@@ -511,12 +511,12 @@ export default function SimulationPage() {
                     )}
 
                     {simulation.monthlyPurchases.length === 0 && simulation.unpurchased.length === 0 && (
-                      <div className="rounded-xl bg-gray-900 p-8 text-center">
-                        <div className="mb-3 inline-flex rounded-full bg-gray-800 p-3">
-                          <Users className="h-6 w-6 text-gray-500" />
+                      <div className="rounded-xl bg-card border border-border p-8 text-center">
+                        <div className="mb-3 inline-flex rounded-full bg-muted p-3">
+                          <Users className="h-6 w-6 text-muted-foreground" />
                         </div>
-                        <h3 className="text-lg font-medium text-gray-300">No items to simulate</h3>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <h3 className="text-lg font-medium text-foreground">No items to simulate</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
                           Add items to your selected groups to run a simulation
                         </p>
                       </div>

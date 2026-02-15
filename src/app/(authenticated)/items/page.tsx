@@ -6,7 +6,6 @@ import {
   Plus,
   Search,
   Filter,
-  ArrowUpDown,
   ArrowUp,
   ArrowDown,
   Pencil,
@@ -338,14 +337,14 @@ export default function ItemsPage() {
     filters.maxPrice;
 
   return (
-    <div className="min-h-screen bg-gray-950 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-100">Items</h1>
+          <h1 className="text-3xl font-bold text-foreground">Items</h1>
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
             Add Item
@@ -353,33 +352,33 @@ export default function ItemsPage() {
         </div>
 
         {/* Filter Bar */}
-        <div className="mb-6 rounded-xl bg-gray-900 p-4">
+        <div className="mb-6 rounded-xl bg-card border border-border p-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${showFilters || hasActiveFilters
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
             >
               <Filter className="h-4 w-4" />
               Filters
               {hasActiveFilters && (
-                <span className="ml-1 rounded-full bg-blue-400 px-2 py-0.5 text-xs text-blue-950">
+                <span className="ml-1 rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs text-primary-foreground">
                   Active
                 </span>
               )}
             </button>
 
-            <div className="h-6 w-px bg-gray-700" />
+            <div className="h-6 w-px bg-border" />
 
             {/* Quick Sort */}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-400">Sort by:</span>
+              <span className="text-sm text-muted-foreground">Sort by:</span>
               <select
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                className="rounded-lg bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
               >
                 <option value="priority">Priority</option>
                 <option value="pricing">Price</option>
@@ -390,7 +389,7 @@ export default function ItemsPage() {
                 onClick={() =>
                   handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")
                 }
-                className="rounded-lg bg-gray-800 p-2 text-gray-300 hover:bg-gray-700"
+                className="rounded-lg bg-input border border-border p-2 text-muted-foreground hover:bg-muted"
               >
                 {filters.sortOrder === "asc" ? (
                   <ArrowUp className="h-4 w-4" />
@@ -403,13 +402,13 @@ export default function ItemsPage() {
 
           {/* Expanded Filters */}
           {showFilters && (
-            <div className="mt-4 grid grid-cols-1 gap-4 border-t border-gray-800 pt-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 md:grid-cols-2 lg:grid-cols-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-400">Group</label>
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Group</label>
                 <select
                   value={filters.groupId}
                   onChange={(e) => handleFilterChange("groupId", e.target.value)}
-                  className="w-full rounded-lg bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                 >
                   <option value="">All Groups</option>
                   {groups.map((group) => (
@@ -421,7 +420,7 @@ export default function ItemsPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-400">
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">
                   Priority Range
                 </label>
                 <div className="flex items-center gap-2">
@@ -433,9 +432,9 @@ export default function ItemsPage() {
                     placeholder="Min"
                     value={filters.minPriority}
                     onChange={(e) => handleFilterChange("minPriority", e.target.value)}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   />
-                  <span className="text-gray-500">-</span>
+                  <span className="text-muted-foreground">-</span>
                   <input
                     type="number"
                     min="1"
@@ -444,13 +443,13 @@ export default function ItemsPage() {
                     placeholder="Max"
                     value={filters.maxPriority}
                     onChange={(e) => handleFilterChange("maxPriority", e.target.value)}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-400">Price Range</label>
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Price Range</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -459,9 +458,9 @@ export default function ItemsPage() {
                     placeholder="Min"
                     value={filters.minPrice}
                     onChange={(e) => handleFilterChange("minPrice", e.target.value)}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   />
-                  <span className="text-gray-500">-</span>
+                  <span className="text-muted-foreground">-</span>
                   <input
                     type="number"
                     min="0"
@@ -469,7 +468,7 @@ export default function ItemsPage() {
                     placeholder="Max"
                     value={filters.maxPrice}
                     onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   />
                 </div>
               </div>
@@ -477,7 +476,7 @@ export default function ItemsPage() {
               <div className="flex items-end">
                 <button
                   onClick={clearFilters}
-                  className="w-full rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
+                  className="w-full rounded-lg bg-muted px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80"
                 >
                   Clear Filters
                 </button>
@@ -487,18 +486,18 @@ export default function ItemsPage() {
         </div>
 
         {/* Items Table */}
-        <div className="rounded-xl bg-gray-900 overflow-hidden">
+        <div className="rounded-xl bg-card border border-border overflow-hidden">
           {loading ? (
             <div className="flex h-64 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : items.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center text-center">
-              <div className="mb-4 rounded-full bg-gray-800 p-4">
-                <Search className="h-8 w-8 text-gray-500" />
+              <div className="mb-4 rounded-full bg-muted p-4">
+                <Search className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium text-gray-300">No items found</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="text-lg font-medium text-foreground">No items found</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
                 {hasActiveFilters
                   ? "Try adjusting your filters or clear them to see all items."
                   : "Get started by adding your first item."}
@@ -506,7 +505,7 @@ export default function ItemsPage() {
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
                 >
                   Clear Filters
                 </button>
@@ -516,44 +515,44 @@ export default function ItemsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-800 bg-gray-900/50">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Item Name
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Group
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Priority
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Price
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Value Score
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-400">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
                       Created
                     </th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-gray-400">
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-muted-foreground">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-800">
+                <tbody className="divide-y divide-border">
                   {items.map((item) => {
                     const valueScore = calculateValueScore(item.priority, item.pricing);
                     return (
                       <tr
                         key={item.id}
-                        className="group cursor-pointer transition-colors hover:bg-gray-800/50"
+                        className="group cursor-pointer transition-colors hover:bg-muted/50"
                         onClick={() => openEditModal(item)}
                       >
                         <td className="px-6 py-4">
-                          <span className="font-medium text-gray-100">{item.itemName}</span>
+                          <span className="font-medium text-foreground">{item.itemName}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="rounded-full bg-gray-800 px-3 py-1 text-sm text-gray-300">
+                          <span className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
                             {item.group?.groupName || "Unknown"}
                           </span>
                         </td>
@@ -567,14 +566,14 @@ export default function ItemsPage() {
                                   : "bg-green-500"
                                 }`}
                             />
-                            <span className="text-gray-100">{item.priority.toFixed(2)}</span>
+                            <span className="text-foreground">{item.priority.toFixed(2)}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-gray-100">{formatCurrency(item.pricing)}</td>
+                        <td className="px-6 py-4 text-foreground">{formatCurrency(item.pricing)}</td>
                         <td className="px-6 py-4">
-                          <span className="text-gray-100">{valueScore.toFixed(2)}</span>
+                          <span className="text-foreground">{valueScore.toFixed(2)}</span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-400">
+                        <td className="px-6 py-4 text-sm text-muted-foreground">
                           {formatDate(item.createdAt)}
                         </td>
                         <td className="px-6 py-4">
@@ -584,7 +583,7 @@ export default function ItemsPage() {
                                 e.stopPropagation();
                                 openEditModal(item);
                               }}
-                              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-blue-400"
+                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
                             >
                               <Pencil className="h-4 w-4" />
                             </button>
@@ -593,7 +592,7 @@ export default function ItemsPage() {
                                 e.stopPropagation();
                                 setDeleteItem(item);
                               }}
-                              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-red-400"
+                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -613,14 +612,14 @@ export default function ItemsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={closeModal} />
-          <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-gray-900 shadow-2xl">
+          <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-card border border-border shadow-2xl">
             <div className="flex items-center justify-between p-6 pb-2 shrink-0">
-              <h2 className="text-xl font-bold text-gray-100">
+              <h2 className="text-xl font-bold text-foreground">
                 {editingItem ? "Edit Item" : "Add New Item"}
               </h2>
               <button
                 onClick={closeModal}
-                className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-100"
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -629,28 +628,28 @@ export default function ItemsPage() {
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <form id="item-form" onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Item Name <span className="text-red-500">*</span>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    Item Name <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.itemName}
                     onChange={(e) => setFormData({ ...formData, itemName: e.target.value })}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                     placeholder="Enter item name"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Group <span className="text-red-500">*</span>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    Group <span className="text-destructive">*</span>
                   </label>
                   <select
                     required
                     value={formData.groupId}
                     onChange={(e) => setFormData({ ...formData, groupId: e.target.value })}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   >
                     <option value="">Select a group</option>
                     {groups.map((group) => (
@@ -662,8 +661,8 @@ export default function ItemsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Price <span className="text-red-500">*</span>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    Price <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="number"
@@ -672,23 +671,23 @@ export default function ItemsPage() {
                     step="0.01"
                     value={formData.pricing}
                     onChange={(e) => setFormData({ ...formData, pricing: e.target.value })}
-                    className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                     placeholder="0.00"
                   />
                 </div>
 
                 {/* Priority Mode Toggle */}
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-300">
+                  <label className="mb-2 block text-sm font-medium text-foreground">
                     Priority Input Mode
                   </label>
-                  <div className="flex rounded-lg bg-gray-800 p-1">
+                  <div className="flex rounded-lg bg-input p-1">
                     <button
                       type="button"
                       onClick={() => setPriorityMode("guided")}
                       className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${priorityMode === "guided"
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:text-gray-200"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       <SlidersHorizontal className="h-4 w-4" />
@@ -698,8 +697,8 @@ export default function ItemsPage() {
                       type="button"
                       onClick={() => setPriorityMode("manual")}
                       className={`flex flex-1 items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors ${priorityMode === "manual"
-                        ? "bg-blue-600 text-white"
-                        : "text-gray-400 hover:text-gray-200"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       <Calculator className="h-4 w-4" />
@@ -710,7 +709,7 @@ export default function ItemsPage() {
 
                 {/* Priority Input */}
                 {priorityMode === "guided" ? (
-                  <div className="space-y-4 rounded-lg bg-gray-800/50 p-4">
+                  <div className="space-y-4 rounded-lg bg-muted/50 p-4">
                     {[
                       { key: "urgency", label: "Urgency", weight: 30 },
                       { key: "impact", label: "Impact", weight: 30 },
@@ -719,10 +718,10 @@ export default function ItemsPage() {
                     ].map((dim) => (
                       <div key={dim.key}>
                         <div className="mb-1 flex items-center justify-between">
-                          <label className="text-sm font-medium text-gray-300">
+                          <label className="text-sm font-medium text-foreground">
                             {dim.label} ({dim.weight}%)
                           </label>
-                          <span className="text-sm font-semibold text-blue-400">
+                          <span className="text-sm font-semibold text-primary">
                             {formData[dim.key as keyof ItemFormData] as number}
                           </span>
                         </div>
@@ -738,9 +737,9 @@ export default function ItemsPage() {
                               [dim.key]: parseInt(e.target.value),
                             })
                           }
-                          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-700 accent-blue-500"
+                          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
                         />
-                        <div className="mt-1 flex justify-between text-xs text-gray-500">
+                        <div className="mt-1 flex justify-between text-xs text-muted-foreground">
                           <span>1</span>
                           <span>2</span>
                           <span>3</span>
@@ -752,7 +751,7 @@ export default function ItemsPage() {
                   </div>
                 ) : (
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                    <label className="mb-1.5 block text-sm font-medium text-foreground">
                       Priority (1-5)
                     </label>
                     <input
@@ -762,21 +761,21 @@ export default function ItemsPage() {
                       step="0.01"
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                       placeholder="3.00"
                     />
                   </div>
                 )}
 
                 {/* Calculated Priority Display */}
-                <div className="rounded-lg bg-blue-600/10 border border-blue-600/20 p-4">
+                <div className="rounded-lg bg-primary/10 border border-primary/20 p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-300">Calculated Priority Score</span>
-                    <span className="text-2xl font-bold text-blue-400">
+                    <span className="text-sm font-medium text-foreground">Calculated Priority Score</span>
+                    <span className="text-2xl font-bold text-primary">
                       {calculatedPriority.toFixed(2)}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {priorityMode === "guided"
                       ? "Based on urgency (30%) + impact (30%) + risk (25%) + frequency (15%)"
                       : "Manually entered priority value"}
@@ -786,11 +785,11 @@ export default function ItemsPage() {
               </form>
             </div>
 
-            <div className="p-6 pt-2 shrink-0 flex gap-3 bg-gray-900 rounded-b-xl border-t border-gray-800/50">
+            <div className="p-6 pt-2 shrink-0 flex gap-3 bg-card rounded-b-xl border-t border-border">
               <button
                 type="button"
                 onClick={closeModal}
-                className="flex-1 rounded-lg bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
+                className="flex-1 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80"
               >
                 Cancel
               </button>

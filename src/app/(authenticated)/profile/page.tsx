@@ -32,6 +32,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProfile = async () => {
@@ -140,13 +141,13 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-gray-100">Profile</h1>
+      <h1 className="text-2xl font-bold text-foreground">Profile</h1>
 
       {message && (
         <div
-          className={`p-3 rounded-lg text-sm ${messageType === "success"
-            ? "bg-green-600/10 border border-green-600/20 text-green-400"
-            : "bg-red-600/10 border border-red-600/20 text-red-400"
+          className={`p-3 rounded-lg text-sm border ${messageType === "success"
+            ? "bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400"
+            : "bg-destructive/10 border-destructive/20 text-destructive"
             }`}
         >
           {message}
@@ -154,24 +155,25 @@ export default function ProfilePage() {
       )}
 
       {/* User Info Card */}
-      <div className="bg-gray-900 rounded-xl border border-gray-800 p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div className="bg-card rounded-xl border border-border p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-center gap-6">
           {profile?.userImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={profile.userImage}
               alt={profile.username}
-              className="w-24 h-24 rounded-full object-cover border-4 border-gray-800 ring-2 ring-gray-700"
+              className="w-24 h-24 rounded-full object-cover border-4 border-background ring-2 ring-border"
             />
           ) : (
-            <div className="w-24 h-24 rounded-full bg-gray-800 border-4 border-gray-900 ring-2 ring-gray-700 flex items-center justify-center">
-              <User className="w-12 h-12 text-gray-500" />
+            <div className="w-24 h-24 rounded-full bg-muted border-4 border-background ring-2 ring-border flex items-center justify-center">
+              <User className="w-12 h-12 text-muted-foreground" />
             </div>
           )}
           <div className="text-center sm:text-left">
-            <h2 className="text-3xl font-bold text-gray-100 mb-1">
+            <h2 className="text-3xl font-bold text-foreground mb-1">
               {profile?.username}
             </h2>
-            <p className="text-gray-400">
+            <p className="text-muted-foreground">
               Joined{" "}
               {profile?.createdAt
                 ? new Date(profile.createdAt).toLocaleDateString("en-US", {
@@ -185,7 +187,7 @@ export default function ProfilePage() {
 
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white transition-colors border border-gray-700 font-medium"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors border border-border font-medium"
         >
           <LogOut className="w-4 h-4" />
           Sign Out
@@ -194,15 +196,15 @@ export default function ProfilePage() {
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Edit Profile */}
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-100 mb-4">
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Edit Profile
           </h2>
           <form onSubmit={handleSaveProfile} className="space-y-4">
             <div>
               <label
                 htmlFor="edit-username"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-muted-foreground mb-1.5"
               >
                 Username
               </label>
@@ -212,14 +214,14 @@ export default function ProfilePage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
 
             <div>
               <label
                 htmlFor="edit-image"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-muted-foreground mb-1.5"
               >
                 Profile Image URL
               </label>
@@ -228,7 +230,7 @@ export default function ProfilePage() {
                 type="url"
                 value={userImage}
                 onChange={(e) => setUserImage(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                 placeholder="https://example.com/avatar.png"
               />
             </div>
@@ -236,7 +238,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>
@@ -244,15 +246,15 @@ export default function ProfilePage() {
         </div>
 
         {/* Change Password */}
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-          <h2 className="text-lg font-semibold text-gray-100 mb-4">
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Change Password
           </h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
               <label
                 htmlFor="current-password"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-muted-foreground mb-1.5"
               >
                 Current Password
               </label>
@@ -262,14 +264,14 @@ export default function ProfilePage() {
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
 
             <div>
               <label
                 htmlFor="new-password"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-muted-foreground mb-1.5"
               >
                 New Password
               </label>
@@ -279,14 +281,14 @@ export default function ProfilePage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
 
             <div>
               <label
                 htmlFor="confirm-new-password"
-                className="block text-sm font-medium text-gray-400 mb-1.5"
+                className="block text-sm font-medium text-muted-foreground mb-1.5"
               >
                 Confirm New Password
               </label>
@@ -296,14 +298,14 @@ export default function ProfilePage() {
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-lg bg-gray-800 border border-gray-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
 
             <button
               type="submit"
               disabled={saving}
-              className="w-full px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2.5 rounded-lg bg-destructive hover:bg-destructive/90 text-destructive-foreground font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "Changing..." : "Change Password"}
             </button>

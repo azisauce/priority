@@ -81,6 +81,6 @@ export function simulatePurchases(
     totalMonths: month,
     monthlyPurchases,
     totalSpent: monthlyPurchases.reduce((sum, m) => sum + m.spent, 0),
-    unpurchased: remaining.map(({ score, ...rest }) => rest),
+    unpurchased: remaining.map(({ score: _score, ...rest }) => rest),
   };
 }
