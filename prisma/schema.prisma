@@ -8,41 +8,98 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  userImage String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  groups    Group[]
-  items     Item[]
+  id             String          @id @default(cuid())
+  username       String          @unique
+  password       String
+  userImage      String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  groups         Group[]
+  items          Item[]
+  priorityParams PriorityParam[]
+  paramEvalItems ParamEvalItem[]
 }
 
 model Group {
-  id        String   @id @default(cuid())
-  groupName String
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     Item[]
+  id             String               @id @default(cuid())
+  groupName      String
+  userId         String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items          Item[]
+  priorityParams GroupPriorityParam[]
 
   @@unique([groupName, userId])
 }
 
 model Item {
-  id        String   @id @default(cuid())
-  itemName  String
-  pricing   Float
-  urgency   Int      @default(3)
-  impact    Int      @default(3)
-  risk      Int      @default(3)
-  frequency Int      @default(3)
-  priority  Float
-  groupId   String
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Restrict)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String           @id @default(cuid())
+  itemName     String
+  pricing      Float
+  priority     Float
+  groupId      String
+  userId       String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  group        Group            @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paramAnswers ItemParamAnswer[]
+}
+
+model PriorityParam {
+  id          String                    @id @default(cuid())
+  name        String
+  weight      Float
+  userId      String
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  user        User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evalItems   PriorityParamEvalItem[]
+  groups      GroupPriorityParam[]
+  itemAnswers ItemParamAnswer[]
+
+  @@unique([name, userId])
+}
+
+model ParamEvalItem {
+  id          String                    @id @default(cuid())
+  name        String
+  value       Float
+  userId      String
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  user        User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  params      PriorityParamEvalItem[]
+  itemAnswers ItemParamAnswer[]
+}
+
+model PriorityParamEvalItem {
+  priorityParamId String
+  paramEvalItemId String
+  priorityParam   PriorityParam @relation(fields: [priorityParamId], references: [id], onDelete: Cascade)
+  paramEvalItem   ParamEvalItem @relation(fields: [paramEvalItemId], references: [id], onDelete: Cascade)
+
+  @@id([priorityParamId, paramEvalItemId])
+}
+
+model GroupPriorityParam {
+  groupId         String
+  priorityParamId String
+  group           Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  priorityParam   PriorityParam @relation(fields: [priorityParamId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, priorityParamId])
+}
+
+model ItemParamAnswer {
+  id              String        @id @default(cuid())
+  itemId          String
+  priorityParamId String
+  paramEvalItemId String
+  item            Item          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  priorityParam   PriorityParam @relation(fields: [priorityParamId], references: [id], onDelete: Cascade)
+  paramEvalItem   ParamEvalItem @relation(fields: [paramEvalItemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, priorityParamId])
 }

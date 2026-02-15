@@ -9,10 +9,10 @@ const createItemSchema = z.object({
   itemName: z.string().min(1, "Item name is required").max(200),
   groupId: z.string().min(1, "Group ID is required"),
   pricing: z.number().positive("Price must be positive"),
-  urgency: z.number().int().min(1).max(5).optional(),
-  impact: z.number().int().min(1).max(5).optional(),
-  risk: z.number().int().min(1).max(5).optional(),
-  frequency: z.number().int().min(1).max(5).optional(),
+  answers: z.array(z.object({
+    priorityParamId: z.string().min(1),
+    paramEvalItemId: z.string().min(1),
+  })).optional(),
   priority: z.number().optional(),
 });
 
@@ -55,7 +55,15 @@ export async function GET(request: NextRequest) {
 
   const items = await prisma.item.findMany({
     where,
-    include: { group: true },
+    include: {
+      group: true,
+      paramAnswers: {
+        include: {
+          priorityParam: true,
+          paramEvalItem: true,
+        },
+      },
+    },
     orderBy: { [orderByField]: order },
   });
 
@@ -75,7 +83,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { itemName, groupId, pricing, urgency = 3, impact = 3, risk = 3, frequency = 3, priority } = parsed.data;
+  const { itemName, groupId, pricing, answers = [], priority } = parsed.data;
 
   // Verify group belongs to user
   const group = await prisma.group.findUnique({ where: { id: groupId } });
@@ -83,21 +91,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Group not found or not owned by user" }, { status: 400 });
   }
 
-  const calculatedPriority = priority ?? calculatePriority({ urgency, impact, risk, frequency });
+  // Calculate priority from answers if not provided manually
+  let calculatedPriority = priority ?? 0;
+  if (!priority && answers.length > 0) {
+    // Look up eval item values and param weights
+    const paramIds = answers.map((a) => a.priorityParamId);
+    const evalItemIds = answers.map((a) => a.paramEvalItemId);
+
+    const [params, evalItems] = await Promise.all([
+      prisma.priorityParam.findMany({ where: { id: { in: paramIds } } }),
+      prisma.paramEvalItem.findMany({ where: { id: { in: evalItemIds } } }),
+    ]);
+
+    const paramMap = new Map(params.map((p) => [p.id, p]));
+    const evalItemMap = new Map(evalItems.map((e) => [e.id, e]));
+
+    const priorityAnswers = answers.map((a) => ({
+      value: evalItemMap.get(a.paramEvalItemId)?.value ?? 0,
+      weight: paramMap.get(a.priorityParamId)?.weight ?? 0,
+    }));
+
+    calculatedPriority = calculatePriority(priorityAnswers);
+  }
 
   const item = await prisma.item.create({
     data: {
       itemName,
       groupId,
       pricing,
-      urgency,
-      impact,
-      risk,
-      frequency,
       priority: calculatedPriority,
       userId,
+      paramAnswers: {
+        create: answers.map((a) => ({
+          priorityParamId: a.priorityParamId,
+          paramEvalItemId: a.paramEvalItemId,
+        })),
+      },
     },
-    include: { group: true },
+    include: {
+      group: true,
+      paramAnswers: {
+        include: {
+          priorityParam: true,
+          paramEvalItem: true,
+        },
+      },
+    },
   });
 
   return NextResponse.json({ item }, { status: 201 });

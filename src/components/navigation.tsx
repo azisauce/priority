@@ -9,6 +9,7 @@ import {
   Package,
   FolderOpen,
   Calculator,
+  SlidersHorizontal,
   User,
   LogOut,
   Menu,
@@ -20,6 +21,7 @@ const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/items", label: "Items", icon: Package },
   { href: "/groups", label: "Groups", icon: FolderOpen },
+  { href: "/priority-params", label: "Params", icon: SlidersHorizontal },
   { href: "/simulation", label: "Simulation", icon: Calculator },
 ];
 

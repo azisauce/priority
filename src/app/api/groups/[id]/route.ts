@@ -20,7 +20,27 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
   const group = await prisma.group.findUnique({
     where: { id },
-    include: { items: true },
+    include: {
+      items: {
+        include: {
+          paramAnswers: {
+            include: {
+              priorityParam: true,
+              paramEvalItem: true,
+            },
+          },
+        },
+      },
+      priorityParams: {
+        include: {
+          priorityParam: {
+            include: {
+              evalItems: { include: { paramEvalItem: true } },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!group) {

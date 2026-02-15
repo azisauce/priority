@@ -21,18 +21,33 @@ interface Group {
   _count?: { items: number };
 }
 
+interface EvalItemData {
+  id: string;
+  name: string;
+  value: number;
+}
+
+interface ParamAnswerData {
+  priorityParam: { id: string; name: string; weight: number };
+  paramEvalItem: { id: string; name: string; value: number };
+}
+
+interface GroupParam {
+  id: string;
+  name: string;
+  weight: number;
+  evalItems: { paramEvalItem: EvalItemData }[];
+}
+
 interface Item {
   id: string;
   itemName: string;
   pricing: number;
   priority: number;
-  urgency: number;
-  impact: number;
-  risk: number;
-  frequency: number;
   groupId: string;
   createdAt: string;
   group: Group;
+  paramAnswers?: ParamAnswerData[];
 }
 
 interface Filters {
@@ -49,16 +64,32 @@ interface ItemFormData {
   itemName: string;
   groupId: string;
   pricing: string;
-  urgency: number;
-  impact: number;
-  risk: number;
-  frequency: number;
   priority: string;
+  // Dynamic: paramId -> evalItemId
+  answers: Record<string, string>;
 }
 
-const calculatePriority = (urgency: number, impact: number, risk: number, frequency: number): number => {
-  const score = urgency * 0.3 + impact * 0.3 + risk * 0.25 + frequency * 0.15;
-  return Math.round(score * 100) / 100;
+const calculatePriorityFromAnswers = (
+  answers: Record<string, string>,
+  groupParams: GroupParam[]
+): number => {
+  const entries = Object.entries(answers).filter(([, evalItemId]) => evalItemId);
+  if (entries.length === 0) return 0;
+
+  let totalWeight = 0;
+  let weightedSum = 0;
+
+  for (const [paramId, evalItemId] of entries) {
+    const param = groupParams.find((p) => p.id === paramId);
+    if (!param) continue;
+    const evalItem = param.evalItems.find((e) => e.paramEvalItem.id === evalItemId);
+    if (!evalItem) continue;
+    totalWeight += param.weight;
+    weightedSum += evalItem.paramEvalItem.value * param.weight;
+  }
+
+  if (totalWeight === 0) return 0;
+  return Math.round((weightedSum / totalWeight) * 100) / 100;
 };
 
 const calculateValueScore = (priority: number, price: number): number => {
@@ -106,15 +137,16 @@ export default function ItemsPage() {
   const [deleteItem, setDeleteItem] = useState<Item | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Group params for the selected group in the form
+  const [groupParams, setGroupParams] = useState<GroupParam[]>([]);
+  const [loadingGroupParams, setLoadingGroupParams] = useState(false);
+
   const [formData, setFormData] = useState<ItemFormData>({
     itemName: "",
     groupId: urlGroupId || "",
     pricing: "",
-    urgency: 3,
-    impact: 3,
-    risk: 3,
-    frequency: 3,
     priority: "3",
+    answers: {},
   });
 
   const fetchGroups = useCallback(async () => {
@@ -146,7 +178,6 @@ export default function ItemsPage() {
         const data = await response.json();
         let fetchedItems = data.items || [];
 
-        // Client-side sorting for value score
         if (filters.sortBy === "valueScore") {
           fetchedItems = fetchedItems.sort((a: Item, b: Item) => {
             const scoreA = calculateValueScore(a.priority, a.pricing);
@@ -164,6 +195,25 @@ export default function ItemsPage() {
     }
   }, [filters]);
 
+  const fetchGroupParams = useCallback(async (groupId: string) => {
+    if (!groupId) {
+      setGroupParams([]);
+      return;
+    }
+    setLoadingGroupParams(true);
+    try {
+      const response = await fetch(`/api/groups/${groupId}/params`);
+      if (response.ok) {
+        const data = await response.json();
+        setGroupParams(data.params || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch group params:", error);
+    } finally {
+      setLoadingGroupParams(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchGroups();
   }, [fetchGroups]);
@@ -178,6 +228,13 @@ export default function ItemsPage() {
       setFormData((prev) => ({ ...prev, groupId: urlGroupId }));
     }
   }, [urlGroupId]);
+
+  // When group changes in form, fetch its params
+  useEffect(() => {
+    if (formData.groupId && isModalOpen) {
+      fetchGroupParams(formData.groupId);
+    }
+  }, [formData.groupId, isModalOpen, fetchGroupParams]);
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -202,11 +259,8 @@ export default function ItemsPage() {
       itemName: "",
       groupId: urlGroupId || "",
       pricing: "",
-      urgency: 3,
-      impact: 3,
-      risk: 3,
-      frequency: 3,
       priority: "3",
+      answers: {},
     });
     setIsModalOpen(true);
   };
@@ -214,15 +268,19 @@ export default function ItemsPage() {
   const openEditModal = (item: Item) => {
     setEditingItem(item);
     setPriorityMode("guided");
+    // Build answers map from paramAnswers
+    const answers: Record<string, string> = {};
+    if (item.paramAnswers) {
+      for (const pa of item.paramAnswers) {
+        answers[pa.priorityParam.id] = pa.paramEvalItem.id;
+      }
+    }
     setFormData({
       itemName: item.itemName,
       groupId: item.groupId,
       pricing: item.pricing.toString(),
-      urgency: item.urgency,
-      impact: item.impact,
-      risk: item.risk,
-      frequency: item.frequency,
       priority: item.priority.toString(),
+      answers,
     });
     setIsModalOpen(true);
   };
@@ -230,6 +288,7 @@ export default function ItemsPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingItem(null);
+    setGroupParams([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -244,40 +303,39 @@ export default function ItemsPage() {
     }
 
     let priority: number;
-    let urgency: number;
-    let impact: number;
-    let risk: number;
-    let frequency: number;
+    const answersArray: { priorityParamId: string; paramEvalItemId: string }[] = [];
 
     if (priorityMode === "manual") {
       priority = parseFloat(formData.priority);
-      if (isNaN(priority) || priority < 1 || priority > 5) {
-        alert("Priority must be between 1 and 5");
+      if (isNaN(priority) || priority < 0) {
+        alert("Priority must be a valid number");
         setIsSubmitting(false);
         return;
       }
-      urgency = 3;
-      impact = 3;
-      risk = 3;
-      frequency = 3;
     } else {
-      urgency = formData.urgency;
-      impact = formData.impact;
-      risk = formData.risk;
-      frequency = formData.frequency;
-      priority = calculatePriority(urgency, impact, risk, frequency);
+      // Build answers from form
+      for (const [paramId, evalItemId] of Object.entries(formData.answers)) {
+        if (evalItemId) {
+          answersArray.push({
+            priorityParamId: paramId,
+            paramEvalItemId: evalItemId,
+          });
+        }
+      }
+      priority = calculatePriorityFromAnswers(formData.answers, groupParams);
     }
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       itemName: formData.itemName,
       groupId: formData.groupId,
       pricing,
-      urgency,
-      impact,
-      risk,
-      frequency,
-      priority,
     };
+
+    if (priorityMode === "manual") {
+      payload.priority = priority;
+    } else {
+      payload.answers = answersArray;
+    }
 
     try {
       const url = editingItem ? `/api/items/${editingItem.id}` : "/api/items";
@@ -326,8 +384,10 @@ export default function ItemsPage() {
 
   const calculatedPriority =
     priorityMode === "guided"
-      ? calculatePriority(formData.urgency, formData.impact, formData.risk, formData.frequency)
+      ? calculatePriorityFromAnswers(formData.answers, groupParams)
       : parseFloat(formData.priority) || 0;
+
+  const totalWeight = groupParams.reduce((s, p) => s + p.weight, 0);
 
   const hasActiveFilters =
     filters.groupId ||
@@ -426,8 +486,7 @@ export default function ItemsPage() {
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    min="1"
-                    max="5"
+                    min="0"
                     step="0.01"
                     placeholder="Min"
                     value={filters.minPriority}
@@ -437,8 +496,7 @@ export default function ItemsPage() {
                   <span className="text-muted-foreground">-</span>
                   <input
                     type="number"
-                    min="1"
-                    max="5"
+                    min="0"
                     step="0.01"
                     placeholder="Max"
                     value={filters.maxPriority}
@@ -648,7 +706,9 @@ export default function ItemsPage() {
                   <select
                     required
                     value={formData.groupId}
-                    onChange={(e) => setFormData({ ...formData, groupId: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, groupId: e.target.value, answers: {} })
+                    }
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   >
                     <option value="">Select a group</option>
@@ -710,54 +770,89 @@ export default function ItemsPage() {
                 {/* Priority Input */}
                 {priorityMode === "guided" ? (
                   <div className="space-y-4 rounded-lg bg-muted/50 p-4">
-                    {[
-                      { key: "urgency", label: "Urgency", weight: 30 },
-                      { key: "impact", label: "Impact", weight: 30 },
-                      { key: "risk", label: "Risk", weight: 25 },
-                      { key: "frequency", label: "Frequency", weight: 15 },
-                    ].map((dim) => (
-                      <div key={dim.key}>
-                        <div className="mb-1 flex items-center justify-between">
-                          <label className="text-sm font-medium text-foreground">
-                            {dim.label} ({dim.weight}%)
-                          </label>
-                          <span className="text-sm font-semibold text-primary">
-                            {formData[dim.key as keyof ItemFormData] as number}
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min="1"
-                          max="5"
-                          step="1"
-                          value={formData[dim.key as keyof ItemFormData] as number}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              [dim.key]: parseInt(e.target.value),
-                            })
-                          }
-                          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
-                        />
-                        <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-                          <span>1</span>
-                          <span>2</span>
-                          <span>3</span>
-                          <span>4</span>
-                          <span>5</span>
-                        </div>
+                    {loadingGroupParams ? (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       </div>
-                    ))}
+                    ) : !formData.groupId ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Select a group to see its priority parameters.
+                      </p>
+                    ) : groupParams.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No priority parameters assigned to this group. Assign parameters on the group detail page.
+                      </p>
+                    ) : (
+                      groupParams.map((param) => {
+                        const pct = totalWeight > 0 ? ((param.weight / totalWeight) * 100).toFixed(0) : "0";
+                        const selectedEvalId = formData.answers[param.id] || "";
+                        const selectedEval = param.evalItems.find(
+                          (e) => e.paramEvalItem.id === selectedEvalId
+                        );
+
+                        return (
+                          <div key={param.id}>
+                            <div className="mb-1.5 flex items-center justify-between">
+                              <label className="text-sm font-medium text-foreground">
+                                {param.name}{" "}
+                                <span className="text-muted-foreground font-normal">
+                                  (weight: {param.weight}, {pct}%)
+                                </span>
+                              </label>
+                              {selectedEval && (
+                                <span className="text-sm font-semibold text-primary">
+                                  {selectedEval.paramEvalItem.name} ({selectedEval.paramEvalItem.value})
+                                </span>
+                              )}
+                            </div>
+                            {param.evalItems.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">
+                                No answer options assigned to this parameter.
+                              </p>
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                {param.evalItems
+                                  .sort((a, b) => a.paramEvalItem.value - b.paramEvalItem.value)
+                                  .map((ei) => (
+                                    <button
+                                      key={ei.paramEvalItem.id}
+                                      type="button"
+                                      onClick={() =>
+                                        setFormData({
+                                          ...formData,
+                                          answers: {
+                                            ...formData.answers,
+                                            [param.id]: ei.paramEvalItem.id,
+                                          },
+                                        })
+                                      }
+                                      className={`rounded-lg px-3 py-1.5 text-sm font-medium border transition-colors ${
+                                        selectedEvalId === ei.paramEvalItem.id
+                                          ? "bg-primary text-primary-foreground border-primary"
+                                          : "bg-card text-foreground border-border hover:bg-muted"
+                                      }`}
+                                    >
+                                      {ei.paramEvalItem.name}
+                                      <span className="ml-1 text-xs opacity-70">
+                                        ({ei.paramEvalItem.value})
+                                      </span>
+                                    </button>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 ) : (
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-foreground">
-                      Priority (1-5)
+                      Priority Score
                     </label>
                     <input
                       type="number"
-                      min="1"
-                      max="5"
+                      min="0"
                       step="0.01"
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
@@ -777,7 +872,7 @@ export default function ItemsPage() {
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {priorityMode === "guided"
-                      ? "Based on urgency (30%) + impact (30%) + risk (25%) + frequency (15%)"
+                      ? "Weighted average of selected answers"
                       : "Manually entered priority value"}
                   </p>
                 </div>
@@ -810,26 +905,26 @@ export default function ItemsPage() {
       {deleteItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setDeleteItem(null)} />
-          <div className="relative w-full max-w-md rounded-xl bg-gray-900 p-6 shadow-2xl">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
-              <Trash2 className="h-6 w-6 text-red-500" />
+          <div className="relative w-full max-w-md rounded-xl bg-popover border border-border p-6 shadow-2xl">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <Trash2 className="h-6 w-6 text-destructive" />
             </div>
-            <h2 className="mb-2 text-xl font-bold text-gray-100">Delete Item</h2>
-            <p className="mb-6 text-gray-400">
+            <h2 className="mb-2 text-xl font-bold text-foreground">Delete Item</h2>
+            <p className="mb-6 text-muted-foreground">
               Are you sure you want to delete{" "}
-              <span className="font-medium text-gray-200">{deleteItem.itemName}</span>? This action
+              <span className="font-medium text-foreground">{deleteItem.itemName}</span>? This action
               cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteItem(null)}
-                className="flex-1 rounded-lg bg-gray-800 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:bg-gray-700"
+                className="flex-1 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                className="flex-1 rounded-lg bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
               >
                 Delete
               </button>

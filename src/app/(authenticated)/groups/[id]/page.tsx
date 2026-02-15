@@ -2,24 +2,34 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Pencil, Plus, X, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Plus,
+  X,
+  Check,
+  SlidersHorizontal,
+} from "lucide-react";
 
 interface Item {
   id: string;
   itemName: string;
   pricing: number;
   priority: number;
-  urgency: number;
-  impact: number;
-  risk: number;
-  frequency: number;
   createdAt: string;
+}
+
+interface PriorityParam {
+  id: string;
+  name: string;
+  weight: number;
 }
 
 interface GroupDetail {
   id: string;
   groupName: string;
   items: Item[];
+  priorityParams?: { priorityParam: PriorityParam }[];
 }
 
 function calculateValueScore(priority: number, price: number): number {
@@ -41,6 +51,12 @@ export default function GroupDetailPage() {
   const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Param assignment
+  const [allParams, setAllParams] = useState<PriorityParam[]>([]);
+  const [assignedParamIds, setAssignedParamIds] = useState<Set<string>>(new Set());
+  const [loadingParams, setLoadingParams] = useState(false);
+  const [paramActionLoading, setParamActionLoading] = useState<string | null>(null);
+
   const fetchGroup = useCallback(async () => {
     try {
       const res = await fetch(`/api/groups/${groupId}`);
@@ -50,6 +66,13 @@ export default function GroupDetailPage() {
       }
       const json = await res.json();
       setGroup(json.group);
+      // Build assigned set
+      const assigned = new Set<string>(
+        (json.group.priorityParams || []).map(
+          (gp: { priorityParam: PriorityParam }) => gp.priorityParam.id
+        )
+      );
+      setAssignedParamIds(assigned);
     } catch {
       setError("Failed to load group");
     } finally {
@@ -57,9 +80,25 @@ export default function GroupDetailPage() {
     }
   }, [groupId]);
 
+  const fetchAllParams = useCallback(async () => {
+    setLoadingParams(true);
+    try {
+      const res = await fetch("/api/priority-params");
+      if (res.ok) {
+        const json = await res.json();
+        setAllParams(json.params || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch params:", err);
+    } finally {
+      setLoadingParams(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchGroup();
-  }, [fetchGroup]);
+    fetchAllParams();
+  }, [fetchGroup, fetchAllParams]);
 
   const handleSaveEdit = async () => {
     if (!editName.trim()) {
@@ -89,6 +128,40 @@ export default function GroupDetailPage() {
       setEditError("Failed to update group");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const toggleParam = async (paramId: string) => {
+    setParamActionLoading(paramId);
+    const isAssigned = assignedParamIds.has(paramId);
+
+    try {
+      if (isAssigned) {
+        const res = await fetch(
+          `/api/groups/${groupId}/params?priorityParamId=${paramId}`,
+          { method: "DELETE" }
+        );
+        if (res.ok) {
+          setAssignedParamIds((prev) => {
+            const next = new Set(prev);
+            next.delete(paramId);
+            return next;
+          });
+        }
+      } else {
+        const res = await fetch(`/api/groups/${groupId}/params`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ priorityParamId: paramId }),
+        });
+        if (res.ok) {
+          setAssignedParamIds((prev) => new Set(prev).add(paramId));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to toggle param:", err);
+    } finally {
+      setParamActionLoading(null);
     }
   };
 
@@ -204,8 +277,62 @@ export default function GroupDetailPage() {
         <p className="text-destructive text-sm">{editError}</p>
       )}
 
+      {/* Priority Parameters Assignment */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-border flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Priority Parameters</h2>
+          <span className="ml-auto text-sm text-muted-foreground">
+            {assignedParamIds.size} assigned
+          </span>
+        </div>
+        <div className="p-4">
+          {loadingParams ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          ) : allParams.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No priority parameters created yet. Create some in the Params page first.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {allParams.map((param) => {
+                const isAssigned = assignedParamIds.has(param.id);
+                const isLoading = paramActionLoading === param.id;
+                return (
+                  <button
+                    key={param.id}
+                    onClick={() => toggleParam(param.id)}
+                    disabled={isLoading}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium border transition-colors disabled:opacity-50 ${
+                      isAssigned
+                        ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
+                    }`}
+                  >
+                    {isLoading ? (
+                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : isAssigned ? (
+                      <Check className="w-3 h-3" />
+                    ) : (
+                      <Plus className="w-3 h-3" />
+                    )}
+                    {param.name}
+                    <span className="text-xs opacity-60">w:{param.weight}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Items Table */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-foreground">Items</h2>
+        </div>
         {sortedItems.length === 0 ? (
           <div className="p-12 text-center">
             <p className="text-muted-foreground">

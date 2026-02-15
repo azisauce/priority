@@ -9,10 +9,11 @@ const updateItemSchema = z.object({
   itemName: z.string().min(1).max(200).optional(),
   groupId: z.string().min(1).optional(),
   pricing: z.number().positive().optional(),
-  urgency: z.number().int().min(1).max(5).optional(),
-  impact: z.number().int().min(1).max(5).optional(),
-  risk: z.number().int().min(1).max(5).optional(),
-  frequency: z.number().int().min(1).max(5).optional(),
+  answers: z.array(z.object({
+    priorityParamId: z.string().min(1),
+    paramEvalItemId: z.string().min(1),
+  })).optional(),
+  priority: z.number().optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -27,7 +28,15 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
   const item = await prisma.item.findUnique({
     where: { id },
-    include: { group: true },
+    include: {
+      group: true,
+      paramAnswers: {
+        include: {
+          priorityParam: true,
+          paramEvalItem: true,
+        },
+      },
+    },
   });
 
   if (!item) {
@@ -62,7 +71,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const data = parsed.data;
+  const { answers, priority: manualPriority, ...data } = parsed.data;
 
   // If groupId changes, verify new group belongs to user
   if (data.groupId && data.groupId !== item.groupId) {
@@ -72,18 +81,31 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
   }
 
-  // Recalculate priority if any dimension field changes
-  const dimensionFields = ["urgency", "impact", "risk", "frequency"] as const;
-  const hasDimensionChange = dimensionFields.some((f) => data[f] !== undefined);
+  // Recalculate priority from answers
+  let priority = manualPriority ?? item.priority;
+  if (answers && answers.length > 0 && !manualPriority) {
+    const paramIds = answers.map((a) => a.priorityParamId);
+    const evalItemIds = answers.map((a) => a.paramEvalItemId);
 
-  let priority = item.priority;
-  if (hasDimensionChange) {
-    priority = calculatePriority({
-      urgency: data.urgency ?? item.urgency,
-      impact: data.impact ?? item.impact,
-      risk: data.risk ?? item.risk,
-      frequency: data.frequency ?? item.frequency,
-    });
+    const [params, evalItems] = await Promise.all([
+      prisma.priorityParam.findMany({ where: { id: { in: paramIds } } }),
+      prisma.paramEvalItem.findMany({ where: { id: { in: evalItemIds } } }),
+    ]);
+
+    const paramMap = new Map(params.map((p) => [p.id, p]));
+    const evalItemMap = new Map(evalItems.map((e) => [e.id, e]));
+
+    const priorityAnswers = answers.map((a) => ({
+      value: evalItemMap.get(a.paramEvalItemId)?.value ?? 0,
+      weight: paramMap.get(a.priorityParamId)?.weight ?? 0,
+    }));
+
+    priority = calculatePriority(priorityAnswers);
+  }
+
+  // Update answers: delete old, create new
+  if (answers) {
+    await prisma.itemParamAnswer.deleteMany({ where: { itemId: id } });
   }
 
   const updated = await prisma.item.update({
@@ -91,8 +113,24 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     data: {
       ...data,
       priority,
+      ...(answers ? {
+        paramAnswers: {
+          create: answers.map((a) => ({
+            priorityParamId: a.priorityParamId,
+            paramEvalItemId: a.paramEvalItemId,
+          })),
+        },
+      } : {}),
     },
-    include: { group: true },
+    include: {
+      group: true,
+      paramAnswers: {
+        include: {
+          priorityParam: true,
+          paramEvalItem: true,
+        },
+      },
+    },
   });
 
   return NextResponse.json({ item: updated });

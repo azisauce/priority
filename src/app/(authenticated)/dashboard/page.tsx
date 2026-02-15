@@ -101,14 +101,11 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wider">Priority Score Calculation</p>
                 <div className="font-mono text-sm space-y-2">
                   <div className="flex flex-wrap items-center gap-2 text-foreground/80">
-                    <span>(Urgency × <span className="text-primary">0.30</span>)</span>
-                    <span>+</span>
-                    <span>(Impact × <span className="text-primary">0.30</span>)</span>
-                    <span>+</span>
-                    <span>(Risk × <span className="text-primary">0.25</span>)</span>
-                    <span>+</span>
-                    <span>(Frequency × <span className="text-primary">0.15</span>)</span>
+                    <span>Σ(Answer × <span className="text-primary">Weight</span>)</span>
+                    <span>/</span>
+                    <span>Σ(<span className="text-primary">Weight</span>)</span>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">Weighted average across all configured parameters per group</p>
                 </div>
               </div>
 
@@ -123,7 +120,7 @@ export default function DashboardPage() {
             <div className="space-y-2 text-foreground/80">
               <h3 className="font-semibold text-foreground">How it works</h3>
               <p className="text-sm leading-relaxed">
-                The <span className="text-primary font-medium">Priority Score</span> (1-5) aggregates four key business dimensions to determine an item&apos;s operational importance.
+                The <span className="text-primary font-medium">Priority Score</span> is a weighted average of your custom parameters. Each group can have different parameters with different weights — configure them in <span className="text-primary font-medium">Params</span> and assign them per group.
               </p>
               <p className="text-sm leading-relaxed">
                 The <span className="text-primary font-medium">Value Score</span> exponentially weights high-priority items against their cost. This ensures that critical, low-cost items surface to the top of your purchasing list, maximizing impact for every dollar spent.

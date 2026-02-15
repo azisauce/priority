@@ -6,6 +6,7 @@ import { z } from "zod";
 
 const createGroupSchema = z.object({
   groupName: z.string().min(1, "Group name is required").max(100),
+  priorityParamIds: z.array(z.string()).optional(),
 });
 
 export async function GET() {
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { groupName } = parsed.data;
+  const { groupName, priorityParamIds } = parsed.data;
 
   const existing = await prisma.group.findUnique({
     where: { groupName_userId: { groupName, userId } },
@@ -47,7 +48,23 @@ export async function POST(request: NextRequest) {
   }
 
   const group = await prisma.group.create({
-    data: { groupName, userId },
+    data: {
+      groupName,
+      userId,
+      ...(priorityParamIds && priorityParamIds.length > 0
+        ? {
+            priorityParams: {
+              create: priorityParamIds.map((id) => ({
+                priorityParamId: id,
+              })),
+            },
+          }
+        : {}),
+    },
+    include: {
+      _count: { select: { items: true } },
+      priorityParams: { include: { priorityParam: true } },
+    },
   });
 
   return NextResponse.json({ group }, { status: 201 });
