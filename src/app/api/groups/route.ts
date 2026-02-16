@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import db from "@/lib/db";
 
 const createGroupSchema = z.object({
   groupName: z.string().min(1, "Group name is required").max(100),
-  priorityParamIds: z.array(z.string()).optional(),
+  description: z.string().optional(),
+  priorityItemIds: z.array(z.string()).optional(),
 });
 
 export async function GET() {
@@ -16,13 +17,32 @@ export async function GET() {
   }
   const userId = session.user.id;
 
-  const groups = await prisma.group.findMany({
-    where: { userId },
-    include: { _count: { select: { items: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+  const groups = await db("groups")
+    .where({ user_id: userId })
+    .select("*")
+    .orderBy("created_at", "desc");
 
-  return NextResponse.json({ groups });
+  // Get item counts for each group
+  const groupsWithCounts = await Promise.all(
+    groups.map(async (group) => {
+      const itemCount = await db("items")
+        .where({ group_id: group.id })
+        .count("* as count")
+        .first();
+      
+      return {
+        id: group.id,
+        groupName: group.name,
+        description: group.description,
+        userId: group.user_id,
+        createdAt: group.created_at,
+        updatedAt: group.updated_at,
+        _count: { items: parseInt(itemCount?.count as string || "0") },
+      };
+    })
+  );
+
+  return NextResponse.json({ groups: groupsWithCounts });
 }
 
 export async function POST(request: NextRequest) {
@@ -38,34 +58,59 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { groupName, priorityParamIds } = parsed.data;
+  const { groupName, description, priorityItemIds } = parsed.data;
 
-  const existing = await prisma.group.findUnique({
-    where: { groupName_userId: { groupName, userId } },
-  });
+  const existing = await db("groups")
+    .where({ name: groupName, user_id: userId })
+    .first();
+    
   if (existing) {
     return NextResponse.json({ error: "Group name already exists" }, { status: 409 });
   }
 
-  const group = await prisma.group.create({
-    data: {
-      groupName,
-      userId,
-      ...(priorityParamIds && priorityParamIds.length > 0
-        ? {
-            priorityParams: {
-              create: priorityParamIds.map((id) => ({
-                priorityParamId: id,
-              })),
-            },
-          }
-        : {}),
-    },
-    include: {
-      _count: { select: { items: true } },
-      priorityParams: { include: { priorityParam: true } },
-    },
-  });
+  const [group] = await db("groups")
+    .insert({
+      name: groupName,
+      description: description || null,
+      user_id: userId,
+    })
+    .returning("*");
 
-  return NextResponse.json({ group }, { status: 201 });
+  // Create junction table entries if priority items are provided
+  if (priorityItemIds && priorityItemIds.length > 0) {
+    await db("group_priority_items").insert(
+      priorityItemIds.map((id, index) => ({
+        group_id: group.id,
+        priority_item_id: id,
+        order: index + 1,
+      }))
+    );
+  }
+
+  // Fetch priority items for response
+  const priorityItems = priorityItemIds && priorityItemIds.length > 0
+    ? await db("group_priority_items")
+        .where({ group_id: group.id })
+        .join("priority_items", "group_priority_items.priority_item_id", "priority_items.id")
+        .select("priority_items.*", "group_priority_items.order")
+        .orderBy("group_priority_items.order")
+    : [];
+
+  return NextResponse.json({ 
+    group: {
+      id: group.id,
+      groupName: group.name,
+      description: group.description,
+      userId: group.user_id,
+      createdAt: group.created_at,
+      updatedAt: group.updated_at,
+      _count: { items: 0 },
+      priorityParams: priorityItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        weight: item.weight,
+        order: item.order,
+      })),
+    }
+  }, { status: 201 });
 }

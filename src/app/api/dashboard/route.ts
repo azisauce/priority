@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { calculatePriorityPriceScore } from "@/lib/priority";
+import db from "@/lib/db";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -11,39 +11,53 @@ export async function GET() {
   }
   const userId = session.user.id;
 
-  const [totalItems, totalGroups, aggregation, allItems, recentItems] = await Promise.all([
-    prisma.item.count({ where: { userId } }),
-    prisma.group.count({ where: { userId } }),
-    prisma.item.aggregate({
-      where: { userId },
-      _sum: { pricing: true },
-      _avg: { priority: true },
-    }),
-    prisma.item.findMany({
-      where: { userId },
-      select: { id: true, itemName: true, pricing: true, priority: true, groupId: true },
-    }),
-    prisma.item.findMany({
-      where: { userId },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      include: { group: true },
-    }),
+  const [totalItemsResult, totalGroupsResult, allItems, recentItems] = await Promise.all([
+    db("items").where({ user_id: userId }).count("* as count").first(),
+    db("groups").where({ user_id: userId }).count("* as count").first(),
+    db("items")
+      .where({ user_id: userId })
+      .select("id", "name", "price", "priority", "group_id"),
+    db("items")
+      .where({ user_id: userId })
+      .orderBy("created_at", "desc")
+      .limit(5)
+      .select("items.*")
+      .leftJoin("groups", "items.group_id", "groups.id")
+      .select(
+        "items.*",
+        "groups.id as group_id",
+        "groups.name as group_name",
+        "groups.description as group_description"
+      ),
   ]);
 
-  const totalValue = aggregation._sum.pricing ?? 0;
-  const averagePriority = aggregation._avg.priority
-    ? Math.round(aggregation._avg.priority * 100) / 100
+  const totalItems = parseInt(totalItemsResult?.count as string || "0");
+  const totalGroups = parseInt(totalGroupsResult?.count as string || "0");
+
+  // Calculate aggregations
+  const aggregation = await db("items")
+    .where({ user_id: userId })
+    .sum("price as sum_price")
+    .avg("priority as avg_priority")
+    .first();
+
+  const totalValue = Number(aggregation?.sum_price) || 0;
+  const averagePriority = aggregation?.avg_priority
+    ? Math.round(Number(aggregation.avg_priority) * 100) / 100
     : 0;
 
   // Calculate top 5 items by priority-price score
   const scoredItems = allItems
-    .map((item: { id: string; itemName: string; pricing: number; priority: number; groupId: string }) => ({
-      ...item,
-      score: calculatePriorityPriceScore(item.priority, item.pricing),
+    .map((item) => ({
+      id: item.id,
+      itemName: item.name,
+      pricing: Number(item.price),
+      priority: Number(item.priority),
+      groupId: item.group_id,
+      score: calculatePriorityPriceScore(Number(item.priority), Number(item.price)),
     }))
-    .filter((item: { score: number }) => isFinite(item.score))
-    .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
+    .filter((item) => isFinite(item.score))
+    .sort((a, b) => b.score - a.score)
     .slice(0, 5);
 
   return NextResponse.json({
@@ -52,6 +66,22 @@ export async function GET() {
     totalValue,
     averagePriority,
     topItems: scoredItems,
-    recentItems,
+    recentItems: recentItems.map(item => ({
+      id: item.id,
+      itemName: item.name,
+      description: item.description,
+      pricing: Number(item.price),
+      priority: Number(item.priority),
+      value: Number(item.value),
+      userId: item.user_id,
+      groupId: item.group_id,
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+      group: {
+        id: item.group_id,
+        groupName: item.group_name,
+        description: item.group_description,
+      },
+    })),
   });
 }

@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import db from "@/lib/db";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,9 +16,9 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Username and password are required");
         }
 
-        const user = await prisma.user.findUnique({
-          where: { username: credentials.username },
-        });
+        const user = await db("users")
+          .where({ username: credentials.username })
+          .first();
 
         if (!user) {
           throw new Error("Invalid username or password");
@@ -36,7 +36,7 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           name: user.username,
-          image: user.userImage,
+          image: user.image_url,
         };
       },
     }),
