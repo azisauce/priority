@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   const { initialBudget, monthlyIncome, deadlineMonths, groupIds } = parsed.data;
 
-  let query = db("items").where({ user_id: userId });
+  let query = db("items").where("items.user_id", userId);
   if (groupIds && groupIds.length > 0) {
     query = query.whereIn("group_id", groupIds);
   }

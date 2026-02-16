@@ -12,13 +12,13 @@ export async function GET() {
   const userId = session.user.id;
 
   const [totalItemsResult, totalGroupsResult, allItems, recentItems] = await Promise.all([
-    db("items").where({ user_id: userId }).count("* as count").first(),
+    db("items").where("items.user_id", userId).count("* as count").first(),
     db("groups").where({ user_id: userId }).count("* as count").first(),
     db("items")
-      .where({ user_id: userId })
+      .where("items.user_id", userId)
       .select("id", "name", "price", "priority", "group_id"),
     db("items")
-      .where({ user_id: userId })
+      .where("items.user_id", userId)
       .orderBy("created_at", "desc")
       .limit(5)
       .select("items.*")

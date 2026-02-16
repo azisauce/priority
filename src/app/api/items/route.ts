@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   const sortBy = searchParams.get("sortBy") || "created_at";
   const sortOrder = searchParams.get("sortOrder") || "desc";
 
-  let query = db("items").where({ user_id: userId });
+  let query = db("items").where("items.user_id", userId);
 
   if (groupId) query = query.where({ group_id: groupId });
 
