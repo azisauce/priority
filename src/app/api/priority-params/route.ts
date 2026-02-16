@@ -17,7 +17,9 @@ export async function GET() {
   }
 
   const params = await db("priority_items")
-    .where({ user_id: session.user.id })
+    .where(function () {
+      this.where({ user_id: session.user.id }).orWhereNull("user_id");
+    })
     .select("*")
     .orderBy("created_at", "desc");
 
@@ -27,6 +29,9 @@ export async function GET() {
       const evalItems = await db("priority_item_judgment_items")
         .where({ priority_item_id: param.id })
         .join("judgment_items", "priority_item_judgment_items.judgment_item_id", "judgment_items.id")
+        .where(function () {
+          this.where({ "judgment_items.user_id": session.user.id }).orWhereNull("judgment_items.user_id");
+        })
         .select(
           "judgment_items.*",
           "priority_item_judgment_items.order",

@@ -109,6 +109,54 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
-  // Reverting this migration is destructive/difficult and not implemented automatically.
-  throw new Error("Down migration not implemented for normalize_user_ids_to_uuid");
+  const userRefTables = ["groups", "priority_items", "judgment_items", "items"];
+
+  // Drop recreated FK constraints
+  await knex.raw(`ALTER TABLE groups DROP CONSTRAINT IF EXISTS groups_user_id_fkey;`);
+  await knex.raw(`ALTER TABLE priority_items DROP CONSTRAINT IF EXISTS priority_items_user_id_fkey;`);
+  await knex.raw(`ALTER TABLE judgment_items DROP CONSTRAINT IF EXISTS judgment_items_user_id_fkey;`);
+  await knex.raw(`ALTER TABLE items DROP CONSTRAINT IF EXISTS items_user_id_fkey;`);
+
+  // Restore users.id: rename uuid id -> new_id, rename old_id -> id
+  await knex.raw(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_pkey;`);
+  await knex.schema.alterTable("users", (table) => {
+    table.renameColumn("id", "new_id");
+    table.renameColumn("old_id", "id");
+  });
+  await knex.raw(`ALTER TABLE users ADD PRIMARY KEY (id);`);
+
+  // For each referencing table, restore integer user_id from users.old_id mapping
+  for (const t of userRefTables) {
+  await knex.schema.alterTable(t, (table) => {
+    table.integer("old_user_id");
+  });
+
+  await knex.raw(`
+    UPDATE ${t}
+    SET old_user_id = u.old_id
+    FROM users u
+    WHERE ${t}.user_id::text = u.id::text
+  `);
+
+  await knex.schema.alterTable(t, (table) => {
+    table.dropColumn("user_id");
+  });
+  await knex.schema.alterTable(t, (table) => {
+    table.integer("user_id");
+  });
+  await knex.raw(`UPDATE ${t} SET user_id = old_user_id`);
+  await knex.schema.alterTable(t, (table) => {
+    table.dropColumn("old_user_id");
+  });
+
+  await knex.raw(`
+    ALTER TABLE ${t} ADD CONSTRAINT ${t}_user_id_fkey
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+  `);
+}
+
+  // Drop uuid helper column from users
+  await knex.schema.alterTable("users", (table) => {
+    table.dropColumn("new_id");
+  });
 }

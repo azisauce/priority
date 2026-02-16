@@ -39,6 +39,9 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       const evalItems = await db("priority_item_judgment_items")
         .where({ priority_item_id: param.id })
         .join("judgment_items", "priority_item_judgment_items.judgment_item_id", "judgment_items.id")
+        .where(function () {
+          this.where({ "judgment_items.user_id": session.user.id }).orWhereNull("judgment_items.user_id");
+        })
         .select(
           "judgment_items.*",
           "priority_item_judgment_items.order",
@@ -82,8 +85,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const userId = session.user.id;
   const { id } = await context.params;
 
+  console.log('id ==>', id);
+  console.log('userId ==>', userId);
+  
+
   const group = await db("groups").where({ id }).first();
-  if (!group || group.user_id !== userId) {
+  console.log('group ==>', group);
+
+  if (!group || group.user_id != userId) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
   }
 
@@ -93,10 +102,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
+  console.log('parsed===>', parsed);
+  
   const param = await db("priority_items")
     .where({ id: parsed.data.priorityParamId })
     .first();
-  if (!param || param.user_id !== userId) {
+  console.log('param ==>', param);
+
+  if (!param || (param.user_id && param.user_id != userId)) {
     return NextResponse.json({ error: "Priority param not found" }, { status: 404 });
   }
 

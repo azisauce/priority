@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "seed:run --test": "npx knex --knexfile knexfile.ts seed:run --env development",
     "migrate": "npx tsx ./node_modules/.bin/knex migrate:latest --knexfile knexfile.ts",
-    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.ts",
-    "migrate:make": "knex migrate:make --knexfile knexfile.ts"
+    "migrate:rollback": "npx tsx ./node_modules/.bin/knex migrate:rollback --knexfile knexfile.ts",
+    "migrate:make": "npx tsx ./node_modules/.bin/knex migrate:make --knexfile knexfile.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -17,7 +17,9 @@ export async function GET() {
   }
 
   const evalItems = await db("judgment_items")
-    .where({ user_id: session.user.id })
+    .where(function () {
+      this.where({ user_id: session.user.id }).orWhereNull("user_id");
+    })
     .select("*")
     .orderBy("value", "asc");
 
