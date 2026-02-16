@@ -413,7 +413,8 @@ export default function ItemsPage() {
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            Add Item
+            <span className="sm:hidden">Add</span>
+            <span className="hidden sm:inline">Add Item</span>
           </button>
         </div>
 
@@ -438,8 +439,8 @@ export default function ItemsPage() {
 
             <div className="h-6 w-px bg-border" />
 
-            {/* Quick Sort */}
-            <div className="flex items-center gap-2">
+            {/* Quick Sort: hidden on small screens, moved into the inline filters for sm devices */}
+            <div className="hidden sm:flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Sort by:</span>
               <select
                 value={filters.sortBy}
@@ -469,6 +470,35 @@ export default function ItemsPage() {
           {/* Expanded Filters */}
           {showFilters && (
             <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* Sort controls for small screens (visible only on sm and below) */}
+              <div className="sm:hidden">
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Sort by</label>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={filters.sortBy}
+                    onChange={(e) => handleFilterChange("sortBy", e.target.value)}
+                    className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+                  >
+                    <option value="priority">Priority</option>
+                    <option value="pricing">Price</option>
+                    <option value="createdAt">Date Added</option>
+                    <option value="valueScore">Value Score</option>
+                  </select>
+                  <button
+                    onClick={() =>
+                      handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")
+                    }
+                    className="rounded-lg bg-input border border-border p-2 text-muted-foreground hover:bg-muted"
+                    aria-label="Toggle sort order"
+                  >
+                    {filters.sortOrder === "asc" ? (
+                      <ArrowUp className="h-4 w-4" />
+                    ) : (
+                      <ArrowDown className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Group</label>
                 <select
@@ -820,7 +850,7 @@ export default function ItemsPage() {
                               <label className="text-sm font-medium text-foreground">
                                 {param.name}{" "}
                                 <span className="text-muted-foreground font-normal">
-                                  (weight: {param.weight}, {pct}%)
+                                  ( weight: {pct}% | {param.weight} pts )
                                 </span>
                               </label>
                               {selectedEval && (

@@ -6,8 +6,8 @@ import db from "@/lib/db";
 
 const createGroupSchema = z.object({
   groupName: z.string().min(1, "Group name is required").max(100),
-  description: z.string().optional(),
-  priorityItemIds: z.array(z.string()).optional(),
+  description: z.string().nullable().optional(),
+  priorityItemIds: z.array(z.string()).nullable().optional(),
 });
 
 export async function GET() {

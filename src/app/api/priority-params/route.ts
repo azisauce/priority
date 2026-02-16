@@ -6,7 +6,7 @@ import db from "@/lib/db";
 
 const createParamSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   weight: z.number().int("Weight must be a whole number").min(1, "Weight must be at least 1").max(10, "Weight must be at most 10"),
 });
 
