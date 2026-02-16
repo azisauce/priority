@@ -11,6 +11,14 @@ const createItemSchema = z.object({
   pricing: z.number().positive("Price must be positive"),
   priority: z.number().optional(),
   value: z.number().optional(),
+  answers: z
+    .array(
+      z.object({
+        priorityParamId: z.string().min(1),
+        paramEvalItemId: z.string().min(1),
+      })
+    )
+    .optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -91,6 +99,50 @@ export async function POST(request: NextRequest) {
 
   const { itemName, description, groupId, pricing, priority = 0, value = 0 } = parsed.data;
 
+  // If answers were provided, compute weighted priority and average value
+  let computedPriority = priority;
+  let computedValue = value;
+  if (parsed.data.answers && parsed.data.answers.length > 0) {
+    const answers = parsed.data.answers;
+
+    const priorityParamIds = answers.map((a) => a.priorityParamId);
+    const evalItemIds = answers.map((a) => a.paramEvalItemId);
+
+    // Fetch weights for priority params
+    const params = await db("priority_items").whereIn("id", priorityParamIds).select("id", "weight");
+    const paramsById: Record<string, number> = {};
+    for (const p of params) paramsById[p.id] = Number(p.weight || 0);
+
+    // Fetch values for judgment items
+    const evalItems = await db("judgment_items").whereIn("id", evalItemIds).select("id", "value");
+    const evalById: Record<string, number> = {};
+    for (const ei of evalItems) evalById[ei.id] = Number(ei.value || 0);
+
+    let totalWeight = 0;
+    let weightedSum = 0;
+    let simpleSum = 0;
+    let count = 0;
+
+    for (const a of answers) {
+      const w = paramsById[a.priorityParamId] ?? 0;
+      const v = evalById[a.paramEvalItemId] ?? 0;
+      if (w > 0) {
+        totalWeight += w;
+        weightedSum += v * w;
+      }
+      simpleSum += v;
+      count += 1;
+    }
+
+    if (totalWeight > 0) {
+      computedPriority = Math.round((weightedSum / totalWeight) * 100) / 100;
+    } else {
+      computedPriority = count > 0 ? Math.round((simpleSum / count) * 100) / 100 : 0;
+    }
+
+    computedValue = count > 0 ? Math.round((simpleSum / count) * 100) / 100 : 0;
+  }
+
   // Verify group belongs to user
   const group = await db("groups").where({ id: groupId }).first();
   if (!group || group.user_id !== userId) {
@@ -103,8 +155,8 @@ export async function POST(request: NextRequest) {
       description: description || null,
       group_id: groupId,
       price: pricing,
-      priority,
-      value,
+      priority: computedPriority,
+      value: computedValue,
       user_id: userId,
     })
     .returning("*");
