@@ -14,6 +14,7 @@ import {
 interface Group {
   id: string;
   groupName: string;
+  description: string | null;
   createdAt: string;
   _count: { items: number };
 }
@@ -33,6 +34,7 @@ export default function GroupsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formName, setFormName] = useState("");
+  const [formDesc, setFormDesc] = useState("");
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -82,6 +84,7 @@ export default function GroupsPage() {
   const openAddModal = () => {
     setEditingId(null);
     setFormName("");
+    setFormDesc("");
     setFormError("");
     setSelectedParamIds(new Set());
     setIsModalOpen(true);
@@ -91,6 +94,7 @@ export default function GroupsPage() {
   const openEditModal = async (group: Group) => {
     setEditingId(group.id);
     setFormName(group.groupName);
+    setFormDesc(group.description ?? "");
     setFormError("");
     setIsModalOpen(true);
     fetchAllParams();
@@ -113,6 +117,7 @@ export default function GroupsPage() {
     setIsModalOpen(false);
     setEditingId(null);
     setFormName("");
+    setFormDesc("");
     setFormError("");
     setSelectedParamIds(new Set());
   };
@@ -145,7 +150,7 @@ export default function GroupsPage() {
         const res = await fetch(`/api/groups/${editingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ groupName: formName.trim() }),
+          body: JSON.stringify({ groupName: formName.trim(), description: formDesc.trim() || null }),
         });
 
         if (!res.ok) {
@@ -190,7 +195,8 @@ export default function GroupsPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             groupName: formName.trim(),
-            priorityParamIds: Array.from(selectedParamIds),
+            description: formDesc.trim() || undefined,
+            priorityItemIds: Array.from(selectedParamIds),
           }),
         });
 
@@ -290,6 +296,9 @@ export default function GroupsPage() {
                   <h3 className="text-foreground font-medium truncate">
                     {group.groupName}
                   </h3>
+                  {group.description && (
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{group.description}</p>
+                  )}
                   <span className="inline-block mt-2 text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                     {group._count.items}{" "}
                     {group._count.items === 1 ? "item" : "items"}
@@ -358,6 +367,20 @@ export default function GroupsPage() {
                   placeholder="Enter group name"
                   className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   autoFocus
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                  Description
+                </label>
+                <textarea
+                  value={formDesc}
+                  onChange={(e) => setFormDesc(e.target.value)}
+                  placeholder="Enter group description (optional)"
+                  rows={2}
+                  className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
                 />
               </div>
 

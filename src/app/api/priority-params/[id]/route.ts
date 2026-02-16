@@ -7,7 +7,7 @@ import db from "@/lib/db";
 const updateParamSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   description: z.string().optional(),
-  weight: z.number().positive().max(10).optional(),
+  weight: z.number().int().min(1).max(10).optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };

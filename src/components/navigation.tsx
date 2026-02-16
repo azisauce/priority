@@ -73,8 +73,8 @@ export default function Navigation() {
           href="/profile"
           onClick={() => setMobileOpen(false)}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive("/profile")
-            ? "bg-blue-600/10 text-blue-400"
-            : "text-gray-400 hover:text-gray-100 hover:bg-gray-800"
+            ? "bg-primary/10 text-primary"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent"
             }`}
         >
           {session?.user?.image ? (

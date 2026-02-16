@@ -85,12 +85,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const userId = session.user.id;
   const { id } = await context.params;
 
-  console.log('id ==>', id);
-  console.log('userId ==>', userId);
-  
-
   const group = await db("groups").where({ id }).first();
-  console.log('group ==>', group);
 
   if (!group || group.user_id != userId) {
     return NextResponse.json({ error: "Group not found" }, { status: 404 });
@@ -102,12 +97,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  console.log('parsed===>', parsed);
-  
   const param = await db("priority_items")
     .where({ id: parsed.data.priorityParamId })
     .first();
-  console.log('param ==>', param);
 
   if (!param || (param.user_id && param.user_id != userId)) {
     return NextResponse.json({ error: "Priority param not found" }, { status: 404 });

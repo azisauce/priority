@@ -5,8 +5,8 @@ import { z } from "zod";
 import db from "@/lib/db";
 
 const updateGroupSchema = z.object({
-  groupName: z.string().min(1, "Group name is required").max(100),
-  description: z.string().optional(),
+  groupName: z.string().min(1, "Group name is required").max(100).optional(),
+  description: z.string().nullable().optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -130,16 +130,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   const { groupName, description } = parsed.data;
 
-  const existing = await db("groups")
-    .where({ name: groupName, user_id: userId })
-    .whereNot({ id })
-    .first();
-    
-  if (existing) {
-    return NextResponse.json({ error: "Group name already exists" }, { status: 409 });
+  if (groupName) {
+    const existing = await db("groups")
+      .where({ name: groupName, user_id: userId })
+      .whereNot({ id })
+      .first();
+      
+    if (existing) {
+      return NextResponse.json({ error: "Group name already exists" }, { status: 409 });
+    }
   }
 
-  const updateData: Record<string, unknown> = { name: groupName };
+  const updateData: Record<string, unknown> = {};
+  if (groupName !== undefined) updateData.name = groupName;
   if (description !== undefined) updateData.description = description;
 
   const [updated] = await db("groups")
@@ -176,15 +179,8 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const itemCount = await db("items")
-    .where({ group_id: id })
-    .count("* as count")
-    .first();
-
-  if (parseInt(itemCount?.count as string || "0") > 0) {
-    return NextResponse.json({ error: "Cannot delete group with items" }, { status: 400 });
-  }
-
+  // Delete all items belonging to this group, then delete the group
+  await db("items").where({ group_id: id }).del();
   await db("groups").where({ id }).del();
 
   return NextResponse.json({ message: "Group deleted" });

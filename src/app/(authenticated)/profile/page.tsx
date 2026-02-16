@@ -40,9 +40,9 @@ export default function ProfilePage() {
       const res = await fetch("/api/profile");
       if (res.ok) {
         const data = await res.json();
-        setProfile(data);
-        setUsername(data.username);
-        setUserImage(data.userImage || "");
+        setProfile(data.user);
+        setUsername(data.user.username);
+        setUserImage(data.user.userImage || "");
       }
     } catch {
       showMessage("Failed to load profile", "error");
@@ -78,7 +78,7 @@ export default function ProfilePage() {
         return;
       }
 
-      setProfile(data);
+      setProfile(data.user);
       await updateSession();
       showMessage("Profile updated successfully", "success");
     } catch {

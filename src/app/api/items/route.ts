@@ -6,7 +6,7 @@ import db from "@/lib/db";
 
 const createItemSchema = z.object({
   itemName: z.string().min(1, "Item name is required").max(200),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   groupId: z.string().min(1, "Group ID is required"),
   pricing: z.number().positive("Price must be positive"),
   priority: z.number().optional(),
@@ -94,6 +94,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const parsed = createItemSchema.safeParse(body);
   if (!parsed.success) {
+    console.log('dafaq');
+    
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
@@ -165,7 +167,7 @@ export async function POST(request: NextRequest) {
     item: {
       id: item.id,
       itemName: item.name,
-      description: item.description,
+      description: item?.description,
       pricing: Number(item.price),
       priority: Number(item.priority),
       value: Number(item.value),

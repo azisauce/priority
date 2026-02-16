@@ -42,6 +42,7 @@ interface GroupParam {
 interface Item {
   id: string;
   itemName: string;
+  description: string | null;
   pricing: number;
   priority: number;
   groupId: string;
@@ -62,6 +63,7 @@ interface Filters {
 
 interface ItemFormData {
   itemName: string;
+  description: string;
   groupId: string;
   pricing: string;
   priority: string;
@@ -143,6 +145,7 @@ export default function ItemsPage() {
 
   const [formData, setFormData] = useState<ItemFormData>({
     itemName: "",
+    description: "",
     groupId: urlGroupId || "",
     pricing: "",
     priority: "3",
@@ -257,6 +260,7 @@ export default function ItemsPage() {
     setPriorityMode("guided");
     setFormData({
       itemName: "",
+      description: "",
       groupId: urlGroupId || "",
       pricing: "",
       priority: "3",
@@ -277,6 +281,7 @@ export default function ItemsPage() {
     }
     setFormData({
       itemName: item.itemName,
+      description: item.description ?? "",
       groupId: item.groupId,
       pricing: item.pricing.toString(),
       priority: item.priority.toString(),
@@ -327,6 +332,7 @@ export default function ItemsPage() {
 
     const payload: Record<string, unknown> = {
       itemName: formData.itemName,
+      description: formData.description.trim() || null,
       groupId: formData.groupId,
       pricing,
     };
@@ -607,7 +613,12 @@ export default function ItemsPage() {
                         onClick={() => openEditModal(item)}
                       >
                         <td className="px-6 py-4">
-                          <span className="font-medium text-foreground">{item.itemName}</span>
+                          <div>
+                            <span className="font-medium text-foreground">{item.itemName}</span>
+                            {item.description && (
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
@@ -696,6 +707,19 @@ export default function ItemsPage() {
                     onChange={(e) => setFormData({ ...formData, itemName: e.target.value })}
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                     placeholder="Enter item name"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring resize-none"
+                    placeholder="Enter description (optional)"
+                    rows={2}
                   />
                 </div>
 

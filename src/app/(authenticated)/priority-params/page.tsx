@@ -16,14 +16,18 @@ import {
 interface EvalItem {
   id: string;
   name: string;
+  description: string | null;
   value: number;
+  userId: string | null;
   _count?: { params: number };
 }
 
 interface PriorityParam {
   id: string;
   name: string;
+  description: string | null;
   weight: number;
+  userId: string | null;
   evalItems: { paramEvalItem: EvalItem }[];
   _count?: { groups: number };
 }
@@ -35,6 +39,7 @@ export default function PriorityParamsPage() {
   const [showParamForm, setShowParamForm] = useState(false);
   const [editingParamId, setEditingParamId] = useState<string | null>(null);
   const [paramName, setParamName] = useState("");
+  const [paramDesc, setParamDesc] = useState("");
   const [paramWeight, setParamWeight] = useState("");
   const [paramError, setParamError] = useState("");
   const [paramSaving, setParamSaving] = useState(false);
@@ -47,6 +52,7 @@ export default function PriorityParamsPage() {
   const [showEvalForm, setShowEvalForm] = useState(false);
   const [editingEvalId, setEditingEvalId] = useState<string | null>(null);
   const [evalName, setEvalName] = useState("");
+  const [evalDesc, setEvalDesc] = useState("");
   const [evalValue, setEvalValue] = useState("");
   const [evalError, setEvalError] = useState("");
   const [evalSaving, setEvalSaving] = useState(false);
@@ -89,8 +95,8 @@ export default function PriorityParamsPage() {
       return;
     }
     const weight = parseFloat(paramWeight);
-    if (isNaN(weight) || weight <= 0) {
-      setParamError("Weight must be a positive number");
+    if (isNaN(weight) || weight < 1 || weight > 10 || !Number.isInteger(weight)) {
+      setParamError("Weight must be a whole number between 1 and 10");
       return;
     }
     setParamSaving(true);
@@ -106,7 +112,7 @@ export default function PriorityParamsPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: paramName.trim(), weight }),
+        body: JSON.stringify({ name: paramName.trim(), description: paramDesc.trim() || null, weight }),
       });
 
       if (!res.ok) {
@@ -119,6 +125,7 @@ export default function PriorityParamsPage() {
       setShowParamForm(false);
       setEditingParamId(null);
       setParamName("");
+      setParamDesc("");
       setParamWeight("");
     } catch {
       setParamError("Failed to save parameter");
@@ -141,6 +148,7 @@ export default function PriorityParamsPage() {
   const handleEditParam = (p: PriorityParam) => {
     setEditingParamId(p.id);
     setParamName(p.name);
+    setParamDesc(p.description || "");
     setParamWeight(p.weight.toString());
     setShowParamForm(true);
     setParamError("");
@@ -153,8 +161,8 @@ export default function PriorityParamsPage() {
       return;
     }
     const value = parseFloat(evalValue);
-    if (isNaN(value)) {
-      setEvalError("Value must be a number");
+    if (isNaN(value) || value < 1 || value > 5 || !Number.isInteger(value)) {
+      setEvalError("Value must be a whole number between 1 and 5");
       return;
     }
     setEvalSaving(true);
@@ -170,7 +178,7 @@ export default function PriorityParamsPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: evalName.trim(), value }),
+        body: JSON.stringify({ name: evalName.trim(), description: evalDesc.trim() || null, value }),
       });
 
       if (!res.ok) {
@@ -183,11 +191,13 @@ export default function PriorityParamsPage() {
       await fetchParams();
       if (!isEdit) {
         setEvalName("");
+        setEvalDesc("");
         setEvalValue("");
       } else {
         setShowEvalForm(false);
         setEditingEvalId(null);
         setEvalName("");
+        setEvalDesc("");
         setEvalValue("");
       }
     } catch {
@@ -212,6 +222,7 @@ export default function PriorityParamsPage() {
   const handleEditEval = (e: EvalItem) => {
     setEditingEvalId(e.id);
     setEvalName(e.name);
+    setEvalDesc(e.description || "");
     setEvalValue(e.value.toString());
     setShowEvalForm(true);
     setEvalError("");
@@ -268,6 +279,7 @@ export default function PriorityParamsPage() {
                   setShowParamForm(true);
                   setEditingParamId(null);
                   setParamName("");
+                  setParamDesc("");
                   setParamWeight("");
                   setParamError("");
                 }}
@@ -300,12 +312,20 @@ export default function PriorityParamsPage() {
                   value={paramWeight}
                   onChange={(e) => setParamWeight(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSaveParam()}
-                  placeholder="Weight"
-                  min="0.01"
-                  step="0.01"
-                  className="w-24 bg-input border border-border rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  placeholder="Weight (1-10)"
+                  min="1"
+                  max="10"
+                  step="1"
+                  className="w-28 bg-input border border-border rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
+              <input
+                type="text"
+                value={paramDesc}
+                onChange={(e) => setParamDesc(e.target.value)}
+                placeholder="Description / question (optional)"
+                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSaveParam}
@@ -319,6 +339,7 @@ export default function PriorityParamsPage() {
                     setShowParamForm(false);
                     setEditingParamId(null);
                     setParamName("");
+                    setParamDesc("");
                     setParamWeight("");
                     setParamError("");
                   }}
@@ -370,7 +391,17 @@ export default function PriorityParamsPage() {
                           <ChevronDown className="w-4 h-4 text-muted-foreground" />
                         )}
                         <div>
-                          <h3 className="text-foreground font-medium">{param.name}</h3>
+                          <h3 className="text-foreground font-medium">
+                            {param.name}
+                            {!param.userId && (
+                              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                Generic
+                              </span>
+                            )}
+                          </h3>
+                          {param.description && (
+                            <p className="text-sm text-muted-foreground mt-0.5 italic">{param.description}</p>
+                          )}
                           <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
                             <span>
                               Weight: {param.weight} ({pct}%)
@@ -384,20 +415,22 @@ export default function PriorityParamsPage() {
                           </div>
                         </div>
                       </button>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleEditParam(param)}
-                          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteParam(param)}
-                          className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {param.userId && (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditParam(param)}
+                            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteParam(param)}
+                            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Expanded: manage eval items for this param */}
@@ -469,6 +502,7 @@ export default function PriorityParamsPage() {
                   setShowEvalForm(true);
                   setEditingEvalId(null);
                   setEvalName("");
+                  setEvalDesc("");
                   setEvalValue("");
                   setEvalError("");
                 }}
@@ -501,11 +535,20 @@ export default function PriorityParamsPage() {
                   value={evalValue}
                   onChange={(e) => setEvalValue(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSaveEval()}
-                  placeholder="Value"
-                  step="0.01"
-                  className="w-24 bg-input border border-border rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  placeholder="Value (1-5)"
+                  min="1"
+                  max="5"
+                  step="1"
+                  className="w-28 bg-input border border-border rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
+              <input
+                type="text"
+                value={evalDesc}
+                onChange={(e) => setEvalDesc(e.target.value)}
+                placeholder="Description (optional)"
+                className="w-full bg-input border border-border rounded-lg px-3 py-2 text-foreground placeholder-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSaveEval}
@@ -519,6 +562,7 @@ export default function PriorityParamsPage() {
                     setShowEvalForm(false);
                     setEditingEvalId(null);
                     setEvalName("");
+                    setEvalDesc("");
                     setEvalValue("");
                     setEvalError("");
                   }}
@@ -558,27 +602,37 @@ export default function PriorityParamsPage() {
                 >
                   <div>
                     <span className="text-foreground font-medium">{ei.name}</span>
+                    {!ei.userId && (
+                      <span className="ml-2 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                        Generic
+                      </span>
+                    )}
                     <span className="ml-3 text-sm text-muted-foreground">
                       value: {ei.value}
                     </span>
                     <span className="ml-3 text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                       {ei._count?.params ?? 0} param{(ei._count?.params ?? 0) !== 1 ? "s" : ""}
                     </span>
+                    {ei.description && (
+                      <p className="text-xs text-muted-foreground mt-1">{ei.description}</p>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => handleEditEval(ei)}
-                      className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setDeleteEval(ei)}
-                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {ei.userId && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleEditEval(ei)}
+                        className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteEval(ei)}
+                        className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-muted rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
