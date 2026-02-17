@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Upload, Link2 } from "lucide-react";
 
 interface ProfileData {
   id: string;
@@ -19,6 +19,13 @@ export default function ProfilePage() {
   // Edit fields
   const [username, setUsername] = useState("");
   const [userImage, setUserImage] = useState("");
+  const [useUrlInput, setUseUrlInput] = useState(false);
+  
+  // File upload
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Password fields
   const [currentPassword, setCurrentPassword] = useState("");
@@ -57,13 +64,65 @@ export default function ProfilePage() {
     setTimeout(() => setMessage(""), 4000);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      showMessage("Please select an image file", "error");
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showMessage("Image must be less than 5MB", "error");
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     try {
+      let imagePath = userImage;
+
+      // If user selected a file, upload it first
+      if (selectedFile && !useUrlInput) {
+        setUploading(true);
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", selectedFile);
+
+        const uploadRes = await fetch("/api/upload/avatar", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!uploadRes.ok) {
+          const err = await uploadRes.json();
+          showMessage(err.error || "Failed to upload image", "error");
+          setUploading(false);
+          setSaving(false);
+          return;
+        }
+
+        const uploadData = await uploadRes.json();
+        imagePath = uploadData.path;
+        setUploading(false);
+      }
+
       const body: Record<string, string> = { username };
-      if (userImage) body.userImage = userImage;
+      if (imagePath) body.userImage = imagePath;
 
       const res = await fetch("/api/profile", {
         method: "PATCH",
@@ -79,12 +138,15 @@ export default function ProfilePage() {
       }
 
       setProfile(data.user);
+      setSelectedFile(null);
+      setPreviewUrl(null);
       await updateSession();
       showMessage("Profile updated successfully", "success");
     } catch {
       showMessage("An unexpected error occurred", "error");
     } finally {
       setSaving(false);
+      setUploading(false);
     }
   };
 
@@ -219,28 +281,94 @@ export default function ProfilePage() {
             </div>
 
             <div>
-              <label
-                htmlFor="edit-image"
-                className="block text-sm font-medium text-muted-foreground mb-1.5"
-              >
-                Profile Image URL
-              </label>
-              <input
-                id="edit-image"
-                type="url"
-                value={userImage}
-                onChange={(e) => setUserImage(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                placeholder="https://example.com/avatar.png"
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-muted-foreground">
+                  Profile Image
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUseUrlInput(!useUrlInput);
+                    setSelectedFile(null);
+                    setPreviewUrl(null);
+                  }}
+                  className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  {useUrlInput ? (
+                    <>
+                      <Upload className="w-3 h-3" />
+                      Upload File
+                    </>
+                  ) : (
+                    <>
+                      <Link2 className="w-3 h-3" />
+                      Use URL
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {useUrlInput ? (
+                <input
+                  id="edit-image"
+                  type="url"
+                  value={userImage}
+                  onChange={(e) => setUserImage(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                  placeholder="https://example.com/avatar.png"
+                />
+              ) : (
+                <div className="space-y-3">
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full px-4 py-8 rounded-lg bg-input border-2 border-dashed border-border hover:border-primary/50 cursor-pointer transition-colors flex flex-col items-center justify-center gap-2"
+                  >
+                    {previewUrl || profile?.userImage ? (
+                      <div className="relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={previewUrl || profile?.userImage || ""}
+                          alt="Preview"
+                          className="w-24 h-24 rounded-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Upload className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Click to upload image
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  {selectedFile && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground text-center">
+                    Max size: 5MB. Formats: JPEG, PNG, GIF, WebP
+                  </p>
+                </div>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || uploading}
               className="w-full px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Saving..." : "Save Changes"}
+              {uploading ? "Uploading..." : saving ? "Saving..." : "Save Changes"}
             </button>
           </form>
         </div>

@@ -7,7 +7,14 @@ import db from "@/lib/db";
 
 const updateProfileSchema = z.object({
   username: z.string().min(1).max(50).optional(),
-  userImage: z.string().url().nullable().optional(),
+  userImage: z.string().nullable().optional().refine(
+    (val) => {
+      if (!val) return true; // null or empty is fine
+      // Accept URLs or paths starting with /
+      return val.startsWith("http://") || val.startsWith("https://") || val.startsWith("/");
+    },
+    { message: "Must be a valid URL or path" }
+  ),
   currentPassword: z.string().optional(),
   newPassword: z.string().min(6).optional(),
 }).refine(
