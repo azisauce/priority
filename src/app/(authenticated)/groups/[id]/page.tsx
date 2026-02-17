@@ -33,8 +33,10 @@ interface GroupDetail {
 }
 
 function calculateValueScore(priority: number, price: number): number {
-  if (price <= 0) return Infinity;
-  return Math.pow(priority, 5) / price;
+  const p = Number(priority);
+  const pr = Number(price);
+  if (!isFinite(pr) || pr <= 0 || !isFinite(p)) return Infinity;
+  return Math.pow(p, 5) / pr;
 }
 
 export default function GroupDetailPage() {
@@ -65,10 +67,17 @@ export default function GroupDetailPage() {
         return;
       }
       const json = await res.json();
-      setGroup(json.group);
-      // Build assigned set
+      const rawGroup = json.group;
+      const normalizedItems: Item[] = (rawGroup.items || []).map((it: any) => ({
+        ...it,
+        priority: Number(it.priority),
+        pricing: Number(it.pricing),
+      }));
+      const normalizedGroup = { ...rawGroup, items: normalizedItems };
+      setGroup(normalizedGroup);
+      // Build assigned set from normalizedGroup
       const assigned = new Set<string>(
-        (json.group.priorityParams || []).map(
+        (normalizedGroup.priorityParams || []).map(
           (gp: { priorityParam: PriorityParam }) => gp.priorityParam.id
         )
       );
