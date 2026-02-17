@@ -528,13 +528,19 @@ export default function PriorityParamsPage() {
                                     <span className="text-sm font-medium text-foreground">
                                       {ei.name}
                                     </span>
+                                    {!ei.userId && (
+                                      <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                        Generic
+                                      </span>
+                                    )}
                                     <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                                       value: {ei.value}
                                     </span>
                                   </div>
                                   <button
                                     onClick={() => toggleEvalAssignment(param.id, ei.id)}
-                                    disabled={isLoading}
+                                    disabled={isLoading || !param.userId}
+                                    title={!param.userId ? "Cannot modify generic parameter" : undefined}
                                     className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                                       assigned
                                         ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
@@ -683,7 +689,7 @@ export default function PriorityParamsPage() {
                   <div>
                     <span className="text-foreground font-medium">{ei.name}</span>
                     {!ei.userId && (
-                      <span className="ml-2 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
+                      <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                         Generic
                       </span>
                     )}
