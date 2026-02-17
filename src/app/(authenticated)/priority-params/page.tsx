@@ -258,6 +258,36 @@ export default function PriorityParamsPage() {
   // --- Compute total weight for display ---
   const totalWeight = params.reduce((sum, p) => sum + p.weight, 0);
 
+  // Sort lists so non-generic (user-owned) items appear first, then by name
+  const sortedParams = [...params].sort((a, b) => {
+    const aGeneric = !a.userId;
+    const bGeneric = !b.userId;
+    if (aGeneric !== bGeneric) return aGeneric ? 1 : -1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const sortedEvalItems = [...evalItems].sort((a, b) => {
+    const aGeneric = !a.userId;
+    const bGeneric = !b.userId;
+    if (aGeneric !== bGeneric) return aGeneric ? 1 : -1;
+    return a.name.localeCompare(b.name);
+  });
+
+  // For a given param, return eval items with assigned ones first, then others
+  const evalItemsForParam = (paramId: string) =>
+    [...sortedEvalItems].sort((a, b) => {
+      const aAssigned = isEvalAssigned(paramId, a.id);
+      const bAssigned = isEvalAssigned(paramId, b.id);
+      if (aAssigned && bAssigned) {
+        // both assigned: sort by value descending, then name
+        if (b.value !== a.value) return b.value - a.value;
+        return a.name.localeCompare(b.name);
+      }
+      if (aAssigned !== bAssigned) return aAssigned ? -1 : 1;
+      // both unassigned: keep generic/name ordering
+      return a.name.localeCompare(b.name);
+    });
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -356,7 +386,7 @@ export default function PriorityParamsPage() {
 
           {/* Params List */}
           {loadingParams ? (
-            <div className="space-y-3">
+            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
                   <div className="h-5 w-32 bg-muted rounded mb-2" />
@@ -365,12 +395,14 @@ export default function PriorityParamsPage() {
               ))}
             </div>
           ) : params.length === 0 ? (
-            <div className="bg-card border border-border rounded-lg p-8 text-center">
-              <p className="text-muted-foreground">No parameters yet. Create one to get started.</p>
+            <div className="max-h-[60vh] overflow-y-auto pr-2">
+              <div className="bg-card border border-border rounded-lg p-8 text-center">
+                <p className="text-muted-foreground">No parameters yet. Create one to get started.</p>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              {params.map((param) => {
+            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
+              {sortedParams.map((param) => {
                 const pct = totalWeight > 0 ? ((param.weight / totalWeight) * 100).toFixed(1) : "0";
                 const isExpanded = expandedParam === param.id;
 
@@ -439,13 +471,13 @@ export default function PriorityParamsPage() {
                         <h4 className="text-sm font-medium text-muted-foreground mb-3">
                           Assigned Answer Options
                         </h4>
-                        {evalItems.length === 0 ? (
+                        {sortedEvalItems.length === 0 ? (
                           <p className="text-sm text-muted-foreground">
                             No answer options created yet. Create some in the right panel.
                           </p>
                         ) : (
                           <div className="space-y-2">
-                            {evalItems.map((ei) => {
+                            {evalItemsForParam(param.id).map((ei) => {
                               const assigned = isEvalAssigned(param.id, ei.id);
                               return (
                                 <div
@@ -579,7 +611,7 @@ export default function PriorityParamsPage() {
 
           {/* Eval Items List */}
           {loadingEvalItems ? (
-            <div className="space-y-3">
+            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
                   <div className="h-5 w-32 bg-muted rounded mb-2" />
@@ -587,15 +619,17 @@ export default function PriorityParamsPage() {
                 </div>
               ))}
             </div>
-          ) : evalItems.length === 0 ? (
-            <div className="bg-card border border-border rounded-lg p-8 text-center">
-              <p className="text-muted-foreground">
-                No answer options yet. Create labels like &quot;None&quot;, &quot;Low&quot;, &quot;Medium&quot;, &quot;High&quot;, &quot;Critical&quot;.
-              </p>
+          ) : sortedEvalItems.length === 0 ? (
+            <div className="max-h-[60vh] overflow-y-auto pr-2">
+              <div className="bg-card border border-border rounded-lg p-8 text-center">
+                <p className="text-muted-foreground">
+                  No answer options yet. Create labels like &quot;None&quot;, &quot;Low&quot;, &quot;Medium&quot;, &quot;High&quot;, &quot;Critical&quot;.
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="space-y-2">
-              {evalItems.map((ei) => (
+            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-2">
+              {sortedEvalItems.map((ei) => (
                 <div
                   key={ei.id}
                   className="bg-card border border-border rounded-lg p-4 flex items-center justify-between"
