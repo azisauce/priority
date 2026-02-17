@@ -5,6 +5,7 @@ import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 import crypto from "crypto";
+import { v2 as cloudinary } from "cloudinary";
 import db from "@/lib/db";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
@@ -46,21 +47,68 @@ export async function POST(request: NextRequest) {
       .select("image_url")
       .first();
 
-    // Generate unique filename
+    // Generate unique filename/hash and buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    
     const ext = file.name.split(".").pop() || "jpg";
     const hash = crypto.createHash("md5").update(buffer).digest("hex");
-    const filename = `${session.user.id}_${hash}.${ext}`;
+    const filenameBase = `${session.user.id}_${hash}`;
 
-    // Ensure upload directory exists
+    // If Cloudinary is configured, upload to Cloudinary. Otherwise fall back to local disk.
+    const useCloudinary = Boolean(
+      process.env.CLOUDINARY_URL || process.env.CLOUDINARY_API_KEY
+    );
+
+    if (useCloudinary) {
+      // Configure Cloudinary (will read CLOUDINARY_URL if available)
+      if (process.env.CLOUDINARY_URL) {
+        cloudinary.config({ secure: true });
+      } else {
+        cloudinary.config({
+          cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+          api_key: process.env.CLOUDINARY_API_KEY,
+          api_secret: process.env.CLOUDINARY_API_SECRET,
+          secure: true,
+        });
+      }
+
+      try {
+        const dataUri = `data:${file.type};base64,${buffer.toString("base64")}`;
+        const publicId = `uploads/avatars/${filenameBase}`;
+        const uploadRes = await cloudinary.uploader.upload(dataUri, {
+          public_id: publicId,
+          overwrite: true,
+          resource_type: "image",
+        });
+
+        // If previous image was stored in Cloudinary and matches our pattern, remove it
+        if (user?.image_url && user.image_url.includes("res.cloudinary.com") && user.image_url.includes(filenameBase) === false) {
+          // try to extract previous public_id using the same filename pattern
+          const m = user.image_url.match(/\/(?:uploads\/avatars\/)?([A-Za-z0-9_-]+_[0-9a-f]{32})(?:\.[a-zA-Z0-9]+)$/);
+          if (m && m[1]) {
+            const oldPublicId = `uploads/avatars/${m[1]}`;
+            try {
+              await cloudinary.uploader.destroy(oldPublicId, { resource_type: "image" });
+            } catch (err) {
+              console.error("Failed to delete old cloudinary image:", err);
+            }
+          }
+        }
+
+        return NextResponse.json({ path: uploadRes.secure_url }, { status: 200 });
+      } catch (err) {
+        console.error("Cloudinary upload failed:", err);
+        return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
+      }
+    }
+
+    // FALLBACK: local file storage (used when Cloudinary not configured)
+    const filename = `${filenameBase}.${ext}`;
     const uploadDir = join(process.cwd(), "public", "uploads", "avatars");
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
 
-    // Write file
     const filepath = join(uploadDir, filename);
     await writeFile(filepath, buffer);
 
@@ -80,7 +128,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Return the public path
+    // Return the public path for local file
     const publicPath = `/uploads/avatars/${filename}`;
 
     return NextResponse.json({ path: publicPath }, { status: 200 });
