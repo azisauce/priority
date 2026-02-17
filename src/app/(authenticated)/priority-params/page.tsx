@@ -45,6 +45,7 @@ export default function PriorityParamsPage() {
   const [paramSaving, setParamSaving] = useState(false);
   const [deleteParam, setDeleteParam] = useState<PriorityParam | null>(null);
   const [expandedParam, setExpandedParam] = useState<string | null>(null);
+  const [assigningEval, setAssigningEval] = useState<string | null>(null);
 
   // --- Eval items state ---
   const [evalItems, setEvalItems] = useState<EvalItem[]>([]);
@@ -236,6 +237,39 @@ export default function PriorityParamsPage() {
 
   const toggleEvalAssignment = async (paramId: string, evalItemId: string) => {
     const assigned = isEvalAssigned(paramId, evalItemId);
+    const loadingKey = `${paramId}-${evalItemId}`;
+    setAssigningEval(loadingKey);
+    
+    // Optimistic update: update local state immediately
+    setParams((prevParams) => {
+      return prevParams.map((p) => {
+        if (p.id !== paramId) return p;
+        
+        if (assigned) {
+          // Remove from evalItems
+          return {
+            ...p,
+            evalItems: p.evalItems.filter((e) => e.paramEvalItem.id !== evalItemId),
+          };
+        } else {
+          // Add to evalItems
+          const evalItem = evalItems.find((e) => e.id === evalItemId);
+          if (!evalItem) return p;
+          
+          return {
+            ...p,
+            evalItems: [
+              ...p.evalItems,
+              {
+                id: `temp-${Date.now()}`, // temporary ID
+                paramEvalItem: evalItem,
+              },
+            ],
+          };
+        }
+      });
+    });
+
     try {
       if (assigned) {
         await fetch(
@@ -249,9 +283,14 @@ export default function PriorityParamsPage() {
           body: JSON.stringify({ paramEvalItemId: evalItemId }),
         });
       }
+      // Refresh to get the real data from server
       await fetchParams();
-    } catch {
-      console.error("Failed to toggle eval assignment");
+    } catch (error) {
+      console.error("Failed to toggle eval assignment", error);
+      // Revert optimistic update on error
+      await fetchParams();
+    } finally {
+      setAssigningEval(null);
     }
   };
 
@@ -479,6 +518,7 @@ export default function PriorityParamsPage() {
                           <div className="space-y-2">
                             {evalItemsForParam(param.id).map((ei) => {
                               const assigned = isEvalAssigned(param.id, ei.id);
+                              const isLoading = assigningEval === `${param.id}-${ei.id}`;
                               return (
                                 <div
                                   key={ei.id}
@@ -494,13 +534,19 @@ export default function PriorityParamsPage() {
                                   </div>
                                   <button
                                     onClick={() => toggleEvalAssignment(param.id, ei.id)}
-                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                                    disabled={isLoading}
+                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                                       assigned
                                         ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
                                         : "bg-primary/10 text-primary hover:bg-primary/20"
                                     }`}
                                   >
-                                    {assigned ? (
+                                    {isLoading ? (
+                                      <>
+                                        <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                        {assigned ? "Unassigning..." : "Assigning..."}
+                                      </>
+                                    ) : assigned ? (
                                       <>
                                         <Unlink className="w-3 h-3" /> Unassign
                                       </>

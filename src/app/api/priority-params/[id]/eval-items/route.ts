@@ -56,8 +56,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
   const param = await db("priority_items").where({ id }).first();
-  if (!param || param.user_id !== userId) {
+  if (!param) {
     return NextResponse.json({ error: "Parameter not found" }, { status: 404 });
+  }
+  // Only user's own params can be modified (not generic ones)
+  if (param.user_id !== userId) {
+    return NextResponse.json({ error: "Forbidden - can only modify your own parameters" }, { status: 403 });
   }
 
   const body = await request.json();
@@ -69,8 +73,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const evalItem = await db("judgment_items")
     .where({ id: parsed.data.paramEvalItemId })
     .first();
-  if (!evalItem || evalItem.user_id !== userId) {
+  if (!evalItem) {
     return NextResponse.json({ error: "Eval item not found" }, { status: 404 });
+  }
+  // Allow user's own items or generic items (user_id is null)
+  if (evalItem.user_id !== null && evalItem.user_id !== userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // Check if already assigned
@@ -112,8 +120,12 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
 
   const param = await db("priority_items").where({ id }).first();
-  if (!param || param.user_id !== userId) {
+  if (!param) {
     return NextResponse.json({ error: "Parameter not found" }, { status: 404 });
+  }
+  // Only user's own params can be modified (not generic ones)
+  if (param.user_id !== userId) {
+    return NextResponse.json({ error: "Forbidden - can only modify your own parameters" }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);
