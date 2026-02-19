@@ -41,6 +41,8 @@ export async function GET() {
 
       const groupCount = await db("group_priority_items")
         .where({ priority_item_id: param.id })
+        .join("groups", "group_priority_items.group_id", "groups.id")
+        .where("groups.user_id", session.user.id)
         .count("* as count")
         .first();
 
