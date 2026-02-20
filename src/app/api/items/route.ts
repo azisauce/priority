@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const groupId = searchParams.get("groupId");
+  const showDone = searchParams.get("showDone") || "done"; // 'all' | 'done' | 'undone'
   const minPriority = searchParams.get("minPriority");
   const maxPriority = searchParams.get("maxPriority");
   const minPrice = searchParams.get("minPrice");
@@ -38,8 +39,12 @@ export async function GET(request: NextRequest) {
   const sortOrder = searchParams.get("sortOrder") || "desc";
 
   let query = db("items").where("items.user_id", userId);
-  // Exclude items marked as done from the default list
-  query = query.andWhere("items.is_done", false);
+  // showDone controls which items to include
+  if (showDone === "done") {
+    query = query.andWhere("items.is_done", true);
+  } else if (showDone === "undone") {
+    query = query.andWhere("items.is_done", false);
+  } // 'all' => no filter
 
   if (groupId) query = query.where({ group_id: groupId });
 

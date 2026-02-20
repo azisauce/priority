@@ -134,6 +134,7 @@ export default function ItemsPage() {
     sortBy: "priority",
     sortOrder: "desc",
   });
+  const [showDoneFilter, setShowDoneFilter] = useState<"all" | "done" | "undone">("done");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
@@ -178,6 +179,7 @@ export default function ItemsPage() {
       if (filters.maxPrice) params.set("maxPrice", filters.maxPrice);
       if (filters.sortBy !== "valueScore") params.set("sortBy", filters.sortBy);
       params.set("sortOrder", filters.sortOrder);
+      params.set("showDone", showDoneFilter);
 
       const response = await fetch(`/api/items?${params.toString()}`);
       if (response.ok) {
@@ -199,7 +201,7 @@ export default function ItemsPage() {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, showDoneFilter]);
 
   const fetchGroupParams = useCallback(async (groupId: string) => {
     if (!groupId) {
@@ -227,6 +229,11 @@ export default function ItemsPage() {
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  useEffect(() => {
+    // refetch when showDoneFilter changes
+    fetchItems();
+  }, [showDoneFilter, fetchItems]);
 
   useEffect(() => {
     if (urlGroupId) {
@@ -468,6 +475,19 @@ export default function ItemsPage() {
             </button>
 
             <div className="h-6 w-px bg-border" />
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground">Show:</label>
+              <select
+                value={showDoneFilter}
+                onChange={(e) => setShowDoneFilter(e.target.value as any)}
+                className="rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+              >
+                <option value="all">All</option>
+                <option value="done">Done</option>
+                <option value="undone">Undone</option>
+              </select>
+            </div>
 
             {/* Quick Sort: hidden on small screens, moved into the inline filters for sm devices */}
             <div className="hidden sm:flex items-center gap-2">
