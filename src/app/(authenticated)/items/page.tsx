@@ -673,11 +673,26 @@ export default function ItemsPage() {
                         onClick={() => openEditModal(item)}
                       >
                         <td className="px-6 py-4">
-                          <div>
-                            <span className={"font-medium " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>{item.itemName}</span>
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
-                            )}
+                          <div className="flex items-start gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
+                              }}
+                              disabled={togglingIds.includes(item.id)}
+                              className="rounded-full p-1 text-muted-foreground transform transition duration-150 ease-out hover:scale-105 active:scale-95 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                              title="Mark done"
+                            >
+                              <Check className="h-4 w-4 text-green-500" />
+                            </button>
+                            <div>
+                              <span className={"font-medium " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>
+                                {item.itemName}
+                              </span>
+                              {item.description && (
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -716,17 +731,7 @@ export default function ItemsPage() {
                             >
                               <Pencil className="h-4 w-4" />
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
-                              }}
-                              disabled={togglingIds.includes(item.id)}
-                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                              title="Mark done"
-                            >
-                              <Check className="h-4 w-4 text-green-500" />
-                            </button>
+                            
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
