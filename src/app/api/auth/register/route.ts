@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import db from "@/lib/db";
 
 const registerSchema = z.object({
   username: z.string().min(3).max(30),
@@ -18,9 +18,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validated = registerSchema.parse(body);
 
-    const existingUser = await prisma.user.findUnique({
-      where: { username: validated.username },
-    });
+    const existingUser = await db("users")
+      .where({ username: validated.username })
+      .first();
 
     if (existingUser) {
       return NextResponse.json(
@@ -31,19 +31,20 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(validated.password, 12);
 
-    const user = await prisma.user.create({
-      data: {
+    const [user] = await db("users")
+      .insert({
         username: validated.username,
         password: hashedPassword,
-        userImage: validated.userImage || null,
-      },
-    });
+        image_url: validated.userImage || null,
+      })
+      .returning("*");
 
     return NextResponse.json(
       { message: "User created successfully", userId: user.id },
       { status: 201 }
     );
   } catch (error) {
+    console.error("/api/auth/register error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.issues[0].message },

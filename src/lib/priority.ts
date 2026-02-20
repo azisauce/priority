@@ -1,16 +1,13 @@
-export interface PriorityInput {
-  urgency: number;  // 1-5
-  impact: number;   // 1-5
-  risk: number;     // 1-5
-  frequency: number; // 1-5
+export interface PriorityAnswer {
+  value: number;
+  weight: number;
 }
 
-export function calculatePriority(input: PriorityInput): number {
-  const score =
-    input.urgency * 0.30 +
-    input.impact * 0.30 +
-    input.risk * 0.25 +
-    input.frequency * 0.15;
+export function calculatePriority(answers: PriorityAnswer[]): number {
+  if (answers.length === 0) return 0;
+  const totalWeight = answers.reduce((sum, a) => sum + a.weight, 0);
+  if (totalWeight === 0) return 0;
+  const score = answers.reduce((sum, a) => sum + a.value * a.weight, 0) / totalWeight;
   return Math.round(score * 100) / 100;
 }
 

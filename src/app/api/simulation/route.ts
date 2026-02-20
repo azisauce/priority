@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { simulatePurchases } from "@/lib/priority";
 import { z } from "zod";
+import db from "@/lib/db";
 
 const simulationSchema = z.object({
   initialBudget: z.number().min(0, "Initial budget must be non-negative"),
@@ -27,17 +27,21 @@ export async function POST(request: NextRequest) {
 
   const { initialBudget, monthlyIncome, deadlineMonths, groupIds } = parsed.data;
 
-  const where: Record<string, unknown> = { userId };
+  let query = db("items").where("items.user_id", userId);
   if (groupIds && groupIds.length > 0) {
-    where.groupId = { in: groupIds };
+    query = query.whereIn("group_id", groupIds);
   }
 
-  const items = await prisma.item.findMany({
-    where,
-    select: { id: true, itemName: true, pricing: true, priority: true },
-  });
+  const items = await query.select("id", "name", "price", "priority");
 
-  const result = simulatePurchases(items, initialBudget, monthlyIncome, deadlineMonths);
+  const formattedItems = items.map(item => ({
+    id: item.id,
+    itemName: item.name,
+    pricing: Number(item.price),
+    priority: Number(item.priority),
+  }));
+
+  const result = simulatePurchases(formattedItems, initialBudget, monthlyIncome, deadlineMonths);
 
   return NextResponse.json({ simulation: result });
 }
