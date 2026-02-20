@@ -29,11 +29,13 @@ export async function POST(request: NextRequest) {
   const { initialBudget, monthlyIncome, deadlineMonths, maxPriceThreshold, groupIds } = parsed.data;
 
   let query = db("items").where("items.user_id", userId);
+  // Exclude items marked as done from simulations
+  query = query.andWhere("items.is_done", false);
   if (groupIds && groupIds.length > 0) {
     query = query.whereIn("group_id", groupIds);
   }
   if (typeof maxPriceThreshold === "number") {
-    query = query.andWhere("price", "<=", maxPriceThreshold);
+    query = query.andWhere("items.price", "<=", maxPriceThreshold);
   }
 
   const items = await query.select("id", "name", "price", "priority");

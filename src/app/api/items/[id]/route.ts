@@ -11,6 +11,8 @@ const updateItemSchema = z.object({
   pricing: z.number().positive().optional(),
   priority: z.number().optional(),
   value: z.number().optional(),
+  isDone: z.boolean().optional(),
+  is_done: z.boolean().optional(),
   answers: z
     .array(
       z.object({
@@ -108,6 +110,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       pricing: Number(item.price),
       priority: Number(item.priority),
       value: Number(item.value),
+      isDone: Boolean(item.is_done),
       userId: item.user_id,
       groupId: item.group_id,
       createdAt: item.created_at,
@@ -146,6 +149,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 
   const { itemName, description, groupId, pricing, priority, value } = parsed.data;
+  // support both camelCase and snake_case in payload
+  const isDonePayload = (parsed.data as any).isDone !== undefined ? (parsed.data as any).isDone : (parsed.data as any).is_done;
 
   // If groupId changes, verify new group belongs to user
   if (groupId && groupId !== item.group_id) {
@@ -260,6 +265,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (pricing !== undefined) updateData.price = pricing;
   if (computedPriority !== undefined) updateData.priority = computedPriority;
   if (computedValue !== undefined) updateData.value = computedValue;
+  if (isDonePayload !== undefined) updateData.is_done = Boolean(isDonePayload);
 
   const [updated] = await db("items")
     .where({ id })
@@ -275,6 +281,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       description: updated.description,
       pricing: Number(updated.price),
       priority: Number(updated.priority),
+      isDone: Boolean(updated.is_done),
       value: Number(updated.value),
       userId: updated.user_id,
       groupId: updated.group_id,

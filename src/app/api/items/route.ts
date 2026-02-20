@@ -38,6 +38,8 @@ export async function GET(request: NextRequest) {
   const sortOrder = searchParams.get("sortOrder") || "desc";
 
   let query = db("items").where("items.user_id", userId);
+  // Exclude items marked as done from the default list
+  query = query.andWhere("items.is_done", false);
 
   if (groupId) query = query.where({ group_id: groupId });
 
@@ -117,6 +119,7 @@ export async function GET(request: NextRequest) {
       itemName: item.name,
       description: item.description,
       pricing: Number(item.price),
+      isDone: Boolean(item.is_done),
       priority: Number(item.priority),
       value: Number(item.value),
       userId: item.user_id,

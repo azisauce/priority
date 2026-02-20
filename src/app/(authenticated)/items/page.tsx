@@ -14,6 +14,7 @@ import {
   Calculator,
   SlidersHorizontal,
 } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface Group {
   id: string;
@@ -46,6 +47,7 @@ interface Item {
   pricing: number;
   priority: number;
   groupId: string;
+  isDone?: boolean;
   createdAt: string;
   group: Group;
   paramAnswers?: ParamAnswerData[];
@@ -138,6 +140,7 @@ export default function ItemsPage() {
   const [priorityMode, setPriorityMode] = useState<"guided" | "manual">("guided");
   const [deleteItem, setDeleteItem] = useState<Item | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [togglingIds, setTogglingIds] = useState<string[]>([]);
 
   // Group params for the selected group in the form
   const [groupParams, setGroupParams] = useState<GroupParam[]>([]);
@@ -385,6 +388,33 @@ export default function ItemsPage() {
     } catch (error) {
       console.error("Failed to delete item:", error);
       alert("Failed to delete item");
+    }
+  };
+
+  const toggleItemDone = async (item: Item, done: boolean) => {
+    // optimistic update: remove item from list when marking done
+    setTogglingIds((prev) => [...prev, item.id]);
+    const previousItems = items;
+    if (done) {
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+    }
+
+    try {
+      const response = await fetch(`/api/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isDone: done }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update item");
+      }
+    } catch (err) {
+      // revert on error
+      setItems(previousItems);
+      alert("Failed to update item status");
+    } finally {
+      setTogglingIds((prev) => prev.filter((id) => id !== item.id));
     }
   };
 
@@ -644,7 +674,7 @@ export default function ItemsPage() {
                       >
                         <td className="px-6 py-4">
                           <div>
-                            <span className="font-medium text-foreground">{item.itemName}</span>
+                            <span className={"font-medium " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>{item.itemName}</span>
                             {item.description && (
                               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
                             )}
@@ -685,6 +715,17 @@ export default function ItemsPage() {
                               className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
                             >
                               <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
+                              }}
+                              disabled={togglingIds.includes(item.id)}
+                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              title="Mark done"
+                            >
+                              <Check className="h-4 w-4 text-green-500" />
                             </button>
                             <button
                               onClick={(e) => {
