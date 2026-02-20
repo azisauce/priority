@@ -29,10 +29,16 @@ export function simulatePurchases(
   items: { id: string; itemName: string; pricing: number; priority: number }[],
   initialBudget: number,
   monthlyIncome: number,
-  deadlineMonths?: number
+  deadlineMonths?: number,
+  maxPriceThreshold?: number
 ): SimulationResult {
+  // Optionally filter out items above the threshold
+  const considered = typeof maxPriceThreshold === "number"
+    ? items.filter((it) => it.pricing <= maxPriceThreshold)
+    : items.slice();
+
   // Sort items by priority-price score descending
-  const scoredItems = items.map(item => ({
+  const scoredItems = considered.map(item => ({
     ...item,
     score: calculatePriorityPriceScore(item.priority, item.pricing),
   })).sort((a, b) => b.score - a.score);

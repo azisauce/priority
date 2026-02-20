@@ -44,6 +44,7 @@ interface SimulationFormData {
   initialBudget: string;
   monthlyIncome: string;
   deadlineMonths: string;
+  maxPriceThreshold?: string;
 }
 
 const formatCurrency = (amount: number): string => {
@@ -65,6 +66,7 @@ export default function SimulationPage() {
     initialBudget: "",
     monthlyIncome: "",
     deadlineMonths: "",
+    maxPriceThreshold: "",
   });
 
   const fetchGroups = useCallback(async () => {
@@ -127,6 +129,16 @@ export default function SimulationPage() {
     setHasRun(true);
 
     try {
+      const maxPriceThreshold = formData.maxPriceThreshold
+        ? parseFloat(formData.maxPriceThreshold)
+        : undefined;
+
+      if (maxPriceThreshold !== undefined && (isNaN(maxPriceThreshold) || maxPriceThreshold <= 0)) {
+        alert("Please enter a valid max price threshold");
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("/api/simulation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -134,6 +146,7 @@ export default function SimulationPage() {
           initialBudget,
           monthlyIncome,
           deadlineMonths,
+          maxPriceThreshold,
           groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
         }),
       });
@@ -150,6 +163,9 @@ export default function SimulationPage() {
             items = items.filter((item: { groupId: string }) =>
               selectedGroupIds.includes(item.groupId)
             );
+          }
+          if (typeof maxPriceThreshold === "number") {
+            items = items.filter((item: { pricing: number }) => item.pricing <= maxPriceThreshold);
           }
           setTotalItems(items.length);
         }
@@ -247,6 +263,27 @@ export default function SimulationPage() {
                 </div>
 
                 <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
+                    Max Price Threshold
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.maxPriceThreshold}
+                      onChange={(e) =>
+                        setFormData({ ...formData, maxPriceThreshold: e.target.value })
+                      }
+                      className="w-full rounded-lg bg-input border border-border pl-10 pr-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+                      placeholder="No limit"
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">Optional: ignore items with price above this value.</p>
+                </div>
+
+                <div>
                   <div className="mb-3 flex items-center justify-between">
                     <label className="text-sm font-medium text-foreground">
                       Filter by Groups
@@ -319,7 +356,7 @@ export default function SimulationPage() {
 
           <div className="lg:col-span-2">
             {!hasRun ? (
-              <div className="flex h-full min-h-[400px] items-center justify-center rounded-xl bg-card border border-border">
+              <div className="flex h-full min-h-100 items-center justify-center rounded-xl bg-card border border-border">
                 <div className="text-center">
                   <div className="mb-4 inline-flex rounded-full bg-muted p-4">
                     <BarChart3 className="h-8 w-8 text-muted-foreground" />
@@ -331,7 +368,7 @@ export default function SimulationPage() {
                 </div>
               </div>
             ) : loading ? (
-              <div className="flex h-full min-h-[400px] items-center justify-center rounded-xl bg-card border border-border">
+              <div className="flex h-full min-h-100 items-center justify-center rounded-xl bg-card border border-border">
                 <div className="flex flex-col items-center gap-4">
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   <p className="text-muted-foreground">Running simulation...</p>
@@ -399,7 +436,7 @@ export default function SimulationPage() {
                                 className="group relative flex-1"
                               >
                                 <div
-                                  className="mx-auto h-full min-h-[4px] w-full max-w-[60px] rounded-t-md bg-primary transition-colors hover:bg-primary/80"
+                                  className="mx-auto h-full min-h-1 w-full max-w-15 rounded-t-md bg-primary transition-colors hover:bg-primary/80"
                                   style={{ height: `${Math.max(width, 4)}%` }}
                                 />
                                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">

@@ -9,6 +9,7 @@ const simulationSchema = z.object({
   initialBudget: z.number().min(0, "Initial budget must be non-negative"),
   monthlyIncome: z.number().min(0, "Monthly income must be non-negative"),
   deadlineMonths: z.number().int().positive().optional(),
+  maxPriceThreshold: z.number().min(0).optional(),
   groupIds: z.array(z.string()).optional(),
 });
 
@@ -25,11 +26,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { initialBudget, monthlyIncome, deadlineMonths, groupIds } = parsed.data;
+  const { initialBudget, monthlyIncome, deadlineMonths, maxPriceThreshold, groupIds } = parsed.data;
 
   let query = db("items").where("items.user_id", userId);
   if (groupIds && groupIds.length > 0) {
     query = query.whereIn("group_id", groupIds);
+  }
+  if (typeof maxPriceThreshold === "number") {
+    query = query.andWhere("price", "<=", maxPriceThreshold);
   }
 
   const items = await query.select("id", "name", "price", "priority");
@@ -41,7 +45,13 @@ export async function POST(request: NextRequest) {
     priority: Number(item.priority),
   }));
 
-  const result = simulatePurchases(formattedItems, initialBudget, monthlyIncome, deadlineMonths);
+  const result = simulatePurchases(
+    formattedItems,
+    initialBudget,
+    monthlyIncome,
+    deadlineMonths,
+    maxPriceThreshold
+  );
 
   return NextResponse.json({ simulation: result });
 }
