@@ -49,6 +49,10 @@ interface Item {
   createdAt: string;
   group: Group;
   paramAnswers?: ParamAnswerData[];
+  enabledEaseOption?: boolean;
+  easePeriod?: number;
+  interestPercentage?: number;
+  priceWithInterest?: number;
 }
 
 interface Filters {
@@ -69,6 +73,10 @@ interface ItemFormData {
   priority: string;
   // Dynamic: paramId -> evalItemId
   answers: Record<string, string>;
+  enabledEaseOption?: boolean;
+  easePeriod?: string;
+  interestPercentage?: string;
+  priceWithInterest?: string;
 }
 
 const calculatePriorityFromAnswers = (
@@ -152,6 +160,10 @@ export default function ItemsPage() {
     pricing: "",
     priority: "3",
     answers: {},
+    enabledEaseOption: false,
+    easePeriod: "0",
+    interestPercentage: "0",
+    priceWithInterest: "",
   });
 
   const fetchGroups = useCallback(async () => {
@@ -273,6 +285,10 @@ export default function ItemsPage() {
       pricing: "",
       priority: "3",
       answers: {},
+      enabledEaseOption: false,
+      easePeriod: "0",
+      interestPercentage: "0",
+      priceWithInterest: "",
     });
     setIsModalOpen(true);
   };
@@ -293,6 +309,10 @@ export default function ItemsPage() {
       groupId: item.groupId,
       pricing: item.pricing.toString(),
       priority: item.priority.toString(),
+      enabledEaseOption: Boolean(item.enabledEaseOption),
+      easePeriod: item.easePeriod?.toString() ?? "0",
+      interestPercentage: item.interestPercentage?.toString() ?? "0",
+      priceWithInterest: item.priceWithInterest != null ? item.priceWithInterest.toString() : "",
       answers,
     });
     setIsModalOpen(true);
@@ -343,6 +363,10 @@ export default function ItemsPage() {
       description: formData.description.trim() || null,
       groupId: formData.groupId,
       pricing,
+      enabledEaseOption: !!formData.enabledEaseOption,
+      easePeriod: formData.easePeriod ? parseInt(formData.easePeriod, 10) : 0,
+      interestPercentage: formData.interestPercentage ? parseFloat(formData.interestPercentage) : 0,
+      priceWithInterest: formData.priceWithInterest ? parseFloat(formData.priceWithInterest) : null,
     };
 
     if (priorityMode === "manual") {

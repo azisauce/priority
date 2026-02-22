@@ -9,6 +9,10 @@ const updateItemSchema = z.object({
   description: z.string().nullable().optional(),
   groupId: z.string().min(1).optional(),
   pricing: z.number().positive().optional(),
+  enabledEaseOption: z.boolean().optional(),
+  easePeriod: z.number().int().optional(),
+  interestPercentage: z.number().optional(),
+  priceWithInterest: z.number().optional(),
   priority: z.number().optional(),
   value: z.number().optional(),
   isDone: z.boolean().optional(),
@@ -267,6 +271,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (description !== undefined) updateData.description = description;
   if (groupId !== undefined) updateData.group_id = groupId;
   if (pricing !== undefined) updateData.price = pricing;
+  if (parsed.data.enabledEaseOption !== undefined) updateData.enabled_ease_option = Boolean(parsed.data.enabledEaseOption);
+  if (parsed.data.priceWithInterest !== undefined) updateData.price_with_interest = parsed.data.priceWithInterest;
+  if (parsed.data.interestPercentage !== undefined) updateData.interest_percentage = parsed.data.interestPercentage;
+  if (parsed.data.easePeriod !== undefined) updateData.ease_period = parsed.data.easePeriod;
   if (computedPriority !== undefined) updateData.priority = computedPriority;
   if (computedValue !== undefined) updateData.value = computedValue;
   if (isDonePayload !== undefined) updateData.is_done = Boolean(isDonePayload);
