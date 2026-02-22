@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { simulatePurchases } from "@/lib/priority";
+import { simulatePurchases, simulatePurchasesOptimal } from "@/lib/priority";
 import { z } from "zod";
 import db from "@/lib/db";
 
@@ -11,6 +11,7 @@ const simulationSchema = z.object({
   deadlineMonths: z.number().int().positive().optional(),
   maxPriceThreshold: z.number().min(0).optional(),
   useEase: z.boolean().optional(),
+  formula: z.enum(["greedy", "optimal"]).optional(),
   groupIds: z.array(z.string()).optional(),
 });
 
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { initialBudget, monthlyIncome, deadlineMonths, maxPriceThreshold, groupIds, useEase } = parsed.data;
+  const { initialBudget, monthlyIncome, deadlineMonths, maxPriceThreshold, groupIds, useEase, formula } = parsed.data as any;
 
   let query = db("items").where("items.user_id", userId);
   // Exclude items marked as done from simulations
@@ -64,14 +65,27 @@ export async function POST(request: NextRequest) {
       : undefined,
   }));
 
-  const result = simulatePurchases(
-    formattedItems,
-    initialBudget,
-    monthlyIncome,
-    deadlineMonths,
-    maxPriceThreshold,
-    typeof useEase === "boolean" ? useEase : true
-  );
+  const useEaseBool = typeof useEase === "boolean" ? useEase : true;
+  let result;
+  if (formula === "optimal") {
+    result = simulatePurchasesOptimal(
+      formattedItems,
+      initialBudget,
+      monthlyIncome,
+      deadlineMonths,
+      maxPriceThreshold,
+      useEaseBool
+    );
+  } else {
+    result = simulatePurchases(
+      formattedItems,
+      initialBudget,
+      monthlyIncome,
+      deadlineMonths,
+      maxPriceThreshold,
+      useEaseBool
+    );
+  }
 
   return NextResponse.json({ simulation: result });
 }

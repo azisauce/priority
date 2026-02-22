@@ -51,6 +51,7 @@ interface SimulationFormData {
   deadlineMonths: string;
   maxPriceThreshold?: string;
   useEase?: boolean;
+  formula?: "greedy" | "optimal";
 }
 
 const formatCurrency = (amount: number): string => {
@@ -74,6 +75,7 @@ export default function SimulationPage() {
     deadlineMonths: "",
     maxPriceThreshold: "",
     useEase: true,
+    formula: "greedy",
   });
 
   const fetchGroups = useCallback(async () => {
@@ -156,6 +158,7 @@ export default function SimulationPage() {
           maxPriceThreshold,
           groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
           useEase: typeof formData.useEase === "boolean" ? formData.useEase : true,
+          formula: formData.formula || "greedy",
         }),
       });
 
@@ -474,6 +477,19 @@ export default function SimulationPage() {
                       Simulate using ease (installments). When disabled, simulator will ignore ease options.
                     </label>
                   </div>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Formula</label>
+                  <select
+                    value={formData.formula}
+                    onChange={(e) => setFormData({ ...formData, formula: e.target.value as any })}
+                    className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+                  >
+                    <option value="greedy">Greedy (existing)</option>
+                    <option value="optimal">Optimal (knapsack)</option>
+                  </select>
+                  <p className="mt-1 text-xs text-muted-foreground">Choose simulation formula: greedy or optimal selection.</p>
                 </div>
 
                 <div>
