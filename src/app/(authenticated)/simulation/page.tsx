@@ -192,6 +192,14 @@ export default function SimulationPage() {
     ? Math.max(...simulation.monthlyPurchases.map((m) => m.spent), 1)
     : 1;
 
+  // Filter months: hide months that have no purchases or only ongoing installment payments.
+  // Show a month if it contains any non-installment purchase OR contains a final installment (remainingInstallments <= 0).
+  const visibleMonths = simulation
+    ? simulation.monthlyPurchases.filter((m) =>
+        m.items.some((it) => !it.isInstallment || (it.remainingInstallments ?? 0) <= 0)
+      )
+    : [];
+
   const purchasedItemsCount = simulation
     ? simulation.monthlyPurchases.reduce((sum, m) => sum + m.items.length, 0)
     : 0;
@@ -445,13 +453,13 @@ export default function SimulationPage() {
                       </div>
                     </div>
 
-                    {simulation.monthlyPurchases.length > 0 && (
+                    {visibleMonths.length > 0 && (
                       <div className="rounded-xl bg-card border border-border p-5">
                         <h3 className="mb-4 text-lg font-semibold text-foreground">
                           Spending Timeline
                         </h3>
                         <div className="flex h-24 items-end gap-2">
-                          {simulation.monthlyPurchases.map((month: MonthlyPurchase) => {
+                          {visibleMonths.map((month: MonthlyPurchase) => {
                             const width = month.spent > 0 ? (month.spent / maxMonthlySpent) * 100 : 0;
                             return (
                               <div
@@ -475,10 +483,10 @@ export default function SimulationPage() {
                       </div>
                     )}
 
-                    {simulation.monthlyPurchases.length > 0 && (
+                    {visibleMonths.length > 0 && (
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-foreground">Monthly Breakdown</h3>
-                        {simulation.monthlyPurchases.map((month) => (
+                        {visibleMonths.map((month) => (
                           <div key={month.month} className="rounded-xl bg-card border border-border overflow-hidden">
                             <div className="flex items-center justify-between bg-muted/50 px-5 py-3">
                               <h4 className="font-medium text-foreground">Month {month.month}</h4>

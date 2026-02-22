@@ -68,7 +68,7 @@ export function simulatePurchases(
 
   const activeInstallments: ActiveInstallment[] = [];
 
-  while (remaining.length > 0 && month < maxMonths) {
+  while ((remaining.length > 0 || activeInstallments.length > 0) && month < maxMonths) {
     if (month > 0) budget += monthlyIncome;
     month++;
 
