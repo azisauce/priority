@@ -20,7 +20,7 @@ export function calculatePriorityPriceScore(priority: number, price: number): nu
 
 export interface SimulationResult {
   totalMonths: number;
-  monthlyPurchases: { month: number; items: { id: string; itemName: string; pricing: number; priority: number; score: number; isInstallment?: boolean; monthlyPayment?: number }[]; spent: number; remaining: number }[];
+  monthlyPurchases: { month: number; items: { id: string; itemName: string; pricing: number; priority: number; score: number; isInstallment?: boolean; monthlyPayment?: number; remainingInstallments?: number }[]; spent: number; remaining: number }[];
   totalSpent: number;
   unpurchased: { id: string; itemName: string; pricing: number; priority: number }[];
 }
@@ -63,6 +63,7 @@ export function simulatePurchases(
     remainingAmount: number;
     itemName: string;
     priority: number;
+    totalAmount: number;
   };
 
   const activeInstallments: ActiveInstallment[] = [];
@@ -74,21 +75,33 @@ export function simulatePurchases(
     // Deduct active installments for this month
       const installmentPayment = activeInstallments.reduce((sum, a) => sum + a.monthlyPayment, 0);
       let monthSpent = 0;
+      const ongoingEntries: { id: string; itemName: string; pricing: number; priority: number; score: number; isInstallment?: boolean; monthlyPayment?: number; remainingInstallments?: number }[] = [];
       if (installmentPayment > 0) {
-        budget -= installmentPayment;
-        monthSpent += installmentPayment;
-        // update installments
+        // pay and record each active installment for this month
         for (let i = activeInstallments.length - 1; i >= 0; i--) {
           const inst = activeInstallments[i];
+          budget -= inst.monthlyPayment;
+          monthSpent += inst.monthlyPayment;
           inst.remainingAmount -= inst.monthlyPayment;
           inst.remainingMonths -= 1;
+          // record this month's installment payment for UI
+          ongoingEntries.push({
+            id: inst.id,
+            itemName: inst.itemName,
+            pricing: inst.totalAmount,
+            priority: inst.priority,
+            score: calculatePriorityPriceScore(inst.priority, inst.totalAmount),
+            isInstallment: true,
+            monthlyPayment: inst.monthlyPayment,
+            remainingInstallments: inst.remainingMonths,
+          });
           if (inst.remainingMonths <= 0 || inst.remainingAmount <= 0) {
             activeInstallments.splice(i, 1);
           }
         }
       }
 
-      const purchased: { id: string; itemName: string; pricing: number; priority: number; score: number; isInstallment?: boolean; monthlyPayment?: number }[] = [];
+      const purchased: { id: string; itemName: string; pricing: number; priority: number; score: number; isInstallment?: boolean; monthlyPayment?: number; remainingInstallments?: number }[] = [];
     const stillRemaining: ItemInput[] = [];
 
     // Recalculate score using effective price (priceWithInterest if ease exists)
@@ -104,7 +117,7 @@ export function simulatePurchases(
       const item = s.item;
       // Prefer cash if affordable
       if (item.pricing <= budget) {
-        purchased.push({ id: item.id, itemName: item.itemName, pricing: item.pricing, priority: item.priority, score: s.score, isInstallment: false });
+        purchased.push({ id: item.id, itemName: item.itemName, pricing: item.pricing, priority: item.priority, score: s.score, isInstallment: false, remainingInstallments: 0 });
         budget -= item.pricing;
         monthSpent += item.pricing;
         continue;
@@ -115,10 +128,11 @@ export function simulatePurchases(
         const monthlyPayment = item.ease.priceWithInterest / item.ease.easePeriod;
         // require that we can at least pay the first installment this month
         if (monthlyPayment <= budget) {
-          purchased.push({ id: item.id, itemName: item.itemName, pricing: item.ease.priceWithInterest, priority: item.priority, score: s.score, isInstallment: true, monthlyPayment });
+          const remainingMonths = item.ease.easePeriod - 1;
+          const remainingInstallments = remainingMonths; 
+          purchased.push({ id: item.id, itemName: item.itemName, pricing: item.ease.priceWithInterest, priority: item.priority, score: s.score, isInstallment: true, monthlyPayment, remainingInstallments });
           budget -= monthlyPayment; // pay first installment now
           monthSpent += monthlyPayment;
-          const remainingMonths = item.ease.easePeriod - 1;
           const remainingAmount = item.ease.priceWithInterest - monthlyPayment;
           if (remainingMonths > 0 && remainingAmount > 0) {
             activeInstallments.push({
@@ -128,6 +142,7 @@ export function simulatePurchases(
               remainingAmount,
               itemName: item.itemName,
               priority: item.priority,
+              totalAmount: item.ease.priceWithInterest,
             });
           }
           continue;
@@ -137,10 +152,11 @@ export function simulatePurchases(
       stillRemaining.push(item);
     }
 
-    if (purchased.length > 0 || monthSpent > 0) {
+    if (purchased.length > 0 || ongoingEntries.length > 0 || monthSpent > 0) {
+      // show ongoing installment payments first, then newly purchased items
       monthlyPurchases.push({
         month,
-        items: purchased,
+        items: [...ongoingEntries.reverse(), ...purchased],
         spent: monthSpent,
         remaining: budget,
       });

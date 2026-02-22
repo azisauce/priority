@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   BarChart3,
   Users,
+  Clock,
 } from "lucide-react";
 
 interface Group {
@@ -26,6 +27,7 @@ interface SimulationItem {
   score: number;
   isInstallment?: boolean;
   monthlyPayment?: number;
+  remainingInstallments?: number;
 }
 
 interface MonthlyPurchase {
@@ -508,8 +510,12 @@ export default function SimulationPage() {
                                   {month.items.map((item) => (
                                     <tr key={item.id} className="transition-colors hover:bg-muted/50">
                                       <td className="px-5 py-3">
-                                        <div className="flex items-center gap-2">
-                                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                          <div className="flex items-center gap-2">
+                                          {(!item.isInstallment || (item.isInstallment && (item.remainingInstallments ?? 0) <= 0)) ? (
+                                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                          ) : (
+                                            <Clock className="h-4 w-4 text-gray-400" />
+                                          )}
                                           <span className="text-foreground">{item.itemName}</span>
                                         </div>
                                       </td>
@@ -520,7 +526,8 @@ export default function SimulationPage() {
                                         {item.isInstallment ? (
                                           <div className="text-right">
                                             <div className="text-foreground">{formatCurrency(item.monthlyPayment || 0)}/mo</div>
-                                            <div className="text-xs text-muted-foreground">Total: {formatCurrency(item.pricing)}</div>
+                                            {/* <div className="text-xs text-muted-foreground">Total: {formatCurrency(item.pricing)}</div> */}
+                                            <div className="text-xs text-muted-foreground">Remaining: {item.remainingInstallments} months</div>
                                           </div>
                                         ) : (
                                           <span className="text-foreground">{formatCurrency(item.pricing)}</span>
