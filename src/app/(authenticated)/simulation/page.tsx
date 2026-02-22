@@ -188,10 +188,6 @@ export default function SimulationPage() {
     }
   };
 
-  const maxMonthlySpent = simulation
-    ? Math.max(...simulation.monthlyPurchases.map((m) => m.spent), 1)
-    : 1;
-
   // Filter months: hide months that have no purchases or only ongoing installment payments.
   // Show a month if it contains any non-installment purchase OR contains a final installment (remainingInstallments <= 0).
   const visibleMonths = simulation
@@ -199,6 +195,13 @@ export default function SimulationPage() {
         m.items.some((it) => !it.isInstallment || (it.remainingInstallments ?? 0) <= 0)
       )
     : [];
+
+  // Use the visible months to compute the maximum monthly spent so bars scale to what's shown.
+  const maxMonthlySpent = visibleMonths.length > 0
+    ? Math.max(...visibleMonths.map((m) => m.spent), 1)
+    : simulation
+    ? Math.max(...simulation.monthlyPurchases.map((m) => m.spent), 1)
+    : 1;
 
   const purchasedItemsCount = simulation
     ? simulation.monthlyPurchases.reduce((sum, m) => sum + m.items.length, 0)
@@ -464,11 +467,11 @@ export default function SimulationPage() {
                             return (
                               <div
                                 key={month.month}
-                                className="group relative flex-1"
+                                className="group relative flex-1 h-full flex items-end justify-center"
                               >
                                 <div
                                   className="mx-auto h-full min-h-1 w-full max-w-15 rounded-t-md bg-primary transition-colors hover:bg-primary/80"
-                                  style={{ height: `${Math.max(width, 4)}%` }}
+                                  style={{ height: `${Math.max(width, 1)}%` }}
                                 />
                                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
                                   M{month.month}
