@@ -358,6 +358,8 @@ export default function ItemsPage() {
       priority = calculatePriorityFromAnswers(formData.answers, groupParams);
     }
 
+    // Rely on native HTML validation for ease fields (they are marked `required` when enabled)
+
     const payload: Record<string, unknown> = {
       itemName: formData.itemName,
       description: formData.description.trim() || null,

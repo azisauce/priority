@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   X,
   Calculator,
@@ -61,6 +61,66 @@ export default function ItemModal({
   if (!isOpen) return null;
 
   console.log("editingItem=======>",editingItem);
+  const safeParse = (v?: string | number | null) => {
+    if (v === undefined || v === null || v === "") return null;
+    const n = typeof v === "number" ? v : parseFloat(String(v));
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const handlePriceWithInterestChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData((prev) => {
+      const pricing = safeParse(prev.pricing);
+      const pwi = safeParse(val);
+      let interest = prev.interestPercentage ?? "";
+      if (pricing && pricing > 0 && pwi !== null) {
+        const perc = ((pwi - pricing) / pricing) * 100;
+        interest = (Math.round(perc * 100) / 100).toString();
+      }
+      return { ...prev, priceWithInterest: val, interestPercentage: interest };
+    });
+  };
+
+  const handleInterestPercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData((prev) => {
+      const pricing = safeParse(prev.pricing);
+      const perc = safeParse(val);
+      let pwi = prev.priceWithInterest ?? "";
+      if (pricing && pricing > 0 && perc !== null) {
+        const computed = pricing * (1 + perc / 100);
+        pwi = (Math.round(computed * 100) / 100).toString();
+      }
+      return { ...prev, interestPercentage: val, priceWithInterest: pwi };
+    });
+  };
+
+  // When pricing changes, keep paired fields in sync
+  useEffect(() => {
+    const pricing = safeParse(formData.pricing);
+    if (!formData.enabledEaseOption || !pricing || pricing <= 0) return;
+
+    if (formData.priceWithInterest) {
+      const pwi = safeParse(formData.priceWithInterest);
+      if (pwi !== null) {
+        const perc = ((pwi - pricing) / pricing) * 100;
+        const percStr = (Math.round(perc * 100) / 100).toString();
+        if (percStr !== formData.interestPercentage) {
+          setFormData((prev) => ({ ...prev, interestPercentage: percStr }));
+        }
+      }
+    } else if (formData.interestPercentage) {
+      const perc = safeParse(formData.interestPercentage);
+      if (perc !== null) {
+        const computed = pricing * (1 + perc / 100);
+        const pwiStr = (Math.round(computed * 100) / 100).toString();
+        if (pwiStr !== formData.priceWithInterest) {
+          setFormData((prev) => ({ ...prev, priceWithInterest: pwiStr }));
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.pricing, formData.enabledEaseOption]);
   
 
   return (
@@ -112,17 +172,17 @@ export default function ItemModal({
               <div className="flex flex-wrap items-center justify-start gap-4 pt-2">
                 <div className="flex-1 min-w-25">
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Ease Period (months)</label>
-                  <input type="number" min="0" step="1" value={formData.easePeriod ?? ""} onChange={(e) => setFormData({ ...formData, easePeriod: e.target.value })} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0" />
+                  <input required={!!formData.enabledEaseOption} type="number" min="1" step="1" value={formData.easePeriod ?? ""} onChange={(e) => setFormData({ ...formData, easePeriod: e.target.value })} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0" />
                 </div>
 
                 <div className="flex-1 min-w-25">
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Interest Percentage</label>
-                  <input type="number" min="0" step="0.01" value={formData.interestPercentage ?? ""} onChange={(e) => setFormData({ ...formData, interestPercentage: e.target.value })} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0.00" />
+                  <input required={!!formData.enabledEaseOption} type="number" min="0" step="0.1" value={formData.interestPercentage ?? ""} onChange={handleInterestPercentageChange} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0.00" />
                 </div>
 
                 <div className="flex-1 min-w-25">
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Price With Interest</label>
-                  <input type="number" min="0" step="0.01" value={formData.priceWithInterest ?? ""} onChange={(e) => setFormData({ ...formData, priceWithInterest: e.target.value })} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0.00" />
+                  <input required={!!formData.enabledEaseOption} type="number" min="0." step="0.1" value={formData.priceWithInterest ?? ""} onChange={handlePriceWithInterestChange} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0.00" />
                 </div>
               </div>
             )}
