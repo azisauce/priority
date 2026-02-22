@@ -10,9 +10,9 @@ const updateItemSchema = z.object({
   groupId: z.string().min(1).optional(),
   pricing: z.number().positive().optional(),
   enabledEaseOption: z.boolean().optional(),
-  easePeriod: z.number().int().optional(),
-  interestPercentage: z.number().optional(),
-  priceWithInterest: z.number().optional(),
+  easePeriod: z.number().int().nullable().optional(),
+  interestPercentage: z.number().nullable().optional(),
+  priceWithInterest: z.number().nullable().optional(),
   priority: z.number().optional(),
   value: z.number().optional(),
   isDone: z.boolean().optional(),
@@ -153,6 +153,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const body = await request.json();
   const parsed = updateItemSchema.safeParse(body);
   if (!parsed.success) {
+    console.log("whech");
+    
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 

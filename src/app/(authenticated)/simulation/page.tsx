@@ -12,6 +12,7 @@ import {
   Users,
   Clock,
 } from "lucide-react";
+import ItemModal from "@/components/item-modal";
 
 interface Group {
   id: string;
@@ -206,6 +207,164 @@ export default function SimulationPage() {
   const purchasedItemsCount = simulation
     ? simulation.monthlyPurchases.reduce((sum, m) => sum + m.items.length, 0)
     : 0;
+
+  // Item modal state (reuse existing ItemModal)
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [itemFormData, setItemFormData] = useState<any>({
+    itemName: "",
+    description: "",
+    groupId: "",
+    pricing: "",
+    priority: "3",
+    answers: {},
+    enabledEaseOption: false,
+    easePeriod: "0",
+    interestPercentage: "0",
+    priceWithInterest: "",
+  });
+  const [priorityModeItem, setPriorityModeItem] = useState<"guided" | "manual">("guided");
+  const [groupParams, setGroupParams] = useState<any[]>([]);
+  const [loadingGroupParams, setLoadingGroupParams] = useState(false);
+  const [isItemSubmitting, setIsItemSubmitting] = useState(false);
+
+  const calculatePriorityFromAnswers = (
+    answers: Record<string, string>,
+    gp: any[]
+  ) => {
+    const entries = Object.entries(answers).filter(([, evalItemId]) => evalItemId);
+    if (entries.length === 0) return 0;
+
+    let totalWeight = 0;
+    let weightedSum = 0;
+
+    for (const [paramId, evalItemId] of entries) {
+      const param = gp.find((p) => p.id === paramId);
+      if (!param) continue;
+      const evalItem = param.evalItems.find((e: any) => e.paramEvalItem.id === evalItemId);
+      if (!evalItem) continue;
+      totalWeight += param.weight;
+      weightedSum += evalItem.paramEvalItem.value * param.weight;
+    }
+
+    if (totalWeight === 0) return 0;
+    return Math.round((weightedSum / totalWeight) * 100) / 100;
+  };
+
+  const openItemModal = async (id: string) => {
+    try {
+      const res = await fetch(`/api/items/${id}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const item = data.item;
+      setEditingItem(item);
+      const answers: Record<string, string> = {};
+      if (item.paramAnswers) {
+        for (const pa of item.paramAnswers) {
+          answers[pa.priorityParam.id] = pa.paramEvalItem.id;
+        }
+      }
+      setItemFormData({
+        itemName: item.itemName,
+        description: item.description ?? "",
+        groupId: item.groupId || "",
+        pricing: item.pricing != null ? String(item.pricing) : "",
+        priority: item.priority != null ? String(item.priority) : "3",
+        answers,
+        enabledEaseOption: Boolean(item.enabledEaseOption),
+        easePeriod: item.easePeriod != null ? String(item.easePeriod) : "0",
+        interestPercentage: item.interestPercentage != null ? String(item.interestPercentage) : "0",
+        priceWithInterest: item.priceWithInterest != null ? String(item.priceWithInterest) : "",
+      });
+      setIsItemModalOpen(true);
+      // fetch group params for the item's group
+      if (item.groupId) await fetchGroupParams(item.groupId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchGroupParams = async (groupId: string) => {
+    if (!groupId) {
+      setGroupParams([]);
+      return;
+    }
+    setLoadingGroupParams(true);
+    try {
+      const response = await fetch(`/api/groups/${groupId}/params`);
+      if (response.ok) {
+        const data = await response.json();
+        setGroupParams(data.params || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch group params:", error);
+    } finally {
+      setLoadingGroupParams(false);
+    }
+  };
+
+  const handleItemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    setIsItemSubmitting(true);
+    try {
+      const pricing = parseFloat(itemFormData.pricing);
+      if (isNaN(pricing) || pricing <= 0) {
+        alert("Please enter a valid price");
+        setIsItemSubmitting(false);
+        return;
+      }
+
+      const payload: any = {
+        itemName: itemFormData.itemName,
+        description: itemFormData.description.trim() || null,
+        groupId: itemFormData.groupId,
+        pricing,
+        enabledEaseOption: !!itemFormData.enabledEaseOption,
+        easePeriod: itemFormData.easePeriod ? parseInt(itemFormData.easePeriod, 10) : 0,
+        interestPercentage: itemFormData.interestPercentage ? parseFloat(itemFormData.interestPercentage) : 0,
+        priceWithInterest: itemFormData.priceWithInterest ? parseFloat(itemFormData.priceWithInterest) : null,
+      };
+
+      // use priority field directly when manual
+      if (priorityModeItem === "manual") {
+        const pr = parseFloat(itemFormData.priority);
+        if (isNaN(pr) || pr < 0) {
+          alert("Priority must be a valid number");
+          setIsItemSubmitting(false);
+          return;
+        }
+        payload.priority = pr;
+      } else {
+        // convert answers to array
+        const answersArray: { priorityParamId: string; paramEvalItemId: string }[] = [];
+        for (const [paramId, evalItemId] of Object.entries(itemFormData.answers || {})) {
+          if (evalItemId) answersArray.push({ priorityParamId: paramId, paramEvalItemId: String(evalItemId) });
+        }
+        payload.answers = answersArray;
+      }
+
+      const response = await fetch(`/api/items/${editingItem.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setIsItemModalOpen(false);
+        // re-run simulation with current params
+        handleRunSimulation({ preventDefault: () => {} } as any);
+      } else {
+        const err = await response.json();
+        alert(err.error || "Failed to save item");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save item");
+    } finally {
+      setIsItemSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -486,6 +645,23 @@ export default function SimulationPage() {
                       </div>
                     )}
 
+                    <ItemModal
+                      isOpen={isItemModalOpen}
+                      onClose={() => setIsItemModalOpen(false)}
+                      editingItem={editingItem}
+                      formData={itemFormData}
+                      setFormData={setItemFormData}
+                      handleSubmit={handleItemSubmit}
+                      isSubmitting={isItemSubmitting}
+                      groups={groups}
+                      groupParams={groupParams}
+                      loadingGroupParams={loadingGroupParams}
+                      priorityMode={priorityModeItem}
+                      setPriorityMode={setPriorityModeItem}
+                      calculatedPriority={calculatePriorityFromAnswers(itemFormData.answers || {}, groupParams)}
+                      totalWeight={groupParams.reduce((s, p) => s + (p.weight || 0), 0)}
+                    />
+
                     {visibleMonths.length > 0 && (
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-foreground">Monthly Breakdown</h3>
@@ -527,7 +703,7 @@ export default function SimulationPage() {
                                           ) : (
                                             <Clock className="h-4 w-4 text-gray-400" />
                                           )}
-                                          <span className="text-foreground">{item.itemName}</span>
+                                                  <span className="text-foreground cursor-pointer" onClick={() => openItemModal(item.id)}>{item.itemName}</span>
                                         </div>
                                       </td>
                                       <td className="px-5 py-3">
