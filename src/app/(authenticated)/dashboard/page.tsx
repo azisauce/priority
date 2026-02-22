@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Package, FolderOpen, DollarSign, TrendingUp } from "lucide-react";
 
@@ -284,6 +284,49 @@ function CarouselCard() {
   const prev = () => setIndex((i) => (i - 1 + slides.length) % slides.length);
   const next = () => setIndex((i) => (i + 1) % slides.length);
 
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    const el = trackRef.current;
+    if (!el) return;
+    (e.target as Element).setPointerCapture(e.pointerId);
+    setDragging(true);
+    setStartX(e.clientX);
+    setDragOffset(0);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragging || !trackRef.current) return;
+    const delta = e.clientX - startX;
+    setDragOffset(delta);
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!dragging) return;
+    const delta = dragOffset;
+    const threshold = 50; // px
+    setDragging(false);
+    setDragOffset(0);
+    try {
+      (e.target as Element).releasePointerCapture(e.pointerId);
+    } catch {}
+    if (delta < -threshold) {
+      next();
+    } else if (delta > threshold) {
+      prev();
+    }
+  };
+
+  const percentOffset = () => {
+    const el = trackRef.current;
+    if (!el) return 0;
+    const w = el.getBoundingClientRect().width || 1;
+    return (dragOffset / w) * 100;
+  };
+
   return (
     <div className="relative">
       <div className="mb-4 flex items-center justify-between">
@@ -291,18 +334,29 @@ function CarouselCard() {
           <TrendingUp className="w-5 h-5 text-primary" />
           Priority Intelligence Formula
         </h2>
-        <div className="flex items-center gap-2">
-          <button onClick={prev} aria-label="Previous" className="rounded-full p-2 bg-input border border-border hover:bg-muted">
-            ‹
-          </button>
-          <button onClick={next} aria-label="Next" className="rounded-full p-2 bg-input border border-border hover:bg-muted">
-            ›
-          </button>
-        </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg">
-        <div className="flex transition-transform duration-500" style={{ transform: `translateX(-${index * 100}%)` }}>
+      {/* edge arrows
+      <button
+        onClick={prev}
+        aria-label="Previous"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 bg-input border border-border hover:bg-muted"
+      >
+        ‹
+      </button>
+      <button
+        onClick={next}
+        aria-label="Next"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 bg-input border border-border hover:bg-muted"
+      >
+        ›
+      </button> */}
+
+      <div className="overflow-hidden rounded-lg" ref={trackRef} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onPointerLeave={onPointerUp} style={{ cursor: dragging ? "grabbing" : "grab" }}>
+        <div
+          className="flex transition-transform duration-300"
+          style={{ transform: `translateX(calc(-${index * 100}% + ${percentOffset()}%))` }}
+        >
           {slides.map((s, i) => (
             <div key={i} className="w-full flex-shrink-0 p-4">
               {s.content}
