@@ -109,18 +109,18 @@ export default function ItemModal({
             </div>
 
             {formData.enabledEaseOption && (
-              <div className="space-y-3 pt-2">
-                <div>
+              <div className="flex flex-wrap items-center justify-start gap-4 pt-2">
+                <div className="flex-1 min-w-25">
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Ease Period (months)</label>
                   <input type="number" min="0" step="1" value={formData.easePeriod ?? ""} onChange={(e) => setFormData({ ...formData, easePeriod: e.target.value })} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0" />
                 </div>
 
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-foreground">Interest Percentage (%)</label>
+                <div className="flex-1 min-w-25">
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Interest Percentage</label>
                   <input type="number" min="0" step="0.01" value={formData.interestPercentage ?? ""} onChange={(e) => setFormData({ ...formData, interestPercentage: e.target.value })} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0.00" />
                 </div>
 
-                <div>
+                <div className="flex-1 min-w-25">
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Price With Interest</label>
                   <input type="number" min="0" step="0.01" value={formData.priceWithInterest ?? ""} onChange={(e) => setFormData({ ...formData, priceWithInterest: e.target.value })} className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring" placeholder="0.00" />
                 </div>
