@@ -6,10 +6,12 @@ import { Filter, ArrowUp, ArrowDown } from "lucide-react";
 type Props = {
   filters: any;
   setFilters: (f: any) => void;
-  showDoneFilter: string;
-  setShowDoneFilter: (v: string) => void;
+  showDoneFilter: DoneFilter;
+  setShowDoneFilter: React.Dispatch<React.SetStateAction<DoneFilter>>;
   groups: any[];
 };
+
+export type DoneFilter = "all" | "done" | "undone";
 
 export default function ItemsFilter({
   filters,
@@ -71,7 +73,7 @@ export default function ItemsFilter({
           <label className="text-sm text-muted-foreground">Show:</label>
           <select
             value={showDoneFilter}
-            onChange={(e) => setShowDoneFilter(e.target.value)}
+            onChange={(e) => setShowDoneFilter(e.target.value as DoneFilter)}
             className="rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
           >
             <option value="all">All</option>
