@@ -143,6 +143,8 @@ export default function ItemsPage() {
   });
   const [showDoneFilter, setShowDoneFilter] = useState<"all" | "done" | "undone">("undone");
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [priorityMode, setPriorityMode] = useState<"guided" | "manual">("guided");
@@ -274,6 +276,7 @@ export default function ItemsPage() {
       sortBy: "priority",
       sortOrder: "desc",
     });
+    setSearchQuery("");
   };
 
   const openAddModal = () => {
@@ -458,11 +461,20 @@ export default function ItemsPage() {
   const totalWeight = groupParams.reduce((s, p) => s + p.weight, 0);
 
   const hasActiveFilters =
+    searchQuery ||
     filters.groupId ||
     filters.minPriority ||
     filters.maxPriority ||
     filters.minPrice ||
     filters.maxPrice;
+
+  const displayedItems = items.filter((item) => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return true;
+    if (item.itemName.toLowerCase().includes(q)) return true;
+    if (item.description && item.description.toLowerCase().includes(q)) return true;
+    return false;
+  });
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -485,6 +497,8 @@ export default function ItemsPage() {
           setFilters={setFilters}
           showDoneFilter={showDoneFilter}
           setShowDoneFilter={setShowDoneFilter}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
           groups={groups}
         />
 
@@ -494,7 +508,7 @@ export default function ItemsPage() {
             <div className="flex h-64 items-center justify-center">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
-          ) : items.length === 0 ? (
+          ) : displayedItems.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center text-center">
               <div className="mb-4 rounded-full bg-muted p-4">
                 <Search className="h-8 w-8 text-muted-foreground" />
@@ -543,7 +557,7 @@ export default function ItemsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {items.map((item) => {
+                  {displayedItems.map((item) => {
                     const valueScore = calculateValueScore(item.priority, item.pricing);
                     return (
                       <tr

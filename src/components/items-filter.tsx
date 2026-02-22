@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Filter, ArrowUp, ArrowDown } from "lucide-react";
+import { Filter, ArrowUp, ArrowDown, Search } from "lucide-react";
 
 type Props = {
   filters: any;
   setFilters: (f: any) => void;
   showDoneFilter: DoneFilter;
   setShowDoneFilter: React.Dispatch<React.SetStateAction<DoneFilter>>;
+  searchQuery: string;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   groups: any[];
 };
 
@@ -18,11 +20,14 @@ export default function ItemsFilter({
   setFilters,
   showDoneFilter,
   setShowDoneFilter,
+  searchQuery,
+  setSearchQuery,
   groups,
 }: Props) {
   const [showFilters, setShowFilters] = useState(false);
 
   const hasActiveFilters =
+    Boolean(searchQuery) ||
     Boolean(filters.groupId) ||
     Boolean(filters.minPriority) ||
     Boolean(filters.maxPriority) ||
@@ -44,6 +49,7 @@ export default function ItemsFilter({
       sortOrder: "desc",
     });
     setShowDoneFilter("all");
+    setSearchQuery("");
     setShowFilters(false);
   };
 
@@ -66,6 +72,16 @@ export default function ItemsFilter({
             </span>
           )}
         </button>
+
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search items"
+            className="rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+          />
+        </div>
 
         <div className="h-6 w-px bg-border" />
 
