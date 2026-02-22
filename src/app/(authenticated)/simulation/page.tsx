@@ -24,6 +24,8 @@ interface SimulationItem {
   pricing: number;
   priority: number;
   score: number;
+  isInstallment?: boolean;
+  monthlyPayment?: number;
 }
 
 interface MonthlyPurchase {
@@ -496,7 +498,14 @@ export default function SimulationPage() {
                                         <span className="text-muted-foreground">{item.priority.toFixed(2)}</span>
                                       </td>
                                       <td className="px-5 py-3 text-right">
-                                        <span className="text-foreground">{formatCurrency(item.pricing)}</span>
+                                        {item.isInstallment ? (
+                                          <div className="text-right">
+                                            <div className="text-foreground">{formatCurrency(item.monthlyPayment || 0)}/mo</div>
+                                            <div className="text-xs text-muted-foreground">Total: {formatCurrency(item.pricing)}</div>
+                                          </div>
+                                        ) : (
+                                          <span className="text-foreground">{formatCurrency(item.pricing)}</span>
+                                        )}
                                       </td>
                                     </tr>
                                   ))}

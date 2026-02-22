@@ -38,13 +38,29 @@ export async function POST(request: NextRequest) {
     query = query.andWhere("items.price", "<=", maxPriceThreshold);
   }
 
-  const items = await query.select("id", "name", "price", "priority");
+  const items = await query.select(
+    "id",
+    "name",
+    "price",
+    "priority",
+    "enabled_ease_option",
+    "price_with_interest",
+    "interest_percentage",
+    "ease_period"
+  );
 
-  const formattedItems = items.map(item => ({
+  const formattedItems = items.map((item) => ({
     id: item.id,
     itemName: item.name,
     pricing: Number(item.price),
     priority: Number(item.priority),
+    ease: item.enabled_ease_option
+      ? {
+          priceWithInterest: item.price_with_interest ? Number(item.price_with_interest) : undefined,
+          interestPercentage: item.interest_percentage ? Number(item.interest_percentage) : undefined,
+          easePeriod: Number(item.ease_period) || 0,
+        }
+      : undefined,
   }));
 
   const result = simulatePurchases(
