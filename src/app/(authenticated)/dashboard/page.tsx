@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Package, FolderOpen, DollarSign, TrendingUp } from "lucide-react";
 
 interface DashboardData {
@@ -83,51 +84,13 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Formula Display Card */}
-      <div className="bg-gradient-to-br from-card to-background border border-border rounded-xl p-8 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-10">
-          <TrendingUp className="w-32 h-32 text-primary" />
+      {/* Formula Display Carousel */}
+      <div className="bg-gradient-to-br from-card to-background border border-border rounded-xl p-6 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-8">
+          <TrendingUp className="w-36 h-36 text-primary" />
         </div>
 
-        <div className="relative z-10">
-          <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            Priority Intelligence Formula
-          </h2>
-
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wider">Priority Score Calculation</p>
-                <div className="font-mono text-sm space-y-2">
-                  <div className="flex flex-wrap items-center gap-2 text-foreground/80">
-                    <span>Σ(Answer × <span className="text-primary">Weight</span>)</span>
-                    <span>/</span>
-                    <span>Σ(<span className="text-primary">Weight</span>)</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">Weighted average across all configured parameters per group</p>
-                </div>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wider">Value Score</p>
-                <p className="font-mono text-lg text-foreground">
-                  Priority<sup className="text-primary">5</sup> / Price
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-foreground/80">
-              <h3 className="font-semibold text-foreground">How it works</h3>
-              <p className="text-sm leading-relaxed">
-                The <span className="text-primary font-medium">Priority Score</span> is a weighted average of your custom parameters. Each group can have different parameters with different weights — configure them in <span className="text-primary font-medium">Params</span> and assign them per group.
-              </p>
-              <p className="text-sm leading-relaxed">
-                The <span className="text-primary font-medium">Value Score</span> exponentially weights high-priority items against their cost. This ensures that critical, low-cost items surface to the top of your purchasing list, maximizing impact for every dollar spent.
-              </p>
-            </div>
-          </div>
-        </div>
+        <CarouselCard />
       </div>
 
       {/* Stats Grid */}
@@ -251,6 +214,112 @@ export default function DashboardPage() {
             ))}
           </ul>
         )}
+      </div>
+    </div>
+  );
+}
+
+function CarouselCard() {
+  const [index, setIndex] = useState(0);
+  const slides = [
+    {
+      title: "Scoring",
+      content: (
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="bg-muted/50 rounded-lg p-4 border border-border">
+              <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wider">Priority Score Calculation</p>
+              <div className="font-mono text-sm space-y-2">
+                <div className="flex flex-wrap items-center gap-2 text-foreground/80">
+                  <span>Σ(Answer × <span className="text-primary">Weight</span>)</span>
+                  <span>/</span>
+                  <span>Σ(<span className="text-primary">Weight</span>)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Weighted average across all configured parameters per group</p>
+              </div>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-4 border border-border">
+              <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wider">Value Score</p>
+              <p className="font-mono text-lg text-foreground">
+                Priority<sup className="text-primary">5</sup> / Price
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-foreground/80">
+            <h3 className="font-semibold text-foreground">How it works</h3>
+            <p className="text-sm leading-relaxed">
+              The <span className="text-primary font-medium">Priority Score</span> is a weighted average of your custom parameters. Configure them in <Link className="text-primary font-medium" href="/priority-params">Params</Link>.
+            </p>
+            <p className="text-sm leading-relaxed">
+              The <span className="text-primary font-medium">Value Score</span> exponentially weights high-priority items against cost so small, critical purchases bubble up.
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Simulation",
+      content: (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">Simulation selects which items to buy each month.</p>
+          <div className="mt-2 rounded-lg bg-muted/50 p-4 border border-border">
+            <p className="text-sm font-medium text-foreground mb-2">Greedy (default)</p>
+            <p className="text-sm text-foreground/80">Picks highest-scoring items (Priority^5 / Price) and acquires them when cash or first installment is affordable.</p>
+          </div>
+          <div className="mt-2 rounded-lg bg-muted/50 p-4 border border-border">
+            <p className="text-sm font-medium text-foreground mb-2">Optimal (knapsack)</p>
+            <p className="text-sm text-foreground/80">Solves a knapsack per month to maximise acquired priority; exact for small sets, fast approximation for larger ones.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/simulation" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Run Simulation</Link>
+            <Link href="/simulation" className="text-sm text-muted-foreground underline">Advanced options</Link>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  const prev = () => setIndex((i) => (i - 1 + slides.length) % slides.length);
+  const next = () => setIndex((i) => (i + 1) % slides.length);
+
+  return (
+    <div className="relative">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-foreground mb-0 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          Priority Intelligence Formula
+        </h2>
+        <div className="flex items-center gap-2">
+          <button onClick={prev} aria-label="Previous" className="rounded-full p-2 bg-input border border-border hover:bg-muted">
+            ‹
+          </button>
+          <button onClick={next} aria-label="Next" className="rounded-full p-2 bg-input border border-border hover:bg-muted">
+            ›
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-lg">
+        <div className="flex transition-transform duration-500" style={{ transform: `translateX(-${index * 100}%)` }}>
+          {slides.map((s, i) => (
+            <div key={i} className="w-full flex-shrink-0 p-4">
+              {s.content}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center justify-center gap-2">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setIndex(i)}
+            className={`h-2 w-8 rounded-full ${i === index ? "bg-primary" : "bg-muted/50"}`}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
       </div>
     </div>
   );
