@@ -10,6 +10,7 @@ const simulationSchema = z.object({
   monthlyIncome: z.number().min(0, "Monthly income must be non-negative"),
   deadlineMonths: z.number().int().positive().optional(),
   maxPriceThreshold: z.number().min(0).optional(),
+  useEase: z.boolean().optional(),
   groupIds: z.array(z.string()).optional(),
 });
 
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { initialBudget, monthlyIncome, deadlineMonths, maxPriceThreshold, groupIds } = parsed.data;
+  const { initialBudget, monthlyIncome, deadlineMonths, maxPriceThreshold, groupIds, useEase } = parsed.data;
 
   let query = db("items").where("items.user_id", userId);
   // Exclude items marked as done from simulations
@@ -68,7 +69,8 @@ export async function POST(request: NextRequest) {
     initialBudget,
     monthlyIncome,
     deadlineMonths,
-    maxPriceThreshold
+    maxPriceThreshold,
+    typeof useEase === "boolean" ? useEase : true
   );
 
   return NextResponse.json({ simulation: result });

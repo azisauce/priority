@@ -43,7 +43,8 @@ export function simulatePurchases(
   initialBudget: number,
   monthlyIncome: number,
   deadlineMonths?: number,
-  maxPriceThreshold?: number
+  maxPriceThreshold?: number,
+  useEase: boolean = true
 ): SimulationResult {
   const considered = typeof maxPriceThreshold === "number"
     ? items.filter((it) => it.pricing <= maxPriceThreshold)
@@ -92,7 +93,7 @@ export function simulatePurchases(
 
     // Recalculate score using effective price (priceWithInterest if ease exists)
     const scored = remaining.map((item) => {
-      const effectivePrice = item.ease && item.ease.priceWithInterest ? item.ease.priceWithInterest : item.pricing;
+      const effectivePrice = useEase && item.ease && item.ease.priceWithInterest ? item.ease.priceWithInterest : item.pricing;
       return {
         item,
         score: calculatePriorityPriceScore(item.priority, effectivePrice),
@@ -110,7 +111,7 @@ export function simulatePurchases(
       }
 
       // Try ease option if available and has a valid period and priceWithInterest
-      if (item.ease && item.ease.easePeriod > 0 && item.ease.priceWithInterest && item.ease.priceWithInterest > 0) {
+      if (useEase && item.ease && item.ease.easePeriod > 0 && item.ease.priceWithInterest && item.ease.priceWithInterest > 0) {
         const monthlyPayment = item.ease.priceWithInterest / item.ease.easePeriod;
         // require that we can at least pay the first installment this month
         if (monthlyPayment <= budget) {

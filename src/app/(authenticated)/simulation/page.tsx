@@ -47,6 +47,7 @@ interface SimulationFormData {
   monthlyIncome: string;
   deadlineMonths: string;
   maxPriceThreshold?: string;
+  useEase?: boolean;
 }
 
 const formatCurrency = (amount: number): string => {
@@ -69,6 +70,7 @@ export default function SimulationPage() {
     monthlyIncome: "",
     deadlineMonths: "",
     maxPriceThreshold: "",
+    useEase: true,
   });
 
   const fetchGroups = useCallback(async () => {
@@ -150,6 +152,7 @@ export default function SimulationPage() {
           deadlineMonths,
           maxPriceThreshold,
           groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
+          useEase: typeof formData.useEase === "boolean" ? formData.useEase : true,
         }),
       });
 
@@ -283,6 +286,22 @@ export default function SimulationPage() {
                     />
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">Optional: ignore items with price above this value.</p>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Use Ease Option</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="useEase"
+                      type="checkbox"
+                      checked={!!formData.useEase}
+                      onChange={(e) => setFormData({ ...formData, useEase: e.target.checked })}
+                      className="h-4 w-4 rounded border-border bg-input text-primary focus:ring-ring"
+                    />
+                    <label htmlFor="useEase" className="text-sm text-muted-foreground">
+                      Simulate using ease (installments). When disabled, simulator will ignore ease options.
+                    </label>
+                  </div>
                 </div>
 
                 <div>
