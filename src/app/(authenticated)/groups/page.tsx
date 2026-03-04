@@ -248,10 +248,10 @@ export default function GroupsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">Groups</h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Organize your items into groups
           </p>
         </div>
@@ -305,7 +305,7 @@ export default function GroupsPage() {
                     {group._count.items === 1 ? "item" : "items"}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover/card:opacity-100 transition-opacity">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

@@ -225,7 +225,7 @@ export default function GroupDetailPage() {
       </button>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {editing ? (
             <div className="flex items-center gap-2">
@@ -339,8 +339,8 @@ export default function GroupDetailPage() {
 
       {/* Items Table */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">Items</h2>
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Items</h2>
         </div>
         {sortedItems.length === 0 ? (
           <div className="p-12 text-center">
@@ -353,10 +353,10 @@ export default function GroupDetailPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground border-b border-border">
-                  <th className="px-6 py-3 font-medium">Item Name</th>
-                  <th className="px-6 py-3 font-medium">Priority</th>
-                  <th className="px-6 py-3 font-medium">Price</th>
-                  <th className="px-6 py-3 font-medium">Value Score</th>
+                  <th className="px-4 sm:px-6 py-3 font-medium">Item Name</th>
+                  <th className="px-4 sm:px-6 py-3 font-medium">Priority</th>
+                  <th className="hidden sm:table-cell px-4 sm:px-6 py-3 font-medium">Price</th>
+                  <th className="px-4 sm:px-6 py-3 font-medium">Value Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -365,16 +365,19 @@ export default function GroupDetailPage() {
                     key={item.id}
                     className="border-b border-border last:border-0 hover:bg-accent/50"
                   >
-                    <td className="px-6 py-3 text-foreground font-medium">
-                      {item.itemName}
+                    <td className="px-4 sm:px-6 py-3 text-foreground font-medium">
+                      <div>{item.itemName}</div>
+                      <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
+                        ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
                     </td>
-                    <td className="px-6 py-3 text-muted-foreground">
+                    <td className="px-4 sm:px-6 py-3 text-muted-foreground">
                       {item.priority.toFixed(2)}
                     </td>
-                    <td className="px-6 py-3 text-muted-foreground">
+                    <td className="hidden sm:table-cell px-4 sm:px-6 py-3 text-muted-foreground">
                       ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="px-6 py-3 text-primary font-medium">
+                    <td className="px-4 sm:px-6 py-3 text-primary font-medium">
                       {isFinite(item.valueScore)
                         ? item.valueScore.toFixed(4)
                         : "∞"}

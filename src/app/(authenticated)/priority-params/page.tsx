@@ -328,16 +328,16 @@ export default function PriorityParamsPage() {
     });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Priority Parameters</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Priority Parameters</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           Define parameters, answer options, and assign them to customize priority calculation per group.
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* LEFT COLUMN: Priority Params */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -522,14 +522,14 @@ export default function PriorityParamsPage() {
                               return (
                                 <div
                                   key={ei.id}
-                                  className="flex items-center justify-between rounded-lg border border-border p-2.5 bg-card"
+                                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-border p-2.5 bg-card"
                                 >
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                                     <span className="text-sm font-medium text-foreground">
                                       {ei.name}
                                     </span>
                                     {!ei.userId && (
-                                      <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                                         Generic
                                       </span>
                                     )}

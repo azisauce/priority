@@ -38,7 +38,7 @@ export default function Navigation() {
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* App Title */}
-      <div className="p-6 border-b border-border mx-10 lg:mx-0">
+      <div className="p-4 sm:p-6 border-b border-border mx-10 lg:mx-0">
         <h1 className="text-xl font-bold text-foreground">Priority.</h1>
       </div>
 

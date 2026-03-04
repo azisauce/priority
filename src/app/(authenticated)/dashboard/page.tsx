@@ -78,15 +78,15 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           Overview of your purchase priorities
         </p>
       </div>
 
       {/* Formula Display Carousel */}
-      <div className="bg-gradient-to-br from-card to-background border border-border rounded-xl p-6 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-8">
+      <div className="bg-linear-to-br from-card to-background border border-border rounded-xl p-3 sm:p-6 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-8 hidden sm:block">
           <TrendingUp className="w-36 h-36 text-primary" />
         </div>
 
@@ -120,8 +120,8 @@ export default function DashboardPage() {
 
       {/* Top Priority Items */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">
             Top Priority Items
           </h2>
         </div>
@@ -140,11 +140,11 @@ export default function DashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground border-b border-border">
-                  <th className="px-6 py-3 font-medium">Rank</th>
-                  <th className="px-6 py-3 font-medium">Item Name</th>
-                  <th className="px-6 py-3 font-medium">Priority</th>
-                  <th className="px-6 py-3 font-medium">Price</th>
-                  <th className="px-6 py-3 font-medium">Value Score</th>
+                  <th className="px-3 sm:px-6 py-3 font-medium">Rank</th>
+                  <th className="px-3 sm:px-6 py-3 font-medium">Item Name</th>
+                  <th className="px-3 sm:px-6 py-3 font-medium">Priority</th>
+                  <th className="hidden sm:table-cell px-3 sm:px-6 py-3 font-medium">Price</th>
+                  <th className="hidden sm:table-cell px-3 sm:px-6 py-3 font-medium">Value Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -153,17 +153,20 @@ export default function DashboardPage() {
                     key={item.id}
                     className="border-b border-border last:border-0 hover:bg-accent/50"
                   >
-                    <td className="px-6 py-3 text-muted-foreground">{index + 1}</td>
-                    <td className="px-6 py-3 text-foreground font-medium">
-                      {item.itemName}
+                    <td className="px-3 sm:px-6 py-3 text-muted-foreground">{index + 1}</td>
+                    <td className="px-3 sm:px-6 py-3 text-foreground font-medium">
+                      <div>{item.itemName}</div>
+                      <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
+                        ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · VS: {item.score.toFixed(2)}
+                      </div>
                     </td>
-                    <td className="px-6 py-3 text-muted-foreground">
+                    <td className="px-3 sm:px-6 py-3 text-muted-foreground">
                       {item.priority.toFixed(2)}
                     </td>
-                    <td className="px-6 py-3 text-muted-foreground">
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 text-muted-foreground">
                       ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
-                    <td className="px-6 py-3 text-primary font-medium">
+                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 text-primary font-medium">
                       {item.score.toFixed(4)}
                     </td>
                   </tr>
@@ -176,8 +179,8 @@ export default function DashboardPage() {
 
       {/* Recent Items */}
       <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">Recent Items</h2>
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Recent Items</h2>
         </div>
         {loading ? (
           <div className="p-6 space-y-3">
@@ -194,7 +197,7 @@ export default function DashboardPage() {
             {data.recentItems.map((item) => (
               <li
                 key={item.id}
-                className="px-6 py-4 flex items-center justify-between hover:bg-accent/50"
+                className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 hover:bg-accent/50"
               >
                 <div>
                   <p className="text-foreground font-medium">{item.itemName}</p>
@@ -330,9 +333,10 @@ function CarouselCard() {
   return (
     <div className="relative">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-foreground mb-0 flex items-center gap-2">
+        <h2 className="text-base sm:text-xl font-bold text-foreground mb-0 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-primary" />
-          Priority Intelligence Formula
+          <span className="hidden sm:inline">Priority Intelligence Formula</span>
+          <span className="sm:hidden">Formula</span>
         </h2>
       </div>
 
@@ -358,7 +362,7 @@ function CarouselCard() {
           style={{ transform: `translateX(calc(-${index * 100}% + ${percentOffset()}%))` }}
         >
           {slides.map((s, i) => (
-            <div key={i} className="w-full flex-shrink-0 p-4">
+            <div key={i} className="w-full shrink-0 p-4">
               {s.content}
             </div>
           ))}

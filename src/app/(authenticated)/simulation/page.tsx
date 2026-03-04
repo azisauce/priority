@@ -370,16 +370,16 @@ export default function SimulationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-3 sm:p-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Simulation</h1>
-          <p className="mt-1 text-muted-foreground">Plan your purchases over time</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Simulation</h1>
+          <p className="mt-1 text-sm sm:text-base text-muted-foreground">Plan your purchases over time</p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-1">
-            <div className="rounded-xl bg-card border border-border p-6">
+            <div className="rounded-xl bg-card border border-border p-4 sm:p-6">
               <h2 className="mb-6 text-lg font-semibold text-foreground">Configuration</h2>
 
               <form onSubmit={handleRunSimulation} className="space-y-5">
@@ -587,43 +587,43 @@ export default function SimulationPage() {
               <div className="space-y-6">
                 {simulation && (
                   <>
-                    <div className="grid gap-4 sm:grid-cols-3">
-                      <div className="rounded-xl bg-card border border-border p-5">
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
+                      <div className="rounded-xl bg-card border border-border p-3 sm:p-5">
                         <div className="flex items-center gap-3">
                           <div className="rounded-lg bg-blue-600/10 p-2">
                             <Calendar className="h-5 w-5 text-blue-500" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Total Months</p>
-                            <p className="text-2xl font-bold text-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Total Months</p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground">
                               {simulation.totalMonths}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-card border border-border p-5">
+                      <div className="rounded-xl bg-card border border-border p-3 sm:p-5">
                         <div className="flex items-center gap-3">
                           <div className="rounded-lg bg-green-600/10 p-2">
                             <DollarSign className="h-5 w-5 text-green-500" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Total Spent</p>
-                            <p className="text-2xl font-bold text-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Total Spent</p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground">
                               {formatCurrency(simulation.totalSpent)}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="rounded-xl bg-card border border-border p-5">
+                      <div className="rounded-xl bg-card border border-border p-3 sm:p-5">
                         <div className="flex items-center gap-3">
                           <div className="rounded-lg bg-purple-600/10 p-2">
                             <ShoppingCart className="h-5 w-5 text-purple-500" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">Items Purchased</p>
-                            <p className="text-2xl font-bold text-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Items Purchased</p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground">
                               {purchasedItemsCount} / {totalItems}
                             </p>
                           </div>
@@ -632,11 +632,11 @@ export default function SimulationPage() {
                     </div>
 
                     {visibleMonths.length > 0 && (
-                      <div className="rounded-xl bg-card border border-border p-5">
-                        <h3 className="mb-4 text-lg font-semibold text-foreground">
+                      <div className="rounded-xl bg-card border border-border p-3 sm:p-5">
+                        <h3 className="mb-4 text-base sm:text-lg font-semibold text-foreground">
                           Spending Timeline
                         </h3>
-                        <div className="flex h-24 items-end gap-2">
+                        <div className="flex h-24 items-end gap-1 sm:gap-2 overflow-x-auto pb-8">
                           {visibleMonths.map((month: MonthlyPurchase) => {
                             const width = month.spent > 0 ? (month.spent / maxMonthlySpent) * 100 : 0;
                             return (
@@ -680,12 +680,12 @@ export default function SimulationPage() {
 
                     {visibleMonths.length > 0 && (
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-foreground">Monthly Breakdown</h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-foreground">Monthly Breakdown</h3>
                         {visibleMonths.map((month) => (
                           <div key={month.month} className="rounded-xl bg-card border border-border overflow-hidden">
-                            <div className="flex items-center justify-between bg-muted/50 px-5 py-3">
-                              <h4 className="font-medium text-foreground">Month {month.month}</h4>
-                              <div className="flex items-center gap-4 text-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 bg-muted/50 px-3 sm:px-5 py-2 sm:py-3">
+                              <h4 className="font-medium text-foreground text-sm sm:text-base">Month {month.month}</h4>
+                              <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
                                 <span className="text-muted-foreground">
                                   Spent: <span className="font-medium text-foreground">{formatCurrency(month.spent)}</span>
                                 </span>
@@ -698,13 +698,13 @@ export default function SimulationPage() {
                               <table className="w-full">
                                 <thead>
                                   <tr className="border-b border-border">
-                                    <th className="px-5 py-3 text-left text-sm font-medium text-muted-foreground">
+                                    <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-muted-foreground">
                                       Item Name
                                     </th>
-                                    <th className="px-5 py-3 text-left text-sm font-medium text-muted-foreground">
+                                    <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-muted-foreground">
                                       Priority
                                     </th>
-                                    <th className="px-5 py-3 text-right text-sm font-medium text-muted-foreground">
+                                    <th className="px-3 sm:px-5 py-2 sm:py-3 text-right text-xs sm:text-sm font-medium text-muted-foreground">
                                       Price
                                     </th>
                                   </tr>
@@ -712,28 +712,27 @@ export default function SimulationPage() {
                                 <tbody className="divide-y divide-border">
                                   {month.items.map((item) => (
                                     <tr key={item.id} className="transition-colors hover:bg-muted/50">
-                                      <td className="px-5 py-3">
+                                      <td className="px-3 sm:px-5 py-2 sm:py-3">
                                           <div className="flex items-center gap-2">
                                           {(!item.isInstallment || (item.isInstallment && (item.remainingInstallments ?? 0) <= 0)) ? (
-                                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                            <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                                           ) : (
-                                            <Clock className="h-4 w-4 text-gray-400" />
+                                            <Clock className="h-4 w-4 text-gray-400 shrink-0" />
                                           )}
-                                                  <span className="text-foreground cursor-pointer" onClick={() => openItemModal(item.id)}>{item.itemName}</span>
+                                                  <span className="text-foreground cursor-pointer text-sm" onClick={() => openItemModal(item.id)}>{item.itemName}</span>
                                         </div>
                                       </td>
-                                      <td className="px-5 py-3">
-                                        <span className="text-muted-foreground">{item.priority.toFixed(2)}</span>
+                                      <td className="px-3 sm:px-5 py-2 sm:py-3">
+                                        <span className="text-muted-foreground text-sm">{item.priority.toFixed(2)}</span>
                                       </td>
-                                      <td className="px-5 py-3 text-right">
+                                      <td className="px-3 sm:px-5 py-2 sm:py-3 text-right">
                                         {item.isInstallment ? (
                                           <div className="text-right">
-                                            <div className="text-foreground">{formatCurrency(item.monthlyPayment || 0)}/mo</div>
-                                            {/* <div className="text-xs text-muted-foreground">Total: {formatCurrency(item.pricing)}</div> */}
+                                            <div className="text-foreground text-sm">{formatCurrency(item.monthlyPayment || 0)}/mo</div>
                                             <div className="text-xs text-muted-foreground">Remaining: {item.remainingInstallments} months</div>
                                           </div>
                                         ) : (
-                                          <span className="text-foreground">{formatCurrency(item.pricing)}</span>
+                                          <span className="text-foreground text-sm">{formatCurrency(item.pricing)}</span>
                                         )}
                                       </td>
                                     </tr>
@@ -748,9 +747,9 @@ export default function SimulationPage() {
 
                     {simulation.unpurchased.length > 0 && (
                       <div className="rounded-xl bg-red-900/10 border border-red-900/20 overflow-hidden">
-                        <div className="flex items-center gap-3 bg-red-900/20 px-5 py-3">
-                          <AlertTriangle className="h-5 w-5 text-red-400" />
-                          <h3 className="font-medium text-red-300">
+                        <div className="flex items-center gap-3 bg-red-900/20 px-3 sm:px-5 py-2 sm:py-3">
+                          <AlertTriangle className="h-5 w-5 text-red-400 shrink-0" />
+                          <h3 className="font-medium text-red-300 text-sm sm:text-base">
                             Unpurchased Items ({simulation.unpurchased.length})
                           </h3>
                         </div>
@@ -758,13 +757,13 @@ export default function SimulationPage() {
                           <table className="w-full">
                             <thead>
                               <tr className="border-b border-red-900/20">
-                                <th className="px-5 py-3 text-left text-sm font-medium text-red-400/80">
+                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-red-400/80">
                                   Item Name
                                 </th>
-                                <th className="px-5 py-3 text-left text-sm font-medium text-red-400/80">
+                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-red-400/80">
                                   Priority
                                 </th>
-                                <th className="px-5 py-3 text-right text-sm font-medium text-red-400/80">
+                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-right text-xs sm:text-sm font-medium text-red-400/80">
                                   Price
                                 </th>
                               </tr>
@@ -772,9 +771,9 @@ export default function SimulationPage() {
                             <tbody className="divide-y divide-red-900/20">
                               {simulation.unpurchased.map((item) => (
                                 <tr key={item.id} className="transition-colors hover:bg-destructive/10">
-                                  <td className="px-5 py-3 text-destructive-foreground">{item.itemName}</td>
-                                  <td className="px-5 py-3 text-destructive-foreground">{item.priority.toFixed(2)}</td>
-                                  <td className="px-5 py-3 text-right text-destructive-foreground">
+                                  <td className="px-3 sm:px-5 py-2 sm:py-3 text-destructive-foreground text-sm">{item.itemName}</td>
+                                  <td className="px-3 sm:px-5 py-2 sm:py-3 text-destructive-foreground text-sm">{item.priority.toFixed(2)}</td>
+                                  <td className="px-3 sm:px-5 py-2 sm:py-3 text-right text-destructive-foreground text-sm">
                                     {formatCurrency(item.pricing)}
                                   </td>
                                 </tr>

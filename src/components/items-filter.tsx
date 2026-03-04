@@ -54,8 +54,8 @@ export default function ItemsFilter({
   };
 
   return (
-    <div className="mb-6 rounded-xl bg-card border border-border p-4">
-      <div className="flex items-center gap-4">
+    <div className="mb-6 rounded-xl bg-card border border-border p-3 sm:p-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
@@ -65,7 +65,7 @@ export default function ItemsFilter({
           }`}
         >
           <Filter className="h-4 w-4" />
-          Filters
+          <span className="hidden xs:inline">Filters</span>
           {hasActiveFilters && (
             <span className="ml-1 rounded-full bg-primary-foreground/20 px-2 py-0.5 text-xs text-primary-foreground">
               Active
@@ -73,24 +73,24 @@ export default function ItemsFilter({
           )}
         </button>
 
-        <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
+        <div className="flex flex-1 min-w-0 items-center gap-2">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search items"
-            className="rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            className="w-full min-w-25 rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
           />
         </div>
 
-        <div className="h-6 w-px bg-border" />
+        <div className="hidden sm:block h-6 w-px bg-border" />
 
         <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground">Show:</label>
+          <label className="hidden sm:inline text-sm text-muted-foreground">Show:</label>
           <select
             value={showDoneFilter}
             onChange={(e) => setShowDoneFilter(e.target.value as DoneFilter)}
-            className="rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+            className="rounded-lg bg-input border border-border px-2 sm:px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
           >
             <option value="all">All</option>
             <option value="done">Done</option>
@@ -98,8 +98,8 @@ export default function ItemsFilter({
           </select>
         </div>
 
-        {/* Quick Sort: hidden on small screens, moved into the inline filters for sm devices */}
-        <div className="hidden sm:flex items-center gap-2">
+        {/* Quick Sort: hidden on small screens, moved into the expanded filters for sm devices */}
+        <div className="hidden md:flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Sort by:</span>
           <select
             value={filters.sortBy}
@@ -129,8 +129,8 @@ export default function ItemsFilter({
       {/* Expanded Filters */}
       {showFilters && (
         <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Sort controls for small screens (visible only on sm and below) */}
-          <div className="sm:hidden">
+          {/* Sort controls for small/medium screens (visible below md) */}
+          <div className="md:hidden">
             <label className="mb-1 block text-sm font-medium text-muted-foreground">Sort by</label>
             <div className="flex items-center gap-2">
               <select
