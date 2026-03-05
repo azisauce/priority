@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { ThemeProvider, useTheme } from "@/components/theme-provider";
 import {
   LayoutDashboard,
   Package,
@@ -30,6 +31,7 @@ const navLinks = [
 export default function Navigation() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { theme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) =>
@@ -41,7 +43,10 @@ export default function Navigation() {
       <div className="p-4 sm:p-6 border-b border-border mx-10 lg:mx-0">
         <div className="flex items-center gap-1">
           <img
-            src="/assets/logos/black_logo.png"
+            src={theme === "dark" 
+              ? "/assets/logos/basic_logo_light_azure.png" 
+              : "/assets/logos/basic_logo_deep_navy.png"
+            }
             alt="Priority Logo"
             className="w-8 h-8 object-contain"
           />
