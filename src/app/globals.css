@@ -97,3 +97,35 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgb(var(--muted-foreground) / 0.5);
 }
+
+/* Canvas background gradient for floating layout depth */
+body {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgb(var(--primary) / 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgb(var(--primary) / 0.03) 0%, transparent 50%);
+}
+
+.dark body {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgb(var(--primary) / 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgb(var(--primary) / 0.04) 0%, transparent 50%);
+}
+
+/* Mobile sheet slide-up animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
+
+/* Safe area padding for mobile bottom tab bar (notched devices) */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
