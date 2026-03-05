@@ -20,6 +20,7 @@
   --color-border: rgb(var(--border));
   --color-input: rgb(var(--input));
   --color-ring: rgb(var(--ring));
+  --font-raleway: var(--font-raleway);
   --radius: 0.5rem;
 }
 

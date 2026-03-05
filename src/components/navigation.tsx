@@ -39,7 +39,14 @@ export default function Navigation() {
     <div className="flex flex-col h-full">
       {/* App Title */}
       <div className="p-4 sm:p-6 border-b border-border mx-10 lg:mx-0">
-        <h1 className="text-xl font-bold text-foreground">Priority.</h1>
+        <div className="flex items-center gap-1">
+          <img
+            src="/assets/logos/black_logo.png"
+            alt="Priority Logo"
+            className="w-8 h-8 object-contain"
+          />
+          <h1 className="text-xl font-bold font-raleway text-foreground">Priority.</h1>
+        </div>
       </div>
 
       {/* Nav Links */}

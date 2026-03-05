@@ -55,9 +55,16 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="bg-card rounded-xl border border-border p-8">
-          <h1 className="text-3xl font-bold text-foreground text-center mb-8">
-            Priority.
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <img
+              src="/assets/logos/general_logo_azure.png"
+              alt="Priority Logo"
+              className="w-32 h-32 object-contain"
+            />
+            {/* <h1 className="text-3xl font-bold font-raleway text-foreground text-center">
+              Priority.
+            </h1> */}
+          </div>
 
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
