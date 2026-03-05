@@ -22,6 +22,11 @@ const raleway = Raleway({
 export const metadata: Metadata = {
   title: "Priority - Smart Purchase Planner",
   description: "Prioritize and plan your purchases intelligently",
+  icons: {
+    icon: "/assets/logos/basic_logo_light_azure.png",
+    shortcut: "/assets/logos/basic_general_logo_azure.png",
+    apple: "/assets/logos/basic_general_logo_azure.png",
+  },
 };
 
 export default function RootLayout({
