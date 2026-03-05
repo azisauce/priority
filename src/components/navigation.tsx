@@ -188,26 +188,28 @@ export default function Navigation() {
       {/* Bottom Tab Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card border-t border-border">
         <div className="flex items-center justify-around px-1 py-1.5 safe-bottom">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const active = isActive(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`
+          {navLinks
+            .filter((link) => ["/dashboard", "/items", "/debts", "/simulation"].includes(link.href))
+            .map((link) => {
+              const Icon = link.icon;
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`
                   flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors min-w-0
                   ${active
-                    ? "text-primary"
-                    : "text-muted-foreground"
-                  }
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                    }
                 `}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="truncate text-[10px]">{link.label}</span>
-              </Link>
-            );
-          })}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="truncate text-[10px]">{link.label}</span>
+                </Link>
+              );
+            })}
 
           {/* More button for extra actions */}
           <button
@@ -241,8 +243,34 @@ export default function Navigation() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Theme</span>
+            <div className="space-y-1">
+              {/* Extra nav links moved from bottom bar */}
+              {navLinks
+                .filter((link) => !["/dashboard", "/items", "/debts", "/simulation"].includes(link.href))
+                .map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMoreOpen(false)}
+                      className={`
+                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                        ${isActive(link.href)
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        }
+                      `}
+                    >
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="truncate">{link.label}</span>
+                    </Link>
+                  );
+                })}
+            </div>
+
+            <div className="flex items-center justify-between px-3 py-2.5">
+              <span className="text-sm font-medium text-muted-foreground">Theme</span>
               <ThemeToggle />
             </div>
 
