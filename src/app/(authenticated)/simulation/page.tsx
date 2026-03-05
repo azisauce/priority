@@ -590,8 +590,8 @@ export default function SimulationPage() {
                     <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
                       <div className="rounded-xl bg-card border border-border p-3 sm:p-5">
                         <div className="flex items-center gap-3">
-                          <div className="rounded-lg bg-blue-600/10 p-2">
-                            <Calendar className="h-5 w-5 text-blue-500" />
+                          <div className="rounded-lg bg-primary/10 p-2">
+                            <Calendar className="h-5 w-5 text-primary" />
                           </div>
                           <div>
                             <p className="text-xs sm:text-sm text-muted-foreground">Total Months</p>
@@ -717,7 +717,7 @@ export default function SimulationPage() {
                                           {(!item.isInstallment || (item.isInstallment && (item.remainingInstallments ?? 0) <= 0)) ? (
                                             <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                                           ) : (
-                                            <Clock className="h-4 w-4 text-gray-400 shrink-0" />
+                                            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                                           )}
                                                   <span className="text-foreground cursor-pointer text-sm" onClick={() => openItemModal(item.id)}>{item.itemName}</span>
                                         </div>
@@ -746,29 +746,29 @@ export default function SimulationPage() {
                     )}
 
                     {simulation.unpurchased.length > 0 && (
-                      <div className="rounded-xl bg-red-900/10 border border-red-900/20 overflow-hidden">
-                        <div className="flex items-center gap-3 bg-red-900/20 px-3 sm:px-5 py-2 sm:py-3">
-                          <AlertTriangle className="h-5 w-5 text-red-400 shrink-0" />
-                          <h3 className="font-medium text-red-300 text-sm sm:text-base">
+                      <div className="rounded-xl bg-destructive/5 border border-destructive/20 overflow-hidden">
+                        <div className="flex items-center gap-3 bg-destructive/10 px-3 sm:px-5 py-2 sm:py-3">
+                          <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
+                          <h3 className="font-medium text-destructive text-sm sm:text-base">
                             Unpurchased Items ({simulation.unpurchased.length})
                           </h3>
                         </div>
                         <div className="overflow-x-auto">
                           <table className="w-full">
                             <thead>
-                              <tr className="border-b border-red-900/20">
-                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-red-400/80">
+                              <tr className="border-b border-destructive/20">
+                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-destructive/80">
                                   Item Name
                                 </th>
-                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-red-400/80">
+                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-left text-xs sm:text-sm font-medium text-destructive/80">
                                   Priority
                                 </th>
-                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-right text-xs sm:text-sm font-medium text-red-400/80">
+                                <th className="px-3 sm:px-5 py-2 sm:py-3 text-right text-xs sm:text-sm font-medium text-destructive/80">
                                   Price
                                 </th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-red-900/20">
+                            <tbody className="divide-y divide-destructive/20">
                               {simulation.unpurchased.map((item) => (
                                 <tr key={item.id} className="transition-colors hover:bg-destructive/10">
                                   <td className="px-3 sm:px-5 py-2 sm:py-3 text-destructive-foreground text-sm">{item.itemName}</td>
@@ -799,12 +799,12 @@ export default function SimulationPage() {
                     {simulation.unpurchased.length === 0 &&
                       simulation.monthlyPurchases.length > 0 &&
                       purchasedItemsCount > 0 && (
-                        <div className="rounded-xl bg-green-900/10 border border-green-900/20 p-5">
+                        <div className="rounded-xl bg-green-500/10 border border-green-500/20 p-5">
                           <div className="flex items-center gap-3">
-                            <CheckCircle2 className="h-6 w-6 text-green-400" />
+                            <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
                             <div>
-                              <h3 className="font-medium text-green-300">All items purchased!</h3>
-                              <p className="text-sm text-green-400/80">
+                              <h3 className="font-medium text-green-600 dark:text-green-400">All items purchased!</h3>
+                              <p className="text-sm text-green-600/80 dark:text-green-400/80">
                                 Congratulations! You have purchased all {purchasedItemsCount} items.
                               </p>
                             </div>

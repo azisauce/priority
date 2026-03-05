@@ -385,7 +385,7 @@ export default function DebtsPage() {
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/15 px-2.5 py-0.5 text-xs font-medium text-blue-600 dark:text-blue-400">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary">
             <Clock className="h-3 w-3" /> Active
           </span>
         );
@@ -764,7 +764,7 @@ export default function DebtsPage() {
                   <button
                     type="submit"
                     disabled={isPaymentSubmitting}
-                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
                   >
                     {isPaymentSubmitting ? "Saving..." : editingPayment ? "Save Changes" : "Add Payment"}
                   </button>
@@ -961,7 +961,7 @@ export default function DebtsPage() {
               type="submit"
               form="debt-form"
               disabled={isSubmitting}
-              className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {isSubmitting ? "Saving..." : editingDebt ? "Save Changes" : "Add Debt"}
             </button>

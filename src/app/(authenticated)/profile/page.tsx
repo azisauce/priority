@@ -196,7 +196,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="text-gray-400">Loading profile...</div>
+        <div className="text-muted-foreground">Loading profile...</div>
       </div>
     );
   }

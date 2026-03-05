@@ -25,49 +25,49 @@
 
 @layer base {
   :root {
-    /* Light theme — blue-tinted whites and slates */
-    --background: 248 250 252;       /* slate-50 */
-    --foreground: 15 23 42;          /* slate-900 */
+    /* Light theme — canvas: #E6F2FF, anchor: #0A2540, primary: #007FFF, accent: #FF6B6B */
+    --background: 230 242 255;       /* #E6F2FF - canvas */
+    --foreground: 10 37 64;          /* #0A2540 - anchor */
     --card: 255 255 255;             /* white */
-    --card-foreground: 15 23 42;     /* slate-900 */
+    --card-foreground: 10 37 64;     /* #0A2540 - anchor */
     --popover: 255 255 255;          /* white */
-    --popover-foreground: 15 23 42;  /* slate-900 */
-    --primary: 37 99 235;            /* blue-600 */
+    --popover-foreground: 10 37 64;  /* #0A2540 - anchor */
+    --primary: 0 127 255;            /* #007FFF */
     --primary-foreground: 255 255 255;
-    --secondary: 241 245 249;        /* slate-100 */
-    --secondary-foreground: 15 23 42;
-    --muted: 241 245 249;            /* slate-100 */
-    --muted-foreground: 100 116 139; /* slate-500 */
-    --accent: 219 234 254;           /* blue-100 */
-    --accent-foreground: 15 23 42;
-    --destructive: 220 38 38;        /* red-600 */
+    --secondary: 220 235 255;        /* #DCEBFF - lighter canvas */
+    --secondary-foreground: 10 37 64;
+    --muted: 220 235 255;            /* #DCEBFF */
+    --muted-foreground: 80 115 150;  /* #507396 - soft anchor */
+    --accent: 255 235 235;           /* #FFEBEB - light coral tint */
+    --accent-foreground: 10 37 64;   /* anchor */
+    --destructive: 255 107 107;      /* #FF6B6B - accent coral */
     --destructive-foreground: 255 255 255;
-    --border: 203 213 225;           /* slate-300 */
-    --input: 241 245 249;            /* slate-100 */
-    --ring: 59 130 246;              /* blue-500 */
+    --border: 180 210 245;           /* #B4D2F5 - soft blue */
+    --input: 240 247 255;            /* #F0F7FF - near-white blue */
+    --ring: 0 127 255;               /* #007FFF - primary */
   }
 
   .dark {
-    /* Dark theme — deep blue-black with blue accents */
-    --background: 2 6 23;            /* slate-950 */
-    --foreground: 226 232 240;       /* slate-200 */
-    --card: 15 23 42;                /* slate-900 */
-    --card-foreground: 226 232 240;  /* slate-200 */
-    --popover: 15 23 42;             /* slate-900 */
-    --popover-foreground: 226 232 240;
-    --primary: 59 130 246;           /* blue-500 */
+    /* Dark theme — deep navy with blue primary and coral accents */
+    --background: 5 18 35;           /* #051223 - deep navy */
+    --foreground: 220 235 255;       /* #DCEBFF - light canvas */
+    --card: 10 37 64;                /* #0A2540 - anchor */
+    --card-foreground: 220 235 255;  /* #DCEBFF */
+    --popover: 10 37 64;             /* #0A2540 - anchor */
+    --popover-foreground: 220 235 255;
+    --primary: 51 153 255;           /* #3399FF - brighter for dark bg */
     --primary-foreground: 255 255 255;
-    --secondary: 30 41 59;           /* slate-800 */
-    --secondary-foreground: 226 232 240;
-    --muted: 30 41 59;               /* slate-800 */
-    --muted-foreground: 148 163 184; /* slate-400 */
-    --accent: 23 37 84;              /* blue-950 */
-    --accent-foreground: 226 232 240;
-    --destructive: 153 27 27;        /* red-800 */
-    --destructive-foreground: 226 232 240;
-    --border: 30 41 59;              /* slate-800 */
-    --input: 30 41 59;               /* slate-800 */
-    --ring: 59 130 246;              /* blue-500 */
+    --secondary: 15 50 85;           /* #0F3255 */
+    --secondary-foreground: 220 235 255;
+    --muted: 15 50 85;               /* #0F3255 */
+    --muted-foreground: 130 165 200; /* #82A5C8 */
+    --accent: 60 20 20;              /* #3C1414 - dark coral tint */
+    --accent-foreground: 220 235 255;
+    --destructive: 220 80 80;        /* #DC5050 - muted coral */
+    --destructive-foreground: 220 235 255;
+    --border: 15 50 85;              /* #0F3255 */
+    --input: 15 50 85;               /* #0F3255 */
+    --ring: 51 153 255;              /* #3399FF */
   }
 }
 

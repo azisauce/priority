@@ -257,7 +257,7 @@ export default function ItemModal({
 
         <div className="p-6 pt-2 shrink-0 flex gap-3 bg-card rounded-b-xl border-t border-border">
           <button type="button" onClick={onClose} className="flex-1 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/80">Cancel</button>
-          <button type="submit" form="item-form" disabled={isSubmitting} className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50">{isSubmitting ? "Saving..." : editingItem ? "Save Changes" : "Add Item"}</button>
+          <button type="submit" form="item-form" disabled={isSubmitting} className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50">{isSubmitting ? "Saving..." : editingItem ? "Save Changes" : "Add Item"}</button>
         </div>
       </div>
     </div>

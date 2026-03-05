@@ -728,7 +728,7 @@ export default function PriorityParamsPage() {
 
       {/* Delete Param Confirmation */}
       {deleteParam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-popover border border-border rounded-lg p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-foreground mb-2">Delete Parameter</h3>
             <p className="text-muted-foreground text-sm mb-4">
@@ -755,7 +755,7 @@ export default function PriorityParamsPage() {
 
       {/* Delete Eval Item Confirmation */}
       {deleteEval && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
           <div className="bg-popover border border-border rounded-lg p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-foreground mb-2">Delete Answer Option</h3>
             <p className="text-muted-foreground text-sm mb-4">
