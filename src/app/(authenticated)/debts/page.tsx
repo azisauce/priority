@@ -436,201 +436,197 @@ export default function DebtsPage() {
         : 0;
 
     return (
-      <div className="min-h-screen bg-background p-3 sm:p-6">
-        <div className="mx-auto max-w-5xl space-y-6">
-          {/* Back */}
-          <button
-            onClick={() => setSelectedDebt(null)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Debts
-          </button>
+      <div className="space-y-6">
+        {/* Back */}
+        <button
+          onClick={() => setSelectedDebt(null)}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Debts
+        </button>
 
-          {loadingDetail ? (
-            <div className="flex h-64 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          ) : (
-            <>
-              {/* Debt header card */}
-              <div
-                className={`rounded-xl border p-4 sm:p-6 ${
-                  debt.status === "paid"
-                    ? "bg-green-500/5 border-green-500/20"
-                    : debt.status === "overdue"
-                    ? "bg-red-500/5 border-red-500/20"
-                    : "bg-card border-border"
+        {loadingDetail ? (
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : (
+          <>
+            {/* Debt header card */}
+            <div
+              className={`rounded-xl border p-4 sm:p-6 ${debt.status === "paid"
+                ? "bg-green-500/5 border-green-500/20"
+                : debt.status === "overdue"
+                  ? "bg-red-500/5 border-red-500/20"
+                  : "bg-card border-border"
                 }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h1
-                        className={`text-2xl font-bold ${
-                          debt.status === "paid"
-                            ? "text-muted-foreground line-through"
-                            : "text-foreground"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1
+                      className={`text-2xl font-bold ${debt.status === "paid"
+                        ? "text-muted-foreground line-through"
+                        : "text-foreground"
                         }`}
-                      >
-                        {debt.name}
-                      </h1>
-                      {debtStatusBadge(debt.status)}
-                      {periodBadge(debt.paymentPeriod)}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Lender: <span className="text-foreground font-medium">{debt.lenderName}</span>
-                    </p>
-                    {debt.purpose && (
-                      <p className="text-sm text-muted-foreground mt-1">{debt.purpose}</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => openEditDebt(debt)}
-                      className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
                     >
-                      <Pencil className="h-4 w-4" /> Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteDebt(debt)}
-                      className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-muted/80 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" /> Delete
-                    </button>
+                      {debt.name}
+                    </h1>
+                    {debtStatusBadge(debt.status)}
+                    {periodBadge(debt.paymentPeriod)}
                   </div>
-                </div>
-
-                {/* Stats row */}
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total</p>
-                    <p className="text-lg font-bold text-foreground">{formatCurrency(debt.totalAmount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Remaining</p>
-                    <p className={`text-lg font-bold ${debt.status === "paid" ? "text-green-600 dark:text-green-400" : debt.status === "overdue" ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
-                      {formatCurrency(debt.remainingBalance)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Start Date</p>
-                    <p className="text-sm font-medium text-foreground">{formatDate(debt.startDate)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Deadline</p>
-                    <p className="text-sm font-medium text-foreground">{debt.deadline ? formatDate(debt.deadline) : "—"}</p>
-                  </div>
-                </div>
-
-                {/* Progress bar */}
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                    <span>Progress</span>
-                    <span>{paidPct}% paid</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        debt.status === "paid"
-                          ? "bg-green-500"
-                          : debt.status === "overdue"
-                          ? "bg-red-500"
-                          : "bg-primary"
-                      }`}
-                      style={{ width: `${paidPct}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Extra info */}
-                <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                  {debt.fixedInstallmentAmount && (
-                    <span>
-                      Installment: <span className="text-foreground font-medium">{formatCurrency(debt.fixedInstallmentAmount)}</span>
-                    </span>
+                  <p className="text-sm text-muted-foreground">
+                    Lender: <span className="text-foreground font-medium">{debt.lenderName}</span>
+                  </p>
+                  {debt.purpose && (
+                    <p className="text-sm text-muted-foreground mt-1">{debt.purpose}</p>
                   )}
-                  {!debt.fixedInstallmentAmount && (
-                    <span className="italic">Variable installments</span>
-                  )}
-                  <span>
-                    Period: <span className="text-foreground font-medium capitalize">{debt.paymentPeriod}</span>
-                  </span>
-                  {debt.notes && <span className="basis-full pt-1 text-xs">{debt.notes}</span>}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => openEditDebt(debt)}
+                    className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
+                  >
+                    <Pencil className="h-4 w-4" /> Edit
+                  </button>
+                  <button
+                    onClick={() => setDeleteDebt(debt)}
+                    className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-muted/80 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </button>
                 </div>
               </div>
 
-              {/* Payment entries */}
-              <div className="rounded-xl bg-card border border-border overflow-hidden">
-                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Banknote className="w-4 h-4 text-primary" />
-                    <h2 className="text-lg font-semibold text-foreground">Payments</h2>
-                    <span className="text-sm text-muted-foreground">
-                      ({debt.payments?.length || 0})
-                    </span>
-                  </div>
+              {/* Stats row */}
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total</p>
+                  <p className="text-lg font-bold text-foreground">{formatCurrency(debt.totalAmount)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Remaining</p>
+                  <p className={`text-lg font-bold ${debt.status === "paid" ? "text-green-600 dark:text-green-400" : debt.status === "overdue" ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                    {formatCurrency(debt.remainingBalance)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Start Date</p>
+                  <p className="text-sm font-medium text-foreground">{formatDate(debt.startDate)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Deadline</p>
+                  <p className="text-sm font-medium text-foreground">{debt.deadline ? formatDate(debt.deadline) : "—"}</p>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <span>Progress</span>
+                  <span>{paidPct}% paid</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${debt.status === "paid"
+                      ? "bg-green-500"
+                      : debt.status === "overdue"
+                        ? "bg-red-500"
+                        : "bg-primary"
+                      }`}
+                    style={{ width: `${paidPct}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Extra info */}
+              <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                {debt.fixedInstallmentAmount && (
+                  <span>
+                    Installment: <span className="text-foreground font-medium">{formatCurrency(debt.fixedInstallmentAmount)}</span>
+                  </span>
+                )}
+                {!debt.fixedInstallmentAmount && (
+                  <span className="italic">Variable installments</span>
+                )}
+                <span>
+                  Period: <span className="text-foreground font-medium capitalize">{debt.paymentPeriod}</span>
+                </span>
+                {debt.notes && <span className="basis-full pt-1 text-xs">{debt.notes}</span>}
+              </div>
+            </div>
+
+            {/* Payment entries */}
+            <div className="rounded-xl bg-card border border-border overflow-hidden">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Banknote className="w-4 h-4 text-primary" />
+                  <h2 className="text-lg font-semibold text-foreground">Payments</h2>
+                  <span className="text-sm text-muted-foreground">
+                    ({debt.payments?.length || 0})
+                  </span>
+                </div>
+                <button
+                  onClick={openAddPayment}
+                  className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Plus className="h-4 w-4" /> Add Payment
+                </button>
+              </div>
+
+              {!debt.payments?.length ? (
+                <div className="p-12 text-center text-muted-foreground">
+                  <Banknote className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                  <p>No payments recorded yet.</p>
                   <button
                     onClick={openAddPayment}
-                    className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                    className="mt-3 text-primary text-sm underline"
                   >
-                    <Plus className="h-4 w-4" /> Add Payment
+                    Record your first payment
                   </button>
                 </div>
-
-                {!debt.payments?.length ? (
-                  <div className="p-12 text-center text-muted-foreground">
-                    <Banknote className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                    <p>No payments recorded yet.</p>
-                    <button
-                      onClick={openAddPayment}
-                      className="mt-3 text-primary text-sm underline"
-                    >
-                      Record your first payment
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Mobile card view for payments */}
-                    <div className="divide-y divide-border sm:hidden">
-                      {debt.payments.map((p) => (
-                        <div
-                          key={p.id}
-                          className={`p-3 ${p.status === "paid" ? "opacity-70" : ""}`}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className={`font-medium text-sm ${p.status === "paid" ? "text-green-600 dark:text-green-400" : "text-foreground"}`}>
-                                  {formatCurrency(p.amount)}
-                                </span>
-                                {paymentStatusBadge(p.status)}
-                              </div>
-                              <p className="text-xs text-muted-foreground">{formatDate(p.paymentDate)}</p>
-                              {p.note && <p className="text-xs text-muted-foreground truncate max-w-50">{p.note}</p>}
+              ) : (
+                <>
+                  {/* Mobile card view for payments */}
+                  <div className="divide-y divide-border sm:hidden">
+                    {debt.payments.map((p) => (
+                      <div
+                        key={p.id}
+                        className={`p-3 ${p.status === "paid" ? "opacity-70" : ""}`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`font-medium text-sm ${p.status === "paid" ? "text-green-600 dark:text-green-400" : "text-foreground"}`}>
+                                {formatCurrency(p.amount)}
+                              </span>
+                              {paymentStatusBadge(p.status)}
                             </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                onClick={() => openEditPayment(p)}
-                                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                onClick={() => setDeletePayment(p)}
-                                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive transition-colors"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
+                            <p className="text-xs text-muted-foreground">{formatDate(p.paymentDate)}</p>
+                            {p.note && <p className="text-xs text-muted-foreground truncate max-w-50">{p.note}</p>}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => openEditPayment(p)}
+                              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setDeletePayment(p)}
+                              className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
+                  </div>
 
-                    {/* Desktop table view for payments */}
-                    <div className="hidden sm:block overflow-x-auto">
+                  {/* Desktop table view for payments */}
+                  <div className="hidden sm:block overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border bg-muted/50 text-left">
@@ -645,9 +641,8 @@ export default function DebtsPage() {
                         {debt.payments.map((p) => (
                           <tr
                             key={p.id}
-                            className={`transition-colors hover:bg-muted/50 ${
-                              p.status === "paid" ? "opacity-70" : ""
-                            }`}
+                            className={`transition-colors hover:bg-muted/50 ${p.status === "paid" ? "opacity-70" : ""
+                              }`}
                           >
                             <td className="px-4 sm:px-6 py-3 text-foreground">
                               {formatDate(p.paymentDate)}
@@ -679,13 +674,12 @@ export default function DebtsPage() {
                         ))}
                       </tbody>
                     </table>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
 
         {/* ──── Payment Modal ──── */}
         {isPaymentModalOpen && (
@@ -999,182 +993,175 @@ export default function DebtsPage() {
      LIST VIEW
      ═══════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-6">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8 flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Debts</h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Track and manage your debts and payments</p>
-          </div>
-          <button
-            onClick={openAddDebt}
-            className="flex items-center gap-2 rounded-lg bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="sm:hidden">Add</span>
-            <span className="hidden sm:inline">Add Debt</span>
-          </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="mb-6 sm:mb-8 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Debts</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Track and manage your debts and payments</p>
         </div>
+        <button
+          onClick={openAddDebt}
+          className="flex items-center gap-2 rounded-lg bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 shrink-0"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="sm:hidden">Add</span>
+          <span className="hidden sm:inline">Add Debt</span>
+        </button>
+      </div>
 
-        {/* Filters Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search debts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg bg-input border border-border pl-10 pr-4 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
-            />
-          </div>
-          <div className="flex rounded-lg bg-input p-1 border border-border overflow-x-auto">
-            {[
-              { value: "", label: "All" },
-              { value: "active", label: "Active" },
-              { value: "overdue", label: "Overdue" },
-              { value: "paid", label: "Paid" },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setStatusFilter(opt.value)}
-                className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                  statusFilter === opt.value
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+      {/* Filters Bar */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search debts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg bg-input border border-border pl-10 pr-4 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+          />
+        </div>
+        <div className="flex rounded-lg bg-input p-1 border border-border overflow-x-auto">
+          {[
+            { value: "", label: "All" },
+            { value: "active", label: "Active" },
+            { value: "overdue", label: "Overdue" },
+            { value: "paid", label: "Paid" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setStatusFilter(opt.value)}
+              className={`whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${statusFilter === opt.value
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
-              >
-                {opt.label}
-              </button>
-            ))}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      {!loading && debts.length > 0 && (
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-card border border-border rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Owed</p>
+            <p className="text-xl font-bold text-foreground">
+              {formatCurrency(debts.filter((d) => d.status !== "paid").reduce((s, d) => s + d.remainingBalance, 0))}
+            </p>
+          </div>
+          <div className="bg-card border border-border rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Active Debts</p>
+            <p className="text-xl font-bold text-foreground">
+              {debts.filter((d) => d.status === "active").length}
+            </p>
+          </div>
+          <div className="bg-card border border-border rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Overdue</p>
+            <p className="text-xl font-bold text-red-600 dark:text-red-400">
+              {debts.filter((d) => d.status === "overdue").length}
+            </p>
           </div>
         </div>
+      )}
 
-        {/* Summary Cards */}
-        {!loading && debts.length > 0 && (
-          <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Owed</p>
-              <p className="text-xl font-bold text-foreground">
-                {formatCurrency(debts.filter((d) => d.status !== "paid").reduce((s, d) => s + d.remainingBalance, 0))}
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Active Debts</p>
-              <p className="text-xl font-bold text-foreground">
-                {debts.filter((d) => d.status === "active").length}
-              </p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Overdue</p>
-              <p className="text-xl font-bold text-red-600 dark:text-red-400">
-                {debts.filter((d) => d.status === "overdue").length}
-              </p>
-            </div>
+      {/* Debts List */}
+      <div className="rounded-xl bg-card border border-border overflow-hidden">
+        {loading ? (
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        )}
-
-        {/* Debts List */}
-        <div className="rounded-xl bg-card border border-border overflow-hidden">
-          {loading ? (
-            <div className="flex h-64 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        ) : displayedDebts.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center text-center">
+            <div className="mb-4 rounded-full bg-muted p-4">
+              <CreditCard className="h-8 w-8 text-muted-foreground" />
             </div>
-          ) : displayedDebts.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center text-center">
-              <div className="mb-4 rounded-full bg-muted p-4">
-                <CreditCard className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground">No debts found</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {searchQuery || statusFilter
-                  ? "Try adjusting your filters."
-                  : "Get started by adding your first debt."}
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {displayedDebts.map((debt) => {
-                const paidPct =
-                  debt.totalAmount > 0
-                    ? Math.round(((debt.totalAmount - debt.remainingBalance) / debt.totalAmount) * 100)
-                    : 0;
+            <h3 className="text-lg font-medium text-foreground">No debts found</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {searchQuery || statusFilter
+                ? "Try adjusting your filters."
+                : "Get started by adding your first debt."}
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {displayedDebts.map((debt) => {
+              const paidPct =
+                debt.totalAmount > 0
+                  ? Math.round(((debt.totalAmount - debt.remainingBalance) / debt.totalAmount) * 100)
+                  : 0;
 
-                return (
-                  <div
-                    key={debt.id}
-                    onClick={() => fetchDebtDetail(debt.id)}
-                    className={`px-4 sm:px-6 py-4 sm:py-5 cursor-pointer transition-colors hover:bg-muted/50 ${
-                      debt.status === "paid" ? "opacity-60" : ""
+              return (
+                <div
+                  key={debt.id}
+                  onClick={() => fetchDebtDetail(debt.id)}
+                  className={`px-4 sm:px-6 py-4 sm:py-5 cursor-pointer transition-colors hover:bg-muted/50 ${debt.status === "paid" ? "opacity-60" : ""
                     } ${debt.status === "overdue" ? "border-l-4 border-l-red-500" : ""}`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <h3
-                            className={`text-base font-semibold truncate ${
-                              debt.status === "paid"
-                                ? "text-muted-foreground line-through"
-                                : "text-foreground"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <h3
+                          className={`text-base font-semibold truncate ${debt.status === "paid"
+                            ? "text-muted-foreground line-through"
+                            : "text-foreground"
                             }`}
-                          >
-                            {debt.name}
-                          </h3>
-                          {debtStatusBadge(debt.status)}
-                          {periodBadge(debt.paymentPeriod)}
-                        </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>Lender: {debt.lenderName}</span>
-                          {debt.nextPaymentDate && (
-                            <span className="flex items-center gap-1">
-                              <CalendarDays className="h-3 w-3" />
-                              Next: {formatDate(debt.nextPaymentDate)}
-                            </span>
-                          )}
-                        </div>
+                        >
+                          {debt.name}
+                        </h3>
+                        {debtStatusBadge(debt.status)}
+                        {periodBadge(debt.paymentPeriod)}
                       </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>Lender: {debt.lenderName}</span>
+                        {debt.nextPaymentDate && (
+                          <span className="flex items-center gap-1">
+                            <CalendarDays className="h-3 w-3" />
+                            Next: {formatDate(debt.nextPaymentDate)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                      <div className="flex items-center gap-6 shrink-0">
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">Remaining</p>
-                          <p className={`text-lg font-bold ${
-                            debt.status === "paid"
-                              ? "text-green-600 dark:text-green-400"
-                              : debt.status === "overdue"
-                              ? "text-red-600 dark:text-red-400"
-                              : "text-foreground"
+                    <div className="flex items-center gap-6 shrink-0">
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Remaining</p>
+                        <p className={`text-lg font-bold ${debt.status === "paid"
+                          ? "text-green-600 dark:text-green-400"
+                          : debt.status === "overdue"
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-foreground"
                           }`}>
-                            {formatCurrency(debt.remainingBalance)}
-                          </p>
-                        </div>
-                        <div className="text-right hidden sm:block">
-                          <p className="text-xs text-muted-foreground">Total</p>
-                          <p className="text-sm font-medium text-muted-foreground">{formatCurrency(debt.totalAmount)}</p>
-                        </div>
-                        <div className="w-16">
-                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${
-                                debt.status === "paid"
-                                  ? "bg-green-500"
-                                  : debt.status === "overdue"
-                                  ? "bg-red-500"
-                                  : "bg-primary"
+                          {formatCurrency(debt.remainingBalance)}
+                        </p>
+                      </div>
+                      <div className="text-right hidden sm:block">
+                        <p className="text-xs text-muted-foreground">Total</p>
+                        <p className="text-sm font-medium text-muted-foreground">{formatCurrency(debt.totalAmount)}</p>
+                      </div>
+                      <div className="w-16">
+                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${debt.status === "paid"
+                              ? "bg-green-500"
+                              : debt.status === "overdue"
+                                ? "bg-red-500"
+                                : "bg-primary"
                               }`}
-                              style={{ width: `${paidPct}%` }}
-                            />
-                          </div>
-                          <p className="text-center text-xs text-muted-foreground mt-0.5">{paidPct}%</p>
+                            style={{ width: `${paidPct}%` }}
+                          />
                         </div>
+                        <p className="text-center text-xs text-muted-foreground mt-0.5">{paidPct}%</p>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Modals available on both views */}
