@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   description: "Prioritize and plan your purchases intelligently",
   icons: {
     icon: "/assets/logos/basic_logo_light_azure.png",
-    shortcut: "/assets/logos/basic_general_logo_azure.png",
-    apple: "/assets/logos/basic_general_logo_azure.png",
+    shortcut: "/assets/logos/general_logo_azure.png",
+    apple: "/assets/logos/general_logo_azure.png",
   },
 };
 
