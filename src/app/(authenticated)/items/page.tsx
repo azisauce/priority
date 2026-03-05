@@ -477,139 +477,138 @@ export default function ItemsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-6">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8 flex items-center justify-between">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Items</h1>
-          <button
-            onClick={openAddModal}
-            className="flex items-center gap-2 rounded-lg bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="sm:hidden">Add</span>
-            <span className="hidden sm:inline">Add Item</span>
-          </button>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="mb-6 sm:mb-8 flex items-center justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Items</h1>
+        <button
+          onClick={openAddModal}
+          className="flex items-center gap-2 rounded-lg bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="sm:hidden">Add</span>
+          <span className="hidden sm:inline">Add Item</span>
+        </button>
+      </div>
 
-        <ItemsFilter
-          filters={filters}
-          setFilters={setFilters}
-          showDoneFilter={showDoneFilter}
-          setShowDoneFilter={setShowDoneFilter}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          groups={groups}
-        />
+      <ItemsFilter
+        filters={filters}
+        setFilters={setFilters}
+        showDoneFilter={showDoneFilter}
+        setShowDoneFilter={setShowDoneFilter}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        groups={groups}
+      />
 
-        {/* Items Table / Cards */}
-        <div className="rounded-xl bg-card border border-border overflow-hidden">
-          {loading ? (
-            <div className="flex h-64 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      {/* Items Table / Cards */}
+      <div className="rounded-xl bg-card border border-border overflow-hidden">
+        {loading ? (
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        ) : displayedItems.length === 0 ? (
+          <div className="flex h-64 flex-col items-center justify-center text-center px-4">
+            <div className="mb-4 rounded-full bg-muted p-4">
+              <Search className="h-8 w-8 text-muted-foreground" />
             </div>
-          ) : displayedItems.length === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center text-center px-4">
-              <div className="mb-4 rounded-full bg-muted p-4">
-                <Search className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground">No items found</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {hasActiveFilters
-                  ? "Try adjusting your filters or clear them to see all items."
-                  : "Get started by adding your first item."}
-              </p>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          ) : (
-            <>
-              {/* Mobile Card View */}
-              <div className="divide-y divide-border md:hidden">
-                {displayedItems.map((item) => {
-                  const valueScore = calculateValueScore(item.priority, item.pricing);
-                  return (
-                    <div
-                      key={item.id}
-                      className="p-4 transition-colors hover:bg-muted/50 active:bg-muted/50"
-                      onClick={() => openEditModal(item)}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3 min-w-0 flex-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
-                            }}
-                            disabled={togglingIds.includes(item.id)}
-                            className="mt-0.5 shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
-                            title="Mark done"
-                          >
-                            <Check className="h-4 w-4 text-green-500" />
-                          </button>
-                          <div className="min-w-0">
-                            <span className={"font-medium text-sm " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>
-                              {item.itemName}
+            <h3 className="text-lg font-medium text-foreground">No items found</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {hasActiveFilters
+                ? "Try adjusting your filters or clear them to see all items."
+                : "Get started by adding your first item."}
+            </p>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Mobile Card View */}
+            <div className="divide-y divide-border md:hidden">
+              {displayedItems.map((item) => {
+                const valueScore = calculateValueScore(item.priority, item.pricing);
+                return (
+                  <div
+                    key={item.id}
+                    className="p-4 transition-colors hover:bg-muted/50 active:bg-muted/50"
+                    onClick={() => openEditModal(item)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
+                          }}
+                          disabled={togglingIds.includes(item.id)}
+                          className="mt-0.5 shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                          title="Mark done"
+                        >
+                          <Check className="h-4 w-4 text-green-500" />
+                        </button>
+                        <div className="min-w-0">
+                          <span className={"font-medium text-sm " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>
+                            {item.itemName}
+                          </span>
+                          {item.description && (
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                              {item.group?.groupName || "Unknown"}
                             </span>
-                            {item.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-2 mt-2">
-                              <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                                {item.group?.groupName || "Unknown"}
-                              </span>
-                              <div className="flex items-center gap-1">
-                                <div
-                                  className={`h-2 w-2 rounded-full ${item.priority >= 4
-                                    ? "bg-red-500"
-                                    : item.priority >= 3
-                                      ? "bg-yellow-500"
-                                      : "bg-green-500"
-                                    }`}
-                                />
-                                <span className="text-xs text-muted-foreground">{item.priority.toFixed(2)}</span>
-                              </div>
+                            <div className="flex items-center gap-1">
+                              <div
+                                className={`h-2 w-2 rounded-full ${item.priority >= 4
+                                  ? "bg-red-500"
+                                  : item.priority >= 3
+                                    ? "bg-yellow-500"
+                                    : "bg-green-500"
+                                  }`}
+                              />
+                              <span className="text-xs text-muted-foreground">{item.priority.toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="shrink-0 text-right">
-                          <span className="text-sm font-medium text-foreground">{formatCurrency(item.pricing)}</span>
-                          <p className="text-xs text-muted-foreground mt-0.5">VS: {valueScore.toFixed(2)}</p>
-                          <div className="flex items-center justify-end gap-1 mt-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditModal(item);
-                              }}
-                              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteItem(item);
-                              }}
-                              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <span className="text-sm font-medium text-foreground">{formatCurrency(item.pricing)}</span>
+                        <p className="text-xs text-muted-foreground mt-0.5">VS: {valueScore.toFixed(2)}</p>
+                        <div className="flex items-center justify-end gap-1 mt-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(item);
+                            }}
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteItem(item);
+                            }}
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
+            </div>
 
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
@@ -704,7 +703,7 @@ export default function ItemsPage() {
                             >
                               <Pencil className="h-4 w-4" />
                             </button>
-                            
+
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -721,10 +720,9 @@ export default function ItemsPage() {
                   })}
                 </tbody>
               </table>
-              </div>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Add/Edit Modal */}

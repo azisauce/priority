@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Navigation from "@/components/navigation";
+import { SidebarProvider } from "@/components/sidebar-provider";
+import AuthenticatedLayoutShell from "./layout-shell";
 
 export default async function AuthenticatedLayout({
   children,
@@ -15,13 +17,11 @@ export default async function AuthenticatedLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navigation />
-      <main className="lg:pl-64">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-16 lg:pt-8">
-          {children}
-        </div>
-      </main>
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen bg-background text-foreground">
+        <Navigation />
+        <AuthenticatedLayoutShell>{children}</AuthenticatedLayoutShell>
+      </div>
+    </SidebarProvider>
   );
 }
