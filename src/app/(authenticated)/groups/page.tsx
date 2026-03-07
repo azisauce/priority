@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import PageHeader from "@/components/layout/page-header";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -247,17 +248,12 @@ export default function GroupsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">Groups</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Organize your items into groups
-          </p>
-        </div>
+        <PageHeader title="Groups" description="Organize your items into groups" />
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 text-sm font-medium transition-colors"
+          style={{ height: "40px", borderRadius: "9999px" }}
         >
           <Plus className="w-4 h-4" />
           <span className="sm:hidden">Add</span>
@@ -415,11 +411,10 @@ export default function GroupsPage() {
                           key={param.id}
                           type="button"
                           onClick={() => toggleParam(param.id)}
-                          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium border transition-colors ${
-                            isSelected
+                          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium border transition-colors ${isSelected
                               ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
                               : "bg-card text-muted-foreground border-border hover:bg-muted"
-                          }`}
+                            }`}
                         >
                           {isSelected ? (
                             <Check className="w-3 h-3" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import PageHeader from "@/components/layout/page-header";
 import {
   Plus,
   Pencil,
@@ -239,12 +240,12 @@ export default function PriorityParamsPage() {
     const assigned = isEvalAssigned(paramId, evalItemId);
     const loadingKey = `${paramId}-${evalItemId}`;
     setAssigningEval(loadingKey);
-    
+
     // Optimistic update: update local state immediately
     setParams((prevParams) => {
       return prevParams.map((p) => {
         if (p.id !== paramId) return p;
-        
+
         if (assigned) {
           // Remove from evalItems
           return {
@@ -255,7 +256,7 @@ export default function PriorityParamsPage() {
           // Add to evalItems
           const evalItem = evalItems.find((e) => e.id === evalItemId);
           if (!evalItem) return p;
-          
+
           return {
             ...p,
             evalItems: [
@@ -329,13 +330,7 @@ export default function PriorityParamsPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Priority Parameters</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          Define parameters, answer options, and assign them to customize priority calculation per group.
-        </p>
-      </div>
+      <PageHeader title="Priority Parameters" description="Define parameters, answer options, and assign them to customize priority calculation per group" />
 
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* LEFT COLUMN: Priority Params */}
@@ -541,11 +536,10 @@ export default function PriorityParamsPage() {
                                     onClick={() => toggleEvalAssignment(param.id, ei.id)}
                                     disabled={isLoading || !param.userId}
                                     title={!param.userId ? "Cannot modify generic parameter" : undefined}
-                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                                      assigned
+                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${assigned
                                         ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
                                         : "bg-primary/10 text-primary hover:bg-primary/20"
-                                    }`}
+                                      }`}
                                   >
                                     {isLoading ? (
                                       <>

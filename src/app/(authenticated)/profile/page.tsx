@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { User, LogOut, Upload, Link2 } from "lucide-react";
+import PageHeader from "@/components/layout/page-header";
 
 interface ProfileData {
   id: string;
@@ -20,7 +21,7 @@ export default function ProfilePage() {
   const [username, setUsername] = useState("");
   const [userImage, setUserImage] = useState("");
   const [useUrlInput, setUseUrlInput] = useState(false);
-  
+
   // File upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -81,7 +82,7 @@ export default function ProfilePage() {
     }
 
     setSelectedFile(file);
-    
+
     // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -203,7 +204,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-foreground">Profile</h1>
+      <PageHeader title="Profile" description="Manage your account settings" />
 
       {message && (
         <div

@@ -13,6 +13,7 @@ import {
   Clock,
 } from "lucide-react";
 import ItemModal from "@/components/item-modal";
+import PageHeader from "@/components/layout/page-header";
 
 interface Group {
   id: string;
@@ -371,10 +372,7 @@ export default function SimulationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Simulation</h1>
-        <p className="mt-1 text-sm sm:text-base text-muted-foreground">Plan your purchases over time</p>
-      </div>
+      <PageHeader title="Simulation" description="Plan your purchases over time" />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">

@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useSidebar } from "@/components/sidebar-provider";
 import { mainNavItems } from "@/lib/nav-items";
+import TopAppBar from "@/components/layout/top-app-bar";
+import PageTabBar from "@/components/navigation/page-tab-bar";
 
 export default function AuthenticatedLayoutShell({
     children,
@@ -12,16 +16,55 @@ export default function AuthenticatedLayoutShell({
 }) {
     const { collapsed } = useSidebar();
     const pathname = usePathname();
+    const router = useRouter();
+    const { data: session } = useSession();
 
     // Find the active parent (Wishlist, Tracking, etc.)
     const activeParent = mainNavItems.find(
         (item) => "children" in item && item.children?.some((child) => pathname === child.href || pathname.startsWith(child.href + "/"))
     ) as { label: string; children: { href: string; label: string }[] } | undefined;
 
+    // Convert children to tab format for PageTabBar
+    const tabs = activeParent?.children.map(child => ({
+        key: child.href,
+        label: child.label,
+    }));
+
+    const activeTab = activeParent?.children.find(
+        child => pathname === child.href || pathname.startsWith(child.href + "/")
+    )?.href;
+
+    const hasTabs = Boolean(tabs && activeTab);
+
+    // Get the current page title for TopAppBar
+    const getPageTitle = (): string => {
+        if (activeParent) return activeParent.label;
+        const leafItem = mainNavItems.find(item => item.href && (pathname === item.href || pathname.startsWith(item.href + "/")));
+        if (leafItem) return leafItem.label;
+        if (pathname.startsWith("/profile")) return "Profile";
+        return "Priority";
+    };
+
     return (
         <main
             className="transition-all duration-300 ease-in-out min-h-screen"
         >
+            {/* Mobile: TopAppBar + optional PageTabBar */}
+            <div className="lg:hidden">
+                <TopAppBar
+                    title={getPageTitle()}
+                    userImage={session?.user?.image}
+                    onAvatarPress={() => router.push("/profile")}
+                />
+                {tabs && activeTab && (
+                    <PageTabBar
+                        tabs={tabs}
+                        activeTab={activeTab}
+                        onTabChange={(key) => router.push(key)}
+                    />
+                )}
+            </div>
+
             {/* Desktop: floating content panel */}
             <div
                 className={`
@@ -30,39 +73,7 @@ export default function AuthenticatedLayoutShell({
           ${collapsed ? "lg:ml-[calc(72px+2rem)]" : "lg:ml-[calc(16rem+2rem)]"}
         `}
             >
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:pt-8 pb-24 lg:pb-8">
-                    {/* Mobile secondary tab bar — in-flow, above page content */}
-                    {activeParent && (
-                        <div className="lg:hidden -mx-4 sm:-mx-6 mb-6">
-                            {/* Section title */}
-                            <p className="px-4 sm:px-6 pt-1 pb-2 lg:text-xl sm:text-3xl text-2xl font-bold text-foreground">
-                                {activeParent.label}
-                            </p>
-                            {/* Tab row */}
-                            <nav className="border-b border-border" aria-label={activeParent.label + " sections"}>
-                                <div className="flex">
-                                    {activeParent.children.map((child) => {
-                                        const isActive = pathname === child.href || pathname.startsWith(child.href + "/");
-                                        return (
-                                            <Link
-                                                key={child.href}
-                                                href={child.href}
-                                                className={`
-                                                    flex-1 text-center py-2.5 text-sm font-semibold transition-colors border-b-2
-                                                    ${isActive
-                                                        ? "text-primary border-primary"
-                                                        : "text-muted-foreground border-transparent hover:text-foreground"
-                                                    }
-                                                `}
-                                            >
-                                                {child.label}
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            </nav>
-                        </div>
-                    )}
+                <div className={`max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 lg:pb-8 lg:pt-8 ${hasTabs ? "pt-[108px]" : "pt-[60px]"}`}>
                     {children}
                 </div>
             </div>

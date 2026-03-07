@@ -31,8 +31,8 @@ export const mainNavItems: NavItem[] = [
         label: "Wishlist",
         icon: Package,
         children: [
-            { href: "/groups", label: "Groups" },
             { href: "/items", label: "Items" },
+            { href: "/groups", label: "Groups" },
             { href: "/priority-params", label: "Params" },
         ],
         defaultChild: "/items",

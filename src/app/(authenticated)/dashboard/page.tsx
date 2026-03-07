@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Package, FolderOpen, DollarSign, TrendingUp } from "lucide-react";
+import PageHeader from "@/components/layout/page-header";
 
 interface DashboardData {
   totalItems: number;
@@ -76,13 +77,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          Overview of your purchase priorities
-        </p>
-      </div>
+      <PageHeader title="Dashboard" description="Overview of your purchase priorities" />
 
       {/* Formula Display Carousel */}
       <div className="bg-linear-to-br from-card to-background border border-border rounded-xl p-3 sm:p-6 shadow-lg relative overflow-hidden">

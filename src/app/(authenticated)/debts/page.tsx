@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import PageHeader from "@/components/layout/page-header";
 import {
   Plus,
   Search,
@@ -994,15 +995,12 @@ export default function DebtsPage() {
      ═══════════════════════════════════════ */
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="mb-6 sm:mb-8 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Debts</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Track and manage your debts and payments</p>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <PageHeader title="Debts" description="Track and manage your debts and payments" />
         <button
           onClick={openAddDebt}
-          className="flex items-center gap-2 rounded-lg bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 shrink-0"
+          className="flex items-center gap-2 bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 shrink-0"
+          style={{ height: "40px", borderRadius: "9999px" }}
         >
           <Plus className="h-4 w-4" />
           <span className="sm:hidden">Add</span>

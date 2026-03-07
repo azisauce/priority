@@ -1,28 +1,33 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "@/components/theme-provider";
 import { useSidebar } from "@/components/sidebar-provider";
-import {
-  User,
-  LogOut,
-  ChevronLeft,
-} from "lucide-react";
+import { User, LogOut, ChevronLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { mainNavItems } from "@/lib/nav-items";
-
+import BottomNavBar from "@/components/navigation/bottom-nav-bar";
 
 export default function Navigation() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const { theme } = useTheme();
   const { collapsed, toggle } = useSidebar();
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
+
+  // Determine active route for bottom nav
+  const getActiveRoute = (): string => {
+    if (pathname.startsWith("/dashboard")) return "dashboard";
+    if (pathname.startsWith("/items") || pathname.startsWith("/groups") || pathname.startsWith("/priority-params")) return "wishlist";
+    if (pathname.startsWith("/debts")) return "tracking";
+    if (pathname.startsWith("/simulation")) return "simulation";
+    return "dashboard";
+  };
 
   // ─── Desktop Sidebar ────────────────────────────────────────────────
   const desktopSidebar = (
@@ -184,53 +189,13 @@ export default function Navigation() {
     </aside>
   );
 
-  // ─── Mobile Bottom Tab Bar ──────────────────────────────────────────
-  const activeParent = mainNavItems.find(item =>
-    item.children?.some(child => isActive(child.href))
-  );
-
-  const mobileTabBar = (
-    <>
-      {/* Bottom Tab Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card border-t border-border">
-        <div className="flex items-center justify-around px-1 py-1.5 safe-bottom">
-          {mainNavItems.map((item) => {
-            const Icon = item.icon;
-
-            const isItemActive = item.children
-              ? item.children.some(child => isActive(child.href))
-              : item.href ? isActive(item.href) : false;
-
-            return (
-              <Link
-                key={item.label}
-                href={item.href ?? item.defaultChild ?? "#"}
-                className={`
-                  flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-xs transition-colors min-w-0 flex-1
-                  ${isItemActive
-                    ? "text-primary font-semibold"
-                    : "text-muted-foreground font-medium"
-                  }
-                `}
-              >
-                <div className={`p-1 rounded-full ${isItemActive ? "bg-primary/10" : "bg-transparent"} transition-colors`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="truncate text-[10px]">
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-    </>
-  );
-
   return (
     <>
       {desktopSidebar}
-      {mobileTabBar}
+      <BottomNavBar
+        activeRoute={getActiveRoute()}
+        onNavigate={(href) => router.push(href)}
+      />
     </>
   );
 }

@@ -27,48 +27,138 @@
 @layer base {
   :root {
     /* Light theme — canvas: #E6F2FF, anchor: #0A2540, primary: #007FFF, accent: #FF6B6B */
-    --background: 230 242 255;       /* #E6F2FF - canvas */
-    --foreground: 10 37 64;          /* #0A2540 - anchor */
-    --card: 255 255 255;             /* white */
-    --card-foreground: 10 37 64;     /* #0A2540 - anchor */
-    --popover: 255 255 255;          /* white */
-    --popover-foreground: 10 37 64;  /* #0A2540 - anchor */
-    --primary: 0 127 255;            /* #007FFF */
+    --background: 230 242 255;
+    /* #E6F2FF - canvas */
+    --foreground: 10 37 64;
+    /* #0A2540 - anchor */
+    --card: 255 255 255;
+    /* white */
+    --card-foreground: 10 37 64;
+    /* #0A2540 - anchor */
+    --popover: 255 255 255;
+    /* white */
+    --popover-foreground: 10 37 64;
+    /* #0A2540 - anchor */
+    --primary: 0 127 255;
+    /* #007FFF */
     --primary-foreground: 255 255 255;
-    --secondary: 220 235 255;        /* #DCEBFF - lighter canvas */
+    --secondary: 220 235 255;
+    /* #DCEBFF - lighter canvas */
     --secondary-foreground: 10 37 64;
-    --muted: 220 235 255;            /* #DCEBFF */
-    --muted-foreground: 80 115 150;  /* #507396 - soft anchor */
-    --accent: 255 235 235;           /* #FFEBEB - light coral tint */
-    --accent-foreground: 10 37 64;   /* anchor */
-    --destructive: 255 107 107;      /* #FF6B6B - accent coral */
+    --muted: 220 235 255;
+    /* #DCEBFF */
+    --muted-foreground: 80 115 150;
+    /* #507396 - soft anchor */
+    --accent: 255 235 235;
+    /* #FFEBEB - light coral tint */
+    --accent-foreground: 10 37 64;
+    /* anchor */
+    --destructive: 255 107 107;
+    /* #FF6B6B - accent coral */
     --destructive-foreground: 255 255 255;
-    --border: 180 210 245;           /* #B4D2F5 - soft blue */
-    --input: 240 247 255;            /* #F0F7FF - near-white blue */
-    --ring: 0 127 255;               /* #007FFF - primary */
+    --border: 180 210 245;
+    /* #B4D2F5 - soft blue */
+    --input: 240 247 255;
+    /* #F0F7FF - near-white blue */
+    --ring: 0 127 255;
+    /* #007FFF - primary */
+
+    /* ── M3 Design Tokens ── */
+    --m3-primary: 0 127 255;
+    --m3-on-primary: 255 255 255;
+    --m3-primary-container: 220 235 255;
+    --m3-on-primary-container: 0 60 140;
+    --m3-secondary: 80 115 150;
+    --m3-on-secondary: 255 255 255;
+    --m3-secondary-container: 230 240 250;
+    --m3-on-secondary-container: 20 50 80;
+    --m3-tertiary: 255 107 107;
+    --m3-on-tertiary: 255 255 255;
+    --m3-tertiary-container: 255 235 235;
+    --m3-on-tertiary-container: 100 20 20;
+    --m3-error: 186 26 26;
+    --m3-on-error: 255 255 255;
+    --m3-error-container: 255 218 214;
+    --m3-on-error-container: 65 0 2;
+    --m3-surface: 250 252 255;
+    --m3-on-surface: 10 37 64;
+    --m3-surface-variant: 230 235 245;
+    --m3-on-surface-variant: 68 85 110;
+    --m3-outline: 140 165 195;
+    --m3-outline-variant: 195 210 230;
+    --m3-background: 230 242 255;
+    --m3-on-background: 10 37 64;
+    --m3-inverse-surface: 10 37 64;
+    --m3-inverse-on-surface: 230 242 255;
+    --m3-inverse-primary: 130 195 255;
+    --m3-scrim: 0 0 0;
   }
 
   .dark {
     /* Dark theme — deep navy with blue primary and coral accents */
-    --background: 5 18 35;           /* #051223 - deep navy */
-    --foreground: 220 235 255;       /* #DCEBFF - light canvas */
-    --card: 10 37 64;                /* #0A2540 - anchor */
-    --card-foreground: 220 235 255;  /* #DCEBFF */
-    --popover: 10 37 64;             /* #0A2540 - anchor */
+    --background: 5 18 35;
+    /* #051223 - deep navy */
+    --foreground: 220 235 255;
+    /* #DCEBFF - light canvas */
+    --card: 10 37 64;
+    /* #0A2540 - anchor */
+    --card-foreground: 220 235 255;
+    /* #DCEBFF */
+    --popover: 10 37 64;
+    /* #0A2540 - anchor */
     --popover-foreground: 220 235 255;
-    --primary: 51 153 255;           /* #3399FF - brighter for dark bg */
+    --primary: 51 153 255;
+    /* #3399FF - brighter for dark bg */
     --primary-foreground: 255 255 255;
-    --secondary: 15 50 85;           /* #0F3255 */
+    --secondary: 15 50 85;
+    /* #0F3255 */
     --secondary-foreground: 220 235 255;
-    --muted: 15 50 85;               /* #0F3255 */
-    --muted-foreground: 130 165 200; /* #82A5C8 */
-    --accent: 60 20 20;              /* #3C1414 - dark coral tint */
+    --muted: 15 50 85;
+    /* #0F3255 */
+    --muted-foreground: 130 165 200;
+    /* #82A5C8 */
+    --accent: 60 20 20;
+    /* #3C1414 - dark coral tint */
     --accent-foreground: 220 235 255;
-    --destructive: 220 80 80;        /* #DC5050 - muted coral */
+    --destructive: 220 80 80;
+    /* #DC5050 - muted coral */
     --destructive-foreground: 220 235 255;
-    --border: 15 50 85;              /* #0F3255 */
-    --input: 15 50 85;               /* #0F3255 */
-    --ring: 51 153 255;              /* #3399FF */
+    --border: 15 50 85;
+    /* #0F3255 */
+    --input: 15 50 85;
+    /* #0F3255 */
+    --ring: 51 153 255;
+    /* #3399FF */
+
+    /* ── M3 Design Tokens (Dark) ── */
+    --m3-primary: 130 195 255;
+    --m3-on-primary: 0 50 110;
+    --m3-primary-container: 0 75 155;
+    --m3-on-primary-container: 200 225 255;
+    --m3-secondary: 180 200 225;
+    --m3-on-secondary: 20 45 75;
+    --m3-secondary-container: 35 60 90;
+    --m3-on-secondary-container: 210 225 245;
+    --m3-tertiary: 255 180 171;
+    --m3-on-tertiary: 100 20 20;
+    --m3-tertiary-container: 130 30 30;
+    --m3-on-tertiary-container: 255 218 214;
+    --m3-error: 255 180 171;
+    --m3-on-error: 105 0 5;
+    --m3-error-container: 147 0 10;
+    --m3-on-error-container: 255 218 214;
+    --m3-surface: 15 25 40;
+    --m3-on-surface: 220 230 245;
+    --m3-surface-variant: 35 50 70;
+    --m3-on-surface-variant: 185 200 220;
+    --m3-outline: 120 140 170;
+    --m3-outline-variant: 50 65 85;
+    --m3-background: 5 18 35;
+    --m3-on-background: 220 235 255;
+    --m3-inverse-surface: 220 230 245;
+    --m3-inverse-on-surface: 30 42 58;
+    --m3-inverse-primary: 0 100 200;
+    --m3-scrim: 0 0 0;
   }
 }
 
@@ -116,6 +206,7 @@ body {
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }

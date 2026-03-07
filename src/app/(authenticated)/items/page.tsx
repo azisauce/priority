@@ -14,6 +14,7 @@ import {
 import { Check } from "lucide-react";
 import ItemModal from "@/components/item-modal";
 import ItemsFilter from "@/components/items-filter";
+import PageHeader from "@/components/layout/page-header";
 
 interface Group {
   id: string;
@@ -478,12 +479,12 @@ export default function ItemsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="mb-6 sm:mb-8 flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Items</h1>
+      <div className="flex items-center justify-between">
+        <PageHeader title="Items" description="All your wishlist items in one place" />
         <button
           onClick={openAddModal}
           className="flex items-center gap-2 rounded-lg bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          style={{ height: "40px", borderRadius: "9999px" }}
         >
           <Plus className="h-4 w-4" />
           <span className="sm:hidden">Add</span>
