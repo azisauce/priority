@@ -437,7 +437,7 @@ export default function DebtsPage() {
         : 0;
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 py-4">
         {/* Back */}
         <button
           onClick={() => setSelectedDebt(null)}
@@ -994,7 +994,7 @@ export default function DebtsPage() {
      LIST VIEW
      ═══════════════════════════════════════ */
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-4">
       <div className="flex items-center justify-between gap-3">
         <PageHeader title="Debts" description="Track and manage your debts and payments" />
         <button

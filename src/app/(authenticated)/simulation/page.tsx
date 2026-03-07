@@ -371,7 +371,7 @@ export default function SimulationPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-4">
       <PageHeader title="Simulation" description="Plan your purchases over time" />
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -581,7 +581,7 @@ export default function SimulationPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 py-4">
               {simulation && (
                 <>
                   <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">

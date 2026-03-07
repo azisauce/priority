@@ -247,7 +247,7 @@ export default function GroupsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-4">
       <div className="flex items-center justify-between gap-3">
         <PageHeader title="Groups" description="Organize your items into groups" />
         <button
@@ -412,8 +412,8 @@ export default function GroupsPage() {
                           type="button"
                           onClick={() => toggleParam(param.id)}
                           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium border transition-colors ${isSelected
-                              ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
-                              : "bg-card text-muted-foreground border-border hover:bg-muted"
+                            ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+                            : "bg-card text-muted-foreground border-border hover:bg-muted"
                             }`}
                         >
                           {isSelected ? (

@@ -329,7 +329,7 @@ export default function PriorityParamsPage() {
     });
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-6 sm:space-y-8 py-4">
       <PageHeader title="Priority Parameters" description="Define parameters, answer options, and assign them to customize priority calculation per group" />
 
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
@@ -537,8 +537,8 @@ export default function PriorityParamsPage() {
                                     disabled={isLoading || !param.userId}
                                     title={!param.userId ? "Cannot modify generic parameter" : undefined}
                                     className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${assigned
-                                        ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                                        : "bg-primary/10 text-primary hover:bg-primary/20"
+                                      ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                                      : "bg-primary/10 text-primary hover:bg-primary/20"
                                       }`}
                                   >
                                     {isLoading ? (

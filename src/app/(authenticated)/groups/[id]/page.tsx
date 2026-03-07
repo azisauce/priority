@@ -176,7 +176,7 @@ export default function GroupDetailPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 py-4">
         <div className="h-8 w-48 bg-muted rounded animate-pulse" />
         <div className="bg-card border border-border rounded-lg p-6">
           <div className="space-y-3">
@@ -191,7 +191,7 @@ export default function GroupDetailPage() {
 
   if (error || !group) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 py-4">
         <button
           onClick={() => router.push("/groups")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -214,7 +214,7 @@ export default function GroupDetailPage() {
     .sort((a, b) => b.valueScore - a.valueScore);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-4">
       {/* Back button */}
       <button
         onClick={() => router.push("/groups")}
@@ -314,11 +314,10 @@ export default function GroupDetailPage() {
                     key={param.id}
                     onClick={() => toggleParam(param.id)}
                     disabled={isLoading}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium border transition-colors disabled:opacity-50 ${
-                      isAssigned
-                        ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
-                        : "bg-card text-muted-foreground border-border hover:bg-muted"
-                    }`}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium border transition-colors disabled:opacity-50 ${isAssigned
+                      ? "bg-primary/10 text-primary border-primary/30 hover:bg-primary/20"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted"
+                      }`}
                   >
                     {isLoading ? (
                       <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />

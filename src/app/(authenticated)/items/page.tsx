@@ -478,7 +478,7 @@ export default function ItemsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-4">
       <div className="flex items-center justify-between">
         <PageHeader title="Items" description="All your wishlist items in one place" />
         <button
