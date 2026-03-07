@@ -7,36 +7,19 @@ import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "@/components/theme-provider";
 import { useSidebar } from "@/components/sidebar-provider";
 import {
-  LayoutDashboard,
-  Package,
-  FolderOpen,
-  Calculator,
-  SlidersHorizontal,
-  CreditCard,
   User,
   LogOut,
   ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { mainNavItems } from "@/lib/nav-items";
 
-const navLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/items", label: "Items", icon: Package },
-  { href: "/groups", label: "Groups", icon: FolderOpen },
-  { href: "/debts", label: "Debts", icon: CreditCard },
-  { href: "/priority-params", label: "Params", icon: SlidersHorizontal },
-  { href: "/simulation", label: "Simulation", icon: Calculator },
-];
 
 export default function Navigation() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { theme } = useTheme();
   const { collapsed, toggle } = useSidebar();
-  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + "/");
@@ -62,7 +45,8 @@ export default function Navigation() {
                   : "/assets/logos/basic_logo_deep_navy.png"
               }
               alt="Priority Logo"
-              className="w-8 h-8 object-contain shrink-0"
+              onClick={collapsed ? toggle : undefined}
+              className={`w-8 h-8 object-contain shrink-0 ${collapsed ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
             />
             <h1
               className={`text-xl font-bold font-raleway text-foreground whitespace-nowrap transition-opacity duration-200 ${collapsed ? "opacity-0 w-0" : "opacity-100"
@@ -82,44 +66,62 @@ export default function Navigation() {
           </button>
         </div>
 
-        {/* Expand button when collapsed — shown below header */}
-        {collapsed && (
-          <button
-            onClick={toggle}
-            className="mx-auto mt-2 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            aria-label="Expand sidebar"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
-
         {/* Nav Links */}
         <nav className="flex-1 p-2 space-y-1 mt-1">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const active = isActive(link.href);
+          {mainNavItems.map((item) => {
+            const Icon = item.icon;
+
+            const isParentActive = item.children
+              ? item.children.some(child => isActive(child.href))
+              : item.href ? isActive(item.href) : false;
+
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                title={collapsed ? link.label : undefined}
-                className={`
-                  flex items-center gap-3 rounded-lg text-sm font-medium transition-colors
-                  ${collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2.5"}
-                  ${active
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                  }
-                `}
-              >
-                <Icon className="w-5 h-5 shrink-0" />
-                <span
-                  className={`whitespace-nowrap transition-opacity duration-200 ${collapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
-                    }`}
+              <div key={item.label}>
+                <Link
+                  href={item.href || item.defaultChild || "#"}
+                  title={collapsed ? item.label : undefined}
+                  className={`
+                    flex items-center gap-3 rounded-lg text-sm font-medium transition-colors
+                    ${collapsed ? "justify-center px-2 py-2.5" : "px-3 py-2.5"}
+                    ${isParentActive
+                      ? (item.children ? "bg-primary/5 text-foreground" : "bg-primary/10 text-primary")
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    }
+                  `}
                 >
-                  {link.label}
-                </span>
-              </Link>
+                  <Icon className="w-5 h-5 shrink-0" />
+                  <span
+                    className={`whitespace-nowrap transition-opacity duration-200 ${collapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"
+                      }`}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+
+                {/* Sub-menu mapping for children */}
+                {!collapsed && item.children && isParentActive && (
+                  <div className="ml-4 mt-1 pl-4 border-l-2 border-primary/20 space-y-1">
+                    {item.children.map(child => {
+                      const childActive = isActive(child.href);
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={`
+                            block px-3 py-1.5 rounded-md text-sm transition-colors
+                            ${childActive
+                              ? "bg-primary/20 text-primary font-bold"
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                            }
+                          `}
+                        >
+                          {child.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
@@ -183,130 +185,45 @@ export default function Navigation() {
   );
 
   // ─── Mobile Bottom Tab Bar ──────────────────────────────────────────
+  const activeParent = mainNavItems.find(item =>
+    item.children?.some(child => isActive(child.href))
+  );
+
   const mobileTabBar = (
     <>
       {/* Bottom Tab Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card border-t border-border">
         <div className="flex items-center justify-around px-1 py-1.5 safe-bottom">
-          {navLinks
-            .filter((link) => ["/dashboard", "/items", "/debts", "/simulation"].includes(link.href))
-            .map((link) => {
-              const Icon = link.icon;
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`
-                  flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors min-w-0
-                  ${active
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                    }
-                `}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="truncate text-[10px]">{link.label}</span>
-                </Link>
-              );
-            })}
+          {mainNavItems.map((item) => {
+            const Icon = item.icon;
 
-          {/* More button for extra actions */}
-          <button
-            onClick={() => setMobileMoreOpen(!mobileMoreOpen)}
-            className={`
-              flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors min-w-0
-              ${mobileMoreOpen ? "text-primary" : "text-muted-foreground"}
-            `}
-          >
-            <MoreHorizontal className="w-5 h-5" />
-            <span className="text-[10px]">More</span>
-          </button>
+            const isItemActive = item.children
+              ? item.children.some(child => isActive(child.href))
+              : item.href ? isActive(item.href) : false;
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href ?? item.defaultChild ?? "#"}
+                className={`
+                  flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-xs transition-colors min-w-0 flex-1
+                  ${isItemActive
+                    ? "text-primary font-semibold"
+                    : "text-muted-foreground font-medium"
+                  }
+                `}
+              >
+                <div className={`p-1 rounded-full ${isItemActive ? "bg-primary/10" : "bg-transparent"} transition-colors`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className="truncate text-[10px]">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
-
-      {/* Mobile "More" Sheet */}
-      {mobileMoreOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-50 bg-black/40 lg:hidden"
-            onClick={() => setMobileMoreOpen(false)}
-          />
-          <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden bg-card border-t border-border rounded-t-2xl px-4 pt-4 pb-8 space-y-2 animate-slide-up">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-foreground">More</span>
-              <button
-                onClick={() => setMobileMoreOpen(false)}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-1">
-              {/* Extra nav links moved from bottom bar */}
-              {navLinks
-                .filter((link) => !["/dashboard", "/items", "/debts", "/simulation"].includes(link.href))
-                .map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileMoreOpen(false)}
-                      className={`
-                        flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                        ${isActive(link.href)
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                        }
-                      `}
-                    >
-                      <Icon className="w-5 h-5 shrink-0" />
-                      <span className="truncate">{link.label}</span>
-                    </Link>
-                  );
-                })}
-            </div>
-
-            <div className="flex items-center justify-between px-3 py-2.5">
-              <span className="text-sm font-medium text-muted-foreground">Theme</span>
-              <ThemeToggle />
-            </div>
-
-            <Link
-              href="/profile"
-              onClick={() => setMobileMoreOpen(false)}
-              className={`
-                flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                ${isActive("/profile")
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                }
-              `}
-            >
-              {session?.user?.image ? (
-                <img
-                  src={session.user.image}
-                  alt="Avatar"
-                  className="w-5 h-5 rounded-full object-cover"
-                />
-              ) : (
-                <User className="w-5 h-5" />
-              )}
-              <span className="truncate">{session?.user?.name || "Profile"}</span>
-            </Link>
-
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-accent transition-colors w-full"
-            >
-              <LogOut className="w-5 h-5" />
-              Sign Out
-            </button>
-          </div>
-        </>
-      )}
     </>
   );
 

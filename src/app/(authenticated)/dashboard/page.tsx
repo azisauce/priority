@@ -78,7 +78,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           Overview of your purchase priorities
         </p>
@@ -315,7 +315,7 @@ function CarouselCard() {
     setDragOffset(0);
     try {
       (e.target as Element).releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch { }
     if (delta < -threshold) {
       next();
     } else if (delta > threshold) {
