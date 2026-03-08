@@ -24,7 +24,7 @@ export default function Navigation() {
   const getActiveRoute = (): string => {
     if (pathname.startsWith("/dashboard")) return "dashboard";
     if (pathname.startsWith("/items") || pathname.startsWith("/groups") || pathname.startsWith("/priority-params")) return "wishlist";
-    if (pathname.startsWith("/debts")) return "tracking";
+    if (pathname.startsWith("/debts") || pathname.startsWith("/assets")) return "tracking";
     if (pathname.startsWith("/simulation")) return "simulation";
     return "dashboard";
   };

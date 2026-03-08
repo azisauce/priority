@@ -22,7 +22,7 @@ import {
 
 interface PaymentEntry {
   id: string;
-  debtId: string;
+  assetId: string;
   amount: number;
   paymentDate: string;
   status: "scheduled" | "paid" | "missed";
@@ -31,7 +31,7 @@ interface PaymentEntry {
   updatedAt: string;
 }
 
-interface Debt {
+interface Asset {
   id: string;
   name: string;
   purpose: string | null;
@@ -50,7 +50,7 @@ interface Debt {
   updatedAt: string;
 }
 
-interface DebtFormData {
+interface AssetFormData {
   name: string;
   purpose: string;
   totalAmount: string;
@@ -83,7 +83,7 @@ const formatDate = (dateString: string): string =>
 
 /* ───────── empty form defaults ───────── */
 
-const emptyDebtForm: DebtFormData = {
+const emptyAssetForm: AssetFormData = {
   name: "",
   purpose: "",
   totalAmount: "",
@@ -106,21 +106,21 @@ const emptyPaymentForm: PaymentFormData = {
    MAIN PAGE
    ═══════════════════════════════════════════ */
 
-export default function DebtsPage() {
-  const [debts, setDebts] = useState<Debt[]>([]);
+export default function AssetsPage() {
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Modals
-  const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
-  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
-  const [debtForm, setDebtForm] = useState<DebtFormData>(emptyDebtForm);
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [assetForm, setAssetForm] = useState<AssetFormData>(emptyAssetForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deleteDebt, setDeleteDebt] = useState<Debt | null>(null);
+  const [deleteAsset, setDeleteAsset] = useState<Asset | null>(null);
 
   // Detail view
-  const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   // Payment modal
@@ -130,80 +130,80 @@ export default function DebtsPage() {
   const [isPaymentSubmitting, setIsPaymentSubmitting] = useState(false);
   const [deletePayment, setDeletePayment] = useState<PaymentEntry | null>(null);
 
-  /* ─── Fetch debts list ─── */
-  const fetchDebts = useCallback(async () => {
+  /* ─── Fetch assets list ─── */
+  const fetchAssets = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (statusFilter) params.set("status", statusFilter);
-      const res = await fetch(`/api/debts?${params.toString()}`);
+      const res = await fetch(`/api/debts?type=asset&${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setDebts(data.debts || []);
+        setAssets(data.debts || []);
       }
     } catch (err) {
-      console.error("Failed to fetch debts:", err);
+      console.error("Failed to fetch assets:", err);
     } finally {
       setLoading(false);
     }
   }, [statusFilter]);
 
   useEffect(() => {
-    fetchDebts();
-  }, [fetchDebts]);
+    fetchAssets();
+  }, [fetchAssets]);
 
-  /* ─── Fetch single debt detail with payments ─── */
-  const fetchDebtDetail = useCallback(async (debtId: string) => {
+  /* ─── Fetch single asset detail with payments ─── */
+  const fetchAssetDetail = useCallback(async (assetId: string) => {
     setLoadingDetail(true);
     try {
-      const res = await fetch(`/api/debts/${debtId}`);
+      const res = await fetch(`/api/debts/${assetId}`);
       if (res.ok) {
         const data = await res.json();
-        setSelectedDebt(data.debt);
+        setSelectedAsset(data.debt);
       }
     } catch (err) {
-      console.error("Failed to fetch debt detail:", err);
+      console.error("Failed to fetch asset detail:", err);
     } finally {
       setLoadingDetail(false);
     }
   }, []);
 
-  /* ───────────── Debt CRUD ───────────── */
+  /* ───────────── Asset CRUD ───────────── */
 
-  const openAddDebt = () => {
-    setEditingDebt(null);
-    setDebtForm(emptyDebtForm);
-    setIsDebtModalOpen(true);
+  const openAddAsset = () => {
+    setEditingAsset(null);
+    setAssetForm(emptyAssetForm);
+    setIsAssetModalOpen(true);
   };
 
-  const openEditDebt = (debt: Debt) => {
-    setEditingDebt(debt);
-    setDebtForm({
-      name: debt.name,
-      purpose: debt.purpose || "",
-      totalAmount: debt.totalAmount.toString(),
-      counterparty: debt.counterparty,
-      startDate: debt.startDate ? debt.startDate.split("T")[0] : "",
-      deadline: debt.deadline ? debt.deadline.split("T")[0] : "",
-      paymentPeriod: debt.paymentPeriod,
-      fixedInstallmentAmount: debt.fixedInstallmentAmount?.toString() || "",
-      notes: debt.notes || "",
+  const openEditAsset = (asset: Asset) => {
+    setEditingAsset(asset);
+    setAssetForm({
+      name: asset.name,
+      purpose: asset.purpose || "",
+      totalAmount: asset.totalAmount.toString(),
+      counterparty: asset.counterparty,
+      startDate: asset.startDate ? asset.startDate.split("T")[0] : "",
+      deadline: asset.deadline ? asset.deadline.split("T")[0] : "",
+      paymentPeriod: asset.paymentPeriod,
+      fixedInstallmentAmount: asset.fixedInstallmentAmount?.toString() || "",
+      notes: asset.notes || "",
     });
-    setIsDebtModalOpen(true);
+    setIsAssetModalOpen(true);
   };
 
-  const handleSubmitDebt = async (e: React.FormEvent) => {
+  const handleSubmitAsset = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const totalAmount = parseFloat(debtForm.totalAmount);
+    const totalAmount = parseFloat(assetForm.totalAmount);
     if (isNaN(totalAmount) || totalAmount <= 0) {
       alert("Please enter a valid total amount");
       setIsSubmitting(false);
       return;
     }
 
-    const fixedAmt = debtForm.fixedInstallmentAmount ? parseFloat(debtForm.fixedInstallmentAmount) : null;
+    const fixedAmt = assetForm.fixedInstallmentAmount ? parseFloat(assetForm.fixedInstallmentAmount) : null;
     if (fixedAmt !== null && (isNaN(fixedAmt) || fixedAmt <= 0)) {
       alert("Fixed installment amount must be positive or empty");
       setIsSubmitting(false);
@@ -211,20 +211,21 @@ export default function DebtsPage() {
     }
 
     const payload = {
-      name: debtForm.name,
-      purpose: debtForm.purpose.trim() || null,
+      name: assetForm.name,
+      purpose: assetForm.purpose.trim() || null,
       totalAmount,
-      counterparty: debtForm.counterparty,
-      startDate: debtForm.startDate,
-      deadline: debtForm.deadline || null,
-      paymentPeriod: debtForm.paymentPeriod,
+      counterparty: assetForm.counterparty,
+      startDate: assetForm.startDate,
+      deadline: assetForm.deadline || null,
+      paymentPeriod: assetForm.paymentPeriod,
       fixedInstallmentAmount: fixedAmt,
-      notes: debtForm.notes.trim() || null,
+      notes: assetForm.notes.trim() || null,
+      type: "asset",
     };
 
     try {
-      const url = editingDebt ? `/api/debts/${editingDebt.id}` : "/api/debts";
-      const method = editingDebt ? "PATCH" : "POST";
+      const url = editingAsset ? `/api/debts/${editingAsset.id}` : "/api/debts";
+      const method = editingAsset ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
@@ -233,39 +234,39 @@ export default function DebtsPage() {
       });
 
       if (res.ok) {
-        setIsDebtModalOpen(false);
-        setEditingDebt(null);
-        fetchDebts();
-        // If we're editing the currently selected debt, refresh detail
-        if (editingDebt && selectedDebt?.id === editingDebt.id) {
-          fetchDebtDetail(editingDebt.id);
+        setIsAssetModalOpen(false);
+        setEditingAsset(null);
+        fetchAssets();
+        // If we're editing the currently selected asset, refresh detail
+        if (editingAsset && selectedAsset?.id === editingAsset.id) {
+          fetchAssetDetail(editingAsset.id);
         }
       } else {
         const err = await res.json();
-        alert(typeof err.error === "string" ? err.error : "Failed to save debt");
+        alert(typeof err.error === "string" ? err.error : "Failed to save asset");
       }
     } catch (err) {
-      console.error("Failed to save debt:", err);
-      alert("Failed to save debt");
+      console.error("Failed to save asset:", err);
+      alert("Failed to save asset");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteDebt = async () => {
-    if (!deleteDebt) return;
+  const handleDeleteAsset = async () => {
+    if (!deleteAsset) return;
     try {
-      const res = await fetch(`/api/debts/${deleteDebt.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/debts/${deleteAsset.id}`, { method: "DELETE" });
       if (res.ok) {
-        setDeleteDebt(null);
-        if (selectedDebt?.id === deleteDebt.id) setSelectedDebt(null);
-        fetchDebts();
+        setDeleteAsset(null);
+        if (selectedAsset?.id === deleteAsset.id) setSelectedAsset(null);
+        fetchAssets();
       } else {
-        alert("Failed to delete debt");
+        alert("Failed to delete asset");
       }
     } catch (err) {
-      console.error("Failed to delete debt:", err);
-      alert("Failed to delete debt");
+      console.error("Failed to delete asset:", err);
+      alert("Failed to delete asset");
     }
   };
 
@@ -275,7 +276,7 @@ export default function DebtsPage() {
     setEditingPayment(null);
     setPaymentForm({
       ...emptyPaymentForm,
-      amount: selectedDebt?.fixedInstallmentAmount?.toString() || "",
+      amount: selectedAsset?.fixedInstallmentAmount?.toString() || "",
     });
     setIsPaymentModalOpen(true);
   };
@@ -293,7 +294,7 @@ export default function DebtsPage() {
 
   const handleSubmitPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDebt) return;
+    if (!selectedAsset) return;
     setIsPaymentSubmitting(true);
 
     const amount = parseFloat(paymentForm.amount);
@@ -312,8 +313,8 @@ export default function DebtsPage() {
 
     try {
       const url = editingPayment
-        ? `/api/debts/${selectedDebt.id}/payments/${editingPayment.id}`
-        : `/api/debts/${selectedDebt.id}/payments`;
+        ? `/api/debts/${selectedAsset.id}/payments/${editingPayment.id}`
+        : `/api/debts/${selectedAsset.id}/payments`;
       const method = editingPayment ? "PATCH" : "POST";
 
       const res = await fetch(url, {
@@ -325,8 +326,8 @@ export default function DebtsPage() {
       if (res.ok) {
         setIsPaymentModalOpen(false);
         setEditingPayment(null);
-        fetchDebtDetail(selectedDebt.id);
-        fetchDebts();
+        fetchAssetDetail(selectedAsset.id);
+        fetchAssets();
       } else {
         const err = await res.json();
         alert(typeof err.error === "string" ? err.error : "Failed to save payment");
@@ -340,16 +341,16 @@ export default function DebtsPage() {
   };
 
   const handleDeletePayment = async () => {
-    if (!deletePayment || !selectedDebt) return;
+    if (!deletePayment || !selectedAsset) return;
     try {
       const res = await fetch(
-        `/api/debts/${selectedDebt.id}/payments/${deletePayment.id}`,
+        `/api/debts/${selectedAsset.id}/payments/${deletePayment.id}`,
         { method: "DELETE" }
       );
       if (res.ok) {
         setDeletePayment(null);
-        fetchDebtDetail(selectedDebt.id);
-        fetchDebts();
+        fetchAssetDetail(selectedAsset.id);
+        fetchAssets();
       } else {
         alert("Failed to delete payment");
       }
@@ -359,8 +360,8 @@ export default function DebtsPage() {
     }
   };
 
-  /* ─── Filtered debts ─── */
-  const displayedDebts = debts.filter((d) => {
+  /* ─── Filtered assets ─── */
+  const displayedAssets = assets.filter((d) => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return true;
     return (
@@ -370,7 +371,7 @@ export default function DebtsPage() {
   });
 
   /* ─── Status badge helpers ─── */
-  const debtStatusBadge = (status: string) => {
+  const assetStatusBadge = (status: string) => {
     switch (status) {
       case "paid":
         return (
@@ -427,24 +428,24 @@ export default function DebtsPage() {
   };
 
   /* ═══════════════════════════════════════
-     DETAIL VIEW — if a debt is selected
+     DETAIL VIEW — if a asset is selected
      ═══════════════════════════════════════ */
-  if (selectedDebt) {
-    const debt = selectedDebt;
+  if (selectedAsset) {
+    const asset = selectedAsset;
     const paidPct =
-      debt.totalAmount > 0
-        ? Math.round(((debt.totalAmount - debt.remainingBalance) / debt.totalAmount) * 100)
+      asset.totalAmount > 0
+        ? Math.round(((asset.totalAmount - asset.remainingBalance) / asset.totalAmount) * 100)
         : 0;
 
     return (
       <div className="space-y-6 py-4">
         {/* Back */}
         <button
-          onClick={() => setSelectedDebt(null)}
+          onClick={() => setSelectedAsset(null)}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Debts
+          Back to Assets
         </button>
 
         {loadingDetail ? (
@@ -453,11 +454,11 @@ export default function DebtsPage() {
           </div>
         ) : (
           <>
-            {/* Debt header card */}
+            {/* Asset header card */}
             <div
-              className={`rounded-xl border p-4 sm:p-6 ${debt.status === "paid"
+              className={`rounded-xl border p-4 sm:p-6 ${asset.status === "paid"
                 ? "bg-green-500/5 border-green-500/20"
-                : debt.status === "overdue"
+                : asset.status === "overdue"
                   ? "bg-red-500/5 border-red-500/20"
                   : "bg-card border-border"
                 }`}
@@ -466,33 +467,33 @@ export default function DebtsPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-3 flex-wrap">
                     <h1
-                      className={`text-2xl font-bold ${debt.status === "paid"
+                      className={`text-2xl font-bold ${asset.status === "paid"
                         ? "text-muted-foreground line-through"
                         : "text-foreground"
                         }`}
                     >
-                      {debt.name}
+                      {asset.name}
                     </h1>
-                    {debtStatusBadge(debt.status)}
-                    {periodBadge(debt.paymentPeriod)}
+                    {assetStatusBadge(asset.status)}
+                    {periodBadge(asset.paymentPeriod)}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Counterparty: <span className="text-foreground font-medium">{debt.counterparty}</span>
+                    Counterparty: <span className="text-foreground font-medium">{asset.counterparty}</span>
                   </p>
-                  {debt.purpose && (
-                    <p className="text-sm text-muted-foreground mt-1">{debt.purpose}</p>
+                  {asset.purpose && (
+                    <p className="text-sm text-muted-foreground mt-1">{asset.purpose}</p>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
                   <button
-                    onClick={() => openEditDebt(debt)}
+                    onClick={() => openEditAsset(asset)}
                     className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
                   >
                     <Pencil className="h-4 w-4" /> Edit
                   </button>
                   <button
-                    onClick={() => setDeleteDebt(debt)}
+                    onClick={() => setDeleteAsset(asset)}
                     className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-muted/80 transition-colors"
                   >
                     <Trash2 className="h-4 w-4" /> Delete
@@ -504,21 +505,21 @@ export default function DebtsPage() {
               <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total</p>
-                  <p className="text-lg font-bold text-foreground">{formatCurrency(debt.totalAmount)}</p>
+                  <p className="text-lg font-bold text-foreground">{formatCurrency(asset.totalAmount)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Remaining</p>
-                  <p className={`text-lg font-bold ${debt.status === "paid" ? "text-green-600 dark:text-green-400" : debt.status === "overdue" ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
-                    {formatCurrency(debt.remainingBalance)}
+                  <p className={`text-lg font-bold ${asset.status === "paid" ? "text-green-600 dark:text-green-400" : asset.status === "overdue" ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                    {formatCurrency(asset.remainingBalance)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Start Date</p>
-                  <p className="text-sm font-medium text-foreground">{formatDate(debt.startDate)}</p>
+                  <p className="text-sm font-medium text-foreground">{formatDate(asset.startDate)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Deadline</p>
-                  <p className="text-sm font-medium text-foreground">{debt.deadline ? formatDate(debt.deadline) : "—"}</p>
+                  <p className="text-sm font-medium text-foreground">{asset.deadline ? formatDate(asset.deadline) : "—"}</p>
                 </div>
               </div>
 
@@ -530,9 +531,9 @@ export default function DebtsPage() {
                 </div>
                 <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${debt.status === "paid"
+                    className={`h-full rounded-full transition-all duration-500 ${asset.status === "paid"
                       ? "bg-green-500"
-                      : debt.status === "overdue"
+                      : asset.status === "overdue"
                         ? "bg-red-500"
                         : "bg-primary"
                       }`}
@@ -543,18 +544,18 @@ export default function DebtsPage() {
 
               {/* Extra info */}
               <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                {debt.fixedInstallmentAmount && (
+                {asset.fixedInstallmentAmount && (
                   <span>
-                    Installment: <span className="text-foreground font-medium">{formatCurrency(debt.fixedInstallmentAmount)}</span>
+                    Installment: <span className="text-foreground font-medium">{formatCurrency(asset.fixedInstallmentAmount)}</span>
                   </span>
                 )}
-                {!debt.fixedInstallmentAmount && (
+                {!asset.fixedInstallmentAmount && (
                   <span className="italic">Variable installments</span>
                 )}
                 <span>
-                  Period: <span className="text-foreground font-medium capitalize">{debt.paymentPeriod}</span>
+                  Period: <span className="text-foreground font-medium capitalize">{asset.paymentPeriod}</span>
                 </span>
-                {debt.notes && <span className="basis-full pt-1 text-xs">{debt.notes}</span>}
+                {asset.notes && <span className="basis-full pt-1 text-xs">{asset.notes}</span>}
               </div>
             </div>
 
@@ -565,7 +566,7 @@ export default function DebtsPage() {
                   <Banknote className="w-4 h-4 text-primary" />
                   <h2 className="text-lg font-semibold text-foreground">Payments</h2>
                   <span className="text-sm text-muted-foreground">
-                    ({debt.payments?.length || 0})
+                    ({asset.payments?.length || 0})
                   </span>
                 </div>
                 <button
@@ -576,7 +577,7 @@ export default function DebtsPage() {
                 </button>
               </div>
 
-              {!debt.payments?.length ? (
+              {!asset.payments?.length ? (
                 <div className="p-12 text-center text-muted-foreground">
                   <Banknote className="h-10 w-10 mx-auto mb-3 opacity-40" />
                   <p>No payments recorded yet.</p>
@@ -591,7 +592,7 @@ export default function DebtsPage() {
                 <>
                   {/* Mobile card view for payments */}
                   <div className="divide-y divide-border sm:hidden">
-                    {debt.payments.map((p) => (
+                    {asset.payments.map((p) => (
                       <div
                         key={p.id}
                         className={`p-3 ${p.status === "paid" ? "opacity-70" : ""}`}
@@ -639,7 +640,7 @@ export default function DebtsPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {debt.payments.map((p) => (
+                        {asset.payments.map((p) => (
                           <tr
                             key={p.id}
                             className={`transition-colors hover:bg-muted/50 ${p.status === "paid" ? "opacity-70" : ""
@@ -780,7 +781,7 @@ export default function DebtsPage() {
               <h2 className="mb-2 text-xl font-bold text-foreground">Delete Payment</h2>
               <p className="mb-6 text-muted-foreground">
                 Delete payment of <span className="font-medium text-foreground">{formatCurrency(deletePayment.amount)}</span> on{" "}
-                {formatDate(deletePayment.paymentDate)}? This may change the debt balance.
+                {formatDate(deletePayment.paymentDate)}? This may change the asset balance.
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setDeletePayment(null)} className="flex-1 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/80 transition-colors">Cancel</button>
@@ -790,28 +791,28 @@ export default function DebtsPage() {
           </div>
         )}
 
-        {/* ──── Debt Modals (also available in detail) ──── */}
-        {renderDebtModal()}
-        {renderDeleteDebtConfirm()}
+        {/* ──── Asset Modals (also available in detail) ──── */}
+        {renderAssetModal()}
+        {renderDeleteAssetConfirm()}
       </div>
     );
   }
 
   /* ═══════════════════════════════════════
-     HELPER: Debt Modal (shared)
+     HELPER: Asset Modal (shared)
      ═══════════════════════════════════════ */
-  function renderDebtModal() {
-    if (!isDebtModalOpen) return null;
+  function renderAssetModal() {
+    if (!isAssetModalOpen) return null;
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/70" onClick={() => { setIsDebtModalOpen(false); setEditingDebt(null); }} />
+        <div className="absolute inset-0 bg-black/70" onClick={() => { setIsAssetModalOpen(false); setEditingAsset(null); }} />
         <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-card border border-border shadow-2xl">
           <div className="flex items-center justify-between p-6 pb-2 shrink-0">
             <h2 className="text-xl font-bold text-foreground">
-              {editingDebt ? "Edit Debt" : "Add New Debt"}
+              {editingAsset ? "Edit Asset" : "Add New Asset"}
             </h2>
             <button
-              onClick={() => { setIsDebtModalOpen(false); setEditingDebt(null); }}
+              onClick={() => { setIsAssetModalOpen(false); setEditingAsset(null); }}
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <X className="h-5 w-5" />
@@ -819,7 +820,7 @@ export default function DebtsPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 py-4">
-            <form id="debt-form" onSubmit={handleSubmitDebt} className="space-y-4">
+            <form id="asset-form" onSubmit={handleSubmitAsset} className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">
                   Name <span className="text-destructive">*</span>
@@ -827,8 +828,8 @@ export default function DebtsPage() {
                 <input
                   type="text"
                   required
-                  value={debtForm.name}
-                  onChange={(e) => setDebtForm({ ...debtForm, name: e.target.value })}
+                  value={assetForm.name}
+                  onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })}
                   className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   placeholder="e.g. Car loan, Rent advance"
                 />
@@ -837,10 +838,10 @@ export default function DebtsPage() {
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Purpose</label>
                 <textarea
-                  value={debtForm.purpose}
-                  onChange={(e) => setDebtForm({ ...debtForm, purpose: e.target.value })}
+                  value={assetForm.purpose}
+                  onChange={(e) => setAssetForm({ ...assetForm, purpose: e.target.value })}
                   className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring resize-none"
-                  placeholder="Why this debt was taken"
+                  placeholder="Why this asset was taken"
                   rows={2}
                 />
               </div>
@@ -855,8 +856,8 @@ export default function DebtsPage() {
                     required
                     min="0.01"
                     step="0.01"
-                    value={debtForm.totalAmount}
-                    onChange={(e) => setDebtForm({ ...debtForm, totalAmount: e.target.value })}
+                    value={assetForm.totalAmount}
+                    onChange={(e) => setAssetForm({ ...assetForm, totalAmount: e.target.value })}
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                     placeholder="0.00"
                   />
@@ -868,8 +869,8 @@ export default function DebtsPage() {
                   <input
                     type="text"
                     required
-                    value={debtForm.counterparty}
-                    onChange={(e) => setDebtForm({ ...debtForm, counterparty: e.target.value })}
+                    value={assetForm.counterparty}
+                    onChange={(e) => setAssetForm({ ...assetForm, counterparty: e.target.value })}
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                     placeholder="Person or entity"
                   />
@@ -884,8 +885,8 @@ export default function DebtsPage() {
                   <input
                     type="date"
                     required
-                    value={debtForm.startDate}
-                    onChange={(e) => setDebtForm({ ...debtForm, startDate: e.target.value })}
+                    value={assetForm.startDate}
+                    onChange={(e) => setAssetForm({ ...assetForm, startDate: e.target.value })}
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   />
                 </div>
@@ -893,8 +894,8 @@ export default function DebtsPage() {
                   <label className="mb-1.5 block text-sm font-medium text-foreground">Deadline</label>
                   <input
                     type="date"
-                    value={debtForm.deadline}
-                    onChange={(e) => setDebtForm({ ...debtForm, deadline: e.target.value })}
+                    value={assetForm.deadline}
+                    onChange={(e) => setAssetForm({ ...assetForm, deadline: e.target.value })}
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   />
                 </div>
@@ -906,8 +907,8 @@ export default function DebtsPage() {
                     Payment Period <span className="text-destructive">*</span>
                   </label>
                   <select
-                    value={debtForm.paymentPeriod}
-                    onChange={(e) => setDebtForm({ ...debtForm, paymentPeriod: e.target.value as DebtFormData["paymentPeriod"] })}
+                    value={assetForm.paymentPeriod}
+                    onChange={(e) => setAssetForm({ ...assetForm, paymentPeriod: e.target.value as AssetFormData["paymentPeriod"] })}
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                   >
                     <option value="monthly">Monthly</option>
@@ -923,8 +924,8 @@ export default function DebtsPage() {
                     type="number"
                     min="0.01"
                     step="0.01"
-                    value={debtForm.fixedInstallmentAmount}
-                    onChange={(e) => setDebtForm({ ...debtForm, fixedInstallmentAmount: e.target.value })}
+                    value={assetForm.fixedInstallmentAmount}
+                    onChange={(e) => setAssetForm({ ...assetForm, fixedInstallmentAmount: e.target.value })}
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                     placeholder="Leave empty for variable"
                   />
@@ -934,8 +935,8 @@ export default function DebtsPage() {
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Notes</label>
                 <textarea
-                  value={debtForm.notes}
-                  onChange={(e) => setDebtForm({ ...debtForm, notes: e.target.value })}
+                  value={assetForm.notes}
+                  onChange={(e) => setAssetForm({ ...assetForm, notes: e.target.value })}
                   className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring resize-none"
                   placeholder="Optional notes"
                   rows={2}
@@ -947,18 +948,18 @@ export default function DebtsPage() {
           <div className="p-6 pt-2 shrink-0 flex gap-3 bg-card rounded-b-xl border-t border-border">
             <button
               type="button"
-              onClick={() => { setIsDebtModalOpen(false); setEditingDebt(null); }}
+              onClick={() => { setIsAssetModalOpen(false); setEditingAsset(null); }}
               className="flex-1 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/80 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              form="debt-form"
+              form="asset-form"
               disabled={isSubmitting}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              {isSubmitting ? "Saving..." : editingDebt ? "Save Changes" : "Add Debt"}
+              {isSubmitting ? "Saving..." : editingAsset ? "Save Changes" : "Add Asset"}
             </button>
           </div>
         </div>
@@ -966,24 +967,24 @@ export default function DebtsPage() {
     );
   }
 
-  function renderDeleteDebtConfirm() {
-    if (!deleteDebt) return null;
+  function renderDeleteAssetConfirm() {
+    if (!deleteAsset) return null;
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/70" onClick={() => setDeleteDebt(null)} />
+        <div className="absolute inset-0 bg-black/70" onClick={() => setDeleteAsset(null)} />
         <div className="relative w-full max-w-md rounded-xl bg-popover border border-border p-6 shadow-2xl">
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
             <Trash2 className="h-6 w-6 text-destructive" />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-foreground">Delete Debt</h2>
+          <h2 className="mb-2 text-xl font-bold text-foreground">Delete Asset</h2>
           <p className="mb-6 text-muted-foreground">
             Are you sure you want to delete{" "}
-            <span className="font-medium text-foreground">{deleteDebt.name}</span>?
+            <span className="font-medium text-foreground">{deleteAsset.name}</span>?
             This will also delete all payment entries. This action cannot be undone.
           </p>
           <div className="flex gap-3">
-            <button onClick={() => setDeleteDebt(null)} className="flex-1 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/80 transition-colors">Cancel</button>
-            <button onClick={handleDeleteDebt} className="flex-1 rounded-lg bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors">Delete</button>
+            <button onClick={() => setDeleteAsset(null)} className="flex-1 rounded-lg bg-muted px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/80 transition-colors">Cancel</button>
+            <button onClick={handleDeleteAsset} className="flex-1 rounded-lg bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground hover:bg-destructive/90 transition-colors">Delete</button>
           </div>
         </div>
       </div>
@@ -996,15 +997,15 @@ export default function DebtsPage() {
   return (
     <div className="space-y-6 py-4">
       <div className="flex items-center justify-between gap-3">
-        <PageHeader title="Debts" description="Track and manage your debts and payments" />
+        <PageHeader title="Assets" description="Track and manage your assets and payments" />
         <button
-          onClick={openAddDebt}
+          onClick={openAddAsset}
           className="flex items-center gap-2 bg-primary px-3 sm:px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 shrink-0"
           style={{ height: "40px", borderRadius: "9999px" }}
         >
           <Plus className="h-4 w-4" />
           <span className="sm:hidden">Add</span>
-          <span className="hidden sm:inline">Add Debt</span>
+          <span className="hidden sm:inline">Add Asset</span>
         </button>
       </div>
 
@@ -1014,7 +1015,7 @@ export default function DebtsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search debts..."
+            placeholder="Search assets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg bg-input border border-border pl-10 pr-4 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
@@ -1042,82 +1043,82 @@ export default function DebtsPage() {
       </div>
 
       {/* Summary Cards */}
-      {!loading && debts.length > 0 && (
+      {!loading && assets.length > 0 && (
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-card border border-border rounded-lg p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Owed</p>
             <p className="text-xl font-bold text-foreground">
-              {formatCurrency(debts.filter((d) => d.status !== "paid").reduce((s, d) => s + d.remainingBalance, 0))}
+              {formatCurrency(assets.filter((d) => d.status !== "paid").reduce((s, d) => s + d.remainingBalance, 0))}
             </p>
           </div>
           <div className="bg-card border border-border rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Active Debts</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Active Assets</p>
             <p className="text-xl font-bold text-foreground">
-              {debts.filter((d) => d.status === "active").length}
+              {assets.filter((d) => d.status === "active").length}
             </p>
           </div>
           <div className="bg-card border border-border rounded-lg p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Overdue</p>
             <p className="text-xl font-bold text-red-600 dark:text-red-400">
-              {debts.filter((d) => d.status === "overdue").length}
+              {assets.filter((d) => d.status === "overdue").length}
             </p>
           </div>
         </div>
       )}
 
-      {/* Debts List */}
+      {/* Assets List */}
       <div className="rounded-xl bg-card border border-border overflow-hidden">
         {loading ? (
           <div className="flex h-64 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
-        ) : displayedDebts.length === 0 ? (
+        ) : displayedAssets.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center text-center">
             <div className="mb-4 rounded-full bg-muted p-4">
               <CreditCard className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-foreground">No debts found</h3>
+            <h3 className="text-lg font-medium text-foreground">No assets found</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               {searchQuery || statusFilter
                 ? "Try adjusting your filters."
-                : "Get started by adding your first debt."}
+                : "Get started by adding your first asset."}
             </p>
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {displayedDebts.map((debt) => {
+            {displayedAssets.map((asset) => {
               const paidPct =
-                debt.totalAmount > 0
-                  ? Math.round(((debt.totalAmount - debt.remainingBalance) / debt.totalAmount) * 100)
+                asset.totalAmount > 0
+                  ? Math.round(((asset.totalAmount - asset.remainingBalance) / asset.totalAmount) * 100)
                   : 0;
 
               return (
                 <div
-                  key={debt.id}
-                  onClick={() => fetchDebtDetail(debt.id)}
-                  className={`px-4 sm:px-6 py-4 sm:py-5 cursor-pointer transition-colors hover:bg-muted/50 ${debt.status === "paid" ? "opacity-60" : ""
-                    } ${debt.status === "overdue" ? "border-l-4 border-l-red-500" : ""}`}
+                  key={asset.id}
+                  onClick={() => fetchAssetDetail(asset.id)}
+                  className={`px-4 sm:px-6 py-4 sm:py-5 cursor-pointer transition-colors hover:bg-muted/50 ${asset.status === "paid" ? "opacity-60" : ""
+                    } ${asset.status === "overdue" ? "border-l-4 border-l-red-500" : ""}`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <h3
-                          className={`text-base font-semibold truncate ${debt.status === "paid"
+                          className={`text-base font-semibold truncate ${asset.status === "paid"
                             ? "text-muted-foreground line-through"
                             : "text-foreground"
                             }`}
                         >
-                          {debt.name}
+                          {asset.name}
                         </h3>
-                        {debtStatusBadge(debt.status)}
-                        {periodBadge(debt.paymentPeriod)}
+                        {assetStatusBadge(asset.status)}
+                        {periodBadge(asset.paymentPeriod)}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>Counterparty: {debt.counterparty}</span>
-                        {debt.nextPaymentDate && (
+                        <span>Counterparty: {asset.counterparty}</span>
+                        {asset.nextPaymentDate && (
                           <span className="flex items-center gap-1">
                             <CalendarDays className="h-3 w-3" />
-                            Next: {formatDate(debt.nextPaymentDate)}
+                            Next: {formatDate(asset.nextPaymentDate)}
                           </span>
                         )}
                       </div>
@@ -1126,25 +1127,25 @@ export default function DebtsPage() {
                     <div className="flex items-center gap-6 shrink-0">
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">Remaining</p>
-                        <p className={`text-lg font-bold ${debt.status === "paid"
+                        <p className={`text-lg font-bold ${asset.status === "paid"
                           ? "text-green-600 dark:text-green-400"
-                          : debt.status === "overdue"
+                          : asset.status === "overdue"
                             ? "text-red-600 dark:text-red-400"
                             : "text-foreground"
                           }`}>
-                          {formatCurrency(debt.remainingBalance)}
+                          {formatCurrency(asset.remainingBalance)}
                         </p>
                       </div>
                       <div className="text-right hidden sm:block">
                         <p className="text-xs text-muted-foreground">Total</p>
-                        <p className="text-sm font-medium text-muted-foreground">{formatCurrency(debt.totalAmount)}</p>
+                        <p className="text-sm font-medium text-muted-foreground">{formatCurrency(asset.totalAmount)}</p>
                       </div>
                       <div className="w-16">
                         <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${debt.status === "paid"
+                            className={`h-full rounded-full ${asset.status === "paid"
                               ? "bg-green-500"
-                              : debt.status === "overdue"
+                              : asset.status === "overdue"
                                 ? "bg-red-500"
                                 : "bg-primary"
                               }`}
@@ -1163,8 +1164,8 @@ export default function DebtsPage() {
       </div>
 
       {/* Modals available on both views */}
-      {renderDebtModal()}
-      {renderDeleteDebtConfirm()}
+      {renderAssetModal()}
+      {renderDeleteAssetConfirm()}
     </div>
   );
 }

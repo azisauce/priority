@@ -42,6 +42,7 @@ export const mainNavItems: NavItem[] = [
         icon: CreditCard,
         children: [
             { href: "/debts", label: "Debts" },
+            { href: "/assets", label: "Assets" },
         ],
         defaultChild: "/debts",
     },

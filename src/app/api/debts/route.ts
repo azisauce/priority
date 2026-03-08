@@ -8,13 +8,14 @@ const createDebtSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
   purpose: z.string().nullable().optional(),
   totalAmount: z.number().positive("Total amount must be positive"),
-  lenderName: z.string().min(1, "Lender name is required").max(200),
+  counterparty: z.string().min(1, "Counterparty is required").max(200),
   startDate: z.string().min(1, "Start date is required"),
   deadline: z.string().nullable().optional(),
   status: z.enum(["active", "paid", "overdue"]).optional().default("active"),
   paymentPeriod: z.enum(["weekly", "monthly", "custom"]).optional().default("monthly"),
   fixedInstallmentAmount: z.number().positive().nullable().optional(),
   notes: z.string().nullable().optional(),
+  type: z.enum(["debt", "asset"]).optional().default("debt"),
 });
 
 function formatDebt(row: any) {
@@ -24,7 +25,8 @@ function formatDebt(row: any) {
     purpose: row.purpose,
     totalAmount: Number(row.total_amount),
     remainingBalance: Number(row.remaining_balance),
-    lenderName: row.lender_name,
+    counterparty: row.counterparty,
+    type: row.type,
     startDate: row.start_date,
     deadline: row.deadline,
     status: row.status,
@@ -46,8 +48,9 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const statusFilter = searchParams.get("status");
+  const typeFilter = searchParams.get("type") || "debt";
 
-  let query = db("debts").where("debts.user_id", userId);
+  let query = db("debts").where("debts.user_id", userId).andWhere("debts.type", typeFilter);
 
   if (statusFilter && ["active", "paid", "overdue"].includes(statusFilter)) {
     query = query.andWhere("debts.status", statusFilter);
@@ -57,6 +60,7 @@ export async function GET(request: NextRequest) {
   const today = new Date().toISOString().split("T")[0];
   await db("debts")
     .where("user_id", userId)
+    .where("type", typeFilter)
     .whereNotNull("deadline")
     .where("deadline", "<", today)
     .whereNot("status", "paid")
@@ -109,13 +113,14 @@ export async function POST(request: NextRequest) {
     name,
     purpose,
     totalAmount,
-    lenderName,
+    counterparty,
     startDate,
     deadline,
     status,
     paymentPeriod,
     fixedInstallmentAmount,
     notes,
+    type,
   } = parsed.data;
 
   const [debt] = await db("debts")
@@ -124,7 +129,8 @@ export async function POST(request: NextRequest) {
       purpose: purpose || null,
       total_amount: totalAmount,
       remaining_balance: totalAmount, // starts at full amount
-      lender_name: lenderName,
+      counterparty: counterparty,
+      type: type,
       start_date: startDate,
       deadline: deadline || null,
       status: status || "active",

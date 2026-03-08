@@ -9,7 +9,7 @@ const updateDebtSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   purpose: z.string().nullable().optional(),
   totalAmount: z.number().positive().optional(),
-  lenderName: z.string().min(1).max(200).optional(),
+  counterparty: z.string().min(1).max(200).optional(),
   startDate: z.string().optional(),
   deadline: z.string().nullable().optional(),
   status: z.enum(["active", "paid", "overdue"]).optional(),
@@ -25,7 +25,8 @@ function formatDebt(row: any) {
     purpose: row.purpose,
     totalAmount: Number(row.total_amount),
     remainingBalance: Number(row.remaining_balance),
-    lenderName: row.lender_name,
+    counterparty: row.counterparty,
+    type: row.type,
     startDate: row.start_date,
     deadline: row.deadline,
     status: row.status,
@@ -105,7 +106,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const updateData: Record<string, unknown> = {};
   if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
   if (parsed.data.purpose !== undefined) updateData.purpose = parsed.data.purpose;
-  if (parsed.data.lenderName !== undefined) updateData.lender_name = parsed.data.lenderName;
+  if (parsed.data.counterparty !== undefined) updateData.counterparty = parsed.data.counterparty;
   if (parsed.data.startDate !== undefined) updateData.start_date = parsed.data.startDate;
   if (parsed.data.deadline !== undefined) updateData.deadline = parsed.data.deadline;
   if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
