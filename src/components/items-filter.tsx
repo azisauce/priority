@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Filter, ArrowUp, ArrowDown, Search } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 
 type Props = {
   filters: any;
@@ -58,11 +58,10 @@ export default function ItemsFilter({
       <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-            showFilters || hasActiveFilters
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${showFilters || hasActiveFilters
               ? "bg-primary text-primary-foreground"
               : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
+            }`}
         >
           <Filter className="h-4 w-4" />
           <span className="hidden xs:inline">Filters</span>
@@ -98,66 +97,13 @@ export default function ItemsFilter({
           </select>
         </div>
 
-        {/* Quick Sort: hidden on small screens, moved into the expanded filters for sm devices */}
-        <div className="hidden md:flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Sort by:</span>
-          <select
-            value={filters.sortBy}
-            onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-            className="rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
-          >
-            <option value="priority">Priority</option>
-            <option value="pricing">Price</option>
-            <option value="createdAt">Date Added</option>
-            <option value="valueScore">Value Score</option>
-          </select>
-          <button
-            onClick={() =>
-              handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")
-            }
-            className="rounded-lg bg-input border border-border p-2 text-muted-foreground hover:bg-muted"
-          >
-            {filters.sortOrder === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : (
-              <ArrowDown className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+
       </div>
 
       {/* Expanded Filters */}
       {showFilters && (
         <div className="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Sort controls for small/medium screens (visible below md) */}
-          <div className="md:hidden">
-            <label className="mb-1 block text-sm font-medium text-muted-foreground">Sort by</label>
-            <div className="flex items-center gap-2">
-              <select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
-              >
-                <option value="priority">Priority</option>
-                <option value="pricing">Price</option>
-                <option value="createdAt">Date Added</option>
-                <option value="valueScore">Value Score</option>
-              </select>
-              <button
-                onClick={() =>
-                  handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc")
-                }
-                className="rounded-lg bg-input border border-border p-2 text-muted-foreground hover:bg-muted"
-                aria-label="Toggle sort order"
-              >
-                {filters.sortOrder === "asc" ? (
-                  <ArrowUp className="h-4 w-4" />
-                ) : (
-                  <ArrowDown className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-          </div>
+
           <div>
             <label className="mb-1 block text-sm font-medium text-muted-foreground">Group</label>
             <select

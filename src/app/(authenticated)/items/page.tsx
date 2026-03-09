@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Check } from "lucide-react";
+import { MdArrowUpward, MdArrowDownward, MdSwapVert } from "react-icons/md";
 import ItemModal from "@/components/item-modal";
 import ItemsFilter from "@/components/items-filter";
 import PageHeader from "@/components/layout/page-header";
@@ -267,6 +268,46 @@ export default function ItemsPage() {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleSort = (field: Filters["sortBy"]) => {
+    if (filters.sortBy === field) {
+      handleFilterChange("sortOrder", filters.sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setFilters((prev) => ({ ...prev, sortBy: field, sortOrder: "desc" }));
+    }
+  };
+
+  const SortHeader = ({ field, label, align = "left", className = "" }: { field: Filters["sortBy"] | null; label: string; align?: "left" | "right"; className?: string }) => {
+    if (!field) {
+      return (
+        <th className={`px-6 py-4 text-${align} text-sm font-semibold text-muted-foreground ${className}`}>
+          {label}
+        </th>
+      );
+    }
+    const isActive = filters.sortBy === field;
+    const isAsc = filters.sortOrder === "asc";
+
+    return (
+      <th
+        className={`px-6 py-4 text-${align} text-sm font-semibold text-muted-foreground cursor-pointer group hover:bg-muted/80 transition-colors whitespace-nowrap ${className}`}
+        onClick={() => handleSort(field)}
+      >
+        <div className={`flex items-center gap-1 ${align === "right" ? "justify-end" : ""}`}>
+          {label}
+          {isActive ? (
+            <span className="text-primary flex items-center">
+              {isAsc ? <MdArrowUpward className="h-4 w-4" /> : <MdArrowDownward className="h-4 w-4" />}
+            </span>
+          ) : (
+            <span className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
+              <MdSwapVert className="h-4 w-4" />
+            </span>
+          )}
+        </div>
+      </th>
+    );
+  };
+
   const clearFilters = () => {
     setFilters({
       groupId: "",
@@ -504,177 +545,88 @@ export default function ItemsPage() {
 
       {/* Items Table / Cards */}
       <div className="rounded-xl bg-card border border-border overflow-hidden">
-        {loading ? (
-          <div className="flex h-64 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        ) : displayedItems.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center text-center px-4">
-            <div className="mb-4 rounded-full bg-muted p-4">
-              <Search className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-medium text-foreground">No items found</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {hasActiveFilters
-                ? "Try adjusting your filters or clear them to see all items."
-                : "Get started by adding your first item."}
-            </p>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                Clear Filters
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* Mobile Card View */}
-            <div className="divide-y divide-border md:hidden">
-              {displayedItems.map((item) => {
-                const valueScore = calculateValueScore(item.priority, item.pricing);
-                return (
-                  <div
-                    key={item.id}
-                    className="p-4 transition-colors hover:bg-muted/50 active:bg-muted/50"
-                    onClick={() => openEditModal(item)}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
-                          }}
-                          disabled={togglingIds.includes(item.id)}
-                          className="mt-0.5 shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
-                          title="Mark done"
-                        >
-                          <Check className="h-4 w-4 text-green-500" />
-                        </button>
-                        <div className="min-w-0">
-                          <span className={"font-medium text-sm " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>
-                            {item.itemName}
-                          </span>
-                          {item.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
-                          )}
-                          <div className="flex flex-wrap items-center gap-2 mt-2">
-                            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                              {item.group?.groupName || "Unknown"}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <div
-                                className={`h-2 w-2 rounded-full ${item.priority >= 4
-                                  ? "bg-red-500"
-                                  : item.priority >= 3
-                                    ? "bg-yellow-500"
-                                    : "bg-green-500"
-                                  }`}
-                              />
-                              <span className="text-xs text-muted-foreground">{item.priority.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <span className="text-sm font-medium text-foreground">{formatCurrency(item.pricing)}</span>
-                        <p className="text-xs text-muted-foreground mt-0.5">VS: {valueScore.toFixed(2)}</p>
-                        <div className="flex items-center justify-end gap-1 mt-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditModal(item);
-                            }}
-                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteItem(item);
-                            }}
-                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+        {/* Mobile Card View */}
+        <div className="divide-y divide-border md:hidden">
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="p-4 animate-pulse pt-5 pb-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="mt-0.5 shrink-0 h-6 w-6 rounded-full bg-muted" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="h-4 w-3/4 rounded bg-muted" />
+                      <div className="h-3 w-1/2 rounded bg-muted" />
+                      <div className="flex gap-2 mt-2">
+                        <div className="h-4 w-16 rounded-full bg-muted" />
+                        <div className="h-4 w-12 rounded bg-muted" />
                       </div>
                     </div>
                   </div>
-                );
-              })}
+                  <div className="shrink-0 text-right space-y-2">
+                    <div className="h-4 w-16 rounded bg-muted ml-auto" />
+                    <div className="h-3 w-12 rounded bg-muted ml-auto" />
+                    <div className="flex justify-end gap-1 mt-2">
+                      <div className="h-6 w-6 rounded bg-muted" />
+                      <div className="h-6 w-6 rounded bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : displayedItems.length === 0 ? (
+            <div className="flex h-64 flex-col items-center justify-center text-center px-4">
+              <div className="mb-4 rounded-full bg-muted p-4">
+                <Search className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground">No items found</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {hasActiveFilters
+                  ? "Try adjusting your filters or clear them to see all items."
+                  : "Get started by adding your first item."}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                      Item Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                      Group
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                      Priority
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                      Price
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                      Value Score
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-muted-foreground">
-                      Created
-                    </th>
-                    <th className="px-6 py-4 text-right text-sm font-semibold text-muted-foreground">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {displayedItems.map((item) => {
-                    const valueScore = calculateValueScore(item.priority, item.pricing);
-                    return (
-                      <tr
-                        key={item.id}
-                        className="group cursor-pointer transition-colors hover:bg-muted/50"
-                        onClick={() => openEditModal(item)}
+          ) : (
+            displayedItems.map((item) => {
+              const valueScore = calculateValueScore(item.priority, item.pricing);
+              return (
+                <div
+                  key={item.id}
+                  className="p-4 transition-colors hover:bg-muted/50 active:bg-muted/50"
+                  onClick={() => openEditModal(item)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
+                        }}
+                        disabled={togglingIds.includes(item.id)}
+                        className="mt-0.5 shrink-0 rounded-full p-1 text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                        title="Mark done"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-start gap-3">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
-                              }}
-                              disabled={togglingIds.includes(item.id)}
-                              className="rounded-full p-1 text-muted-foreground transform transition duration-150 ease-out hover:scale-105 active:scale-95 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
-                              title="Mark done"
-                            >
-                              <Check className="h-4 w-4 text-green-500" />
-                            </button>
-                            <div>
-                              <span className={"font-medium " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>
-                                {item.itemName}
-                              </span>
-                              {item.description && (
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
+                        <Check className="h-4 w-4 text-green-500" />
+                      </button>
+                      <div className="min-w-0">
+                        <span className={"font-medium text-sm " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>
+                          {item.itemName}
+                        </span>
+                        {item.description && (
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                             {item.group?.groupName || "Unknown"}
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <div
                               className={`h-2 w-2 rounded-full ${item.priority >= 4
                                 ? "bg-red-500"
@@ -683,47 +635,188 @@ export default function ItemsPage() {
                                   : "bg-green-500"
                                 }`}
                             />
-                            <span className="text-foreground">{item.priority.toFixed(2)}</span>
+                            <span className="text-xs text-muted-foreground">{item.priority.toFixed(2)}</span>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-foreground">{formatCurrency(item.pricing)}</td>
-                        <td className="px-6 py-4">
-                          <span className="text-foreground">{valueScore.toFixed(2)}</span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground">
-                          {formatDate(item.createdAt)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditModal(item);
-                              }}
-                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <span className="text-sm font-medium text-foreground">{formatCurrency(item.pricing)}</span>
+                      <p className="text-xs text-muted-foreground mt-0.5">VS: {valueScore.toFixed(2)}</p>
+                      <div className="flex items-center justify-end gap-1 mt-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(item);
+                          }}
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteItem(item);
+                          }}
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
 
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteItem(item);
-                              }}
-                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                <SortHeader field={null} label="Item Name" className="w-[30%]" />
+                <SortHeader field={null} label="Group" className="w-[15%]" />
+                <SortHeader field="priority" label="Priority" className="w-[10%]" />
+                <SortHeader field="pricing" label="Price" className="w-[10%]" />
+                <SortHeader field="valueScore" label="Value Score" className="w-[10%]" />
+                <SortHeader field="createdAt" label="Created" className="w-[15%]" />
+                <SortHeader field={null} label="Actions" align="right" className="w-[10%]" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-6 w-6 rounded-full bg-muted shrink-0" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-4 w-3/4 rounded bg-muted" />
+                          <div className="h-3 w-1/2 rounded bg-muted" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4"><div className="h-6 w-16 rounded-full bg-muted" /></td>
+                    <td className="px-6 py-4"><div className="flex items-center gap-2"><div className="h-2 w-2 rounded-full bg-muted" /><div className="h-4 w-8 rounded bg-muted" /></div></td>
+                    <td className="px-6 py-4"><div className="h-4 w-16 rounded bg-muted" /></td>
+                    <td className="px-6 py-4"><div className="h-4 w-12 rounded bg-muted" /></td>
+                    <td className="px-6 py-4"><div className="h-4 w-24 rounded bg-muted" /></td>
+                    <td className="px-6 py-4"><div className="flex justify-end gap-2"><div className="h-8 w-8 rounded bg-muted" /><div className="h-8 w-8 rounded bg-muted" /></div></td>
+                  </tr>
+                ))
+              ) : displayedItems.length === 0 ? (
+                <tr>
+                  <td colSpan={7}>
+                    <div className="flex h-64 flex-col items-center justify-center text-center px-4">
+                      <div className="mb-4 rounded-full bg-muted p-4">
+                        <Search className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg font-medium text-foreground">No items found</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {hasActiveFilters
+                          ? "Try adjusting your filters or clear them to see all items."
+                          : "Get started by adding your first item."}
+                      </p>
+                      {hasActiveFilters && (
+                        <button
+                          onClick={clearFilters}
+                          className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                        >
+                          Clear Filters
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                displayedItems.map((item) => {
+                  const valueScore = calculateValueScore(item.priority, item.pricing);
+                  return (
+                    <tr
+                      key={item.id}
+                      className="group cursor-pointer transition-colors hover:bg-muted/50"
+                      onClick={() => openEditModal(item)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-start gap-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!togglingIds.includes(item.id)) toggleItemDone(item, true);
+                            }}
+                            disabled={togglingIds.includes(item.id)}
+                            className="rounded-full p-1 text-muted-foreground transform transition duration-150 ease-out hover:scale-105 active:scale-95 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
+                            title="Mark done"
+                          >
+                            <Check className="h-4 w-4 text-green-500" />
+                          </button>
+                          <div>
+                            <span className={"font-medium " + (item.isDone ? "text-muted-foreground line-through" : "text-foreground")}>
+                              {item.itemName}
+                            </span>
+                            {item.description && (
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
+                            )}
                           </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
+                          {item.group?.groupName || "Unknown"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`h-2 w-2 rounded-full ${item.priority >= 4
+                              ? "bg-red-500"
+                              : item.priority >= 3
+                                ? "bg-yellow-500"
+                                : "bg-green-500"
+                              }`}
+                          />
+                          <span className="text-foreground">{item.priority.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-foreground">{formatCurrency(item.pricing)}</td>
+                      <td className="px-6 py-4">
+                        <span className="text-foreground">{valueScore.toFixed(2)}</span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
+                        {formatDate(item.createdAt)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(item);
+                            }}
+                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteItem(item);
+                            }}
+                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Add/Edit Modal */}
