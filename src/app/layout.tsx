@@ -27,6 +27,12 @@ export const metadata: Metadata = {
     shortcut: "/assets/logos/general_logo_primary.png",
     apple: "/assets/logos/general_logo_primary.png",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Priority",
+  },
 };
 
 export default function RootLayout({
@@ -42,6 +48,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthSessionProvider>{children}</AuthSessionProvider>
         </ThemeProvider>
+        <script dangerouslySetInnerHTML={{
+          __html: `if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')`
+        }} />
       </body>
     </html>
   );
