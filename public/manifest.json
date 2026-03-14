@@ -1,0 +1,21 @@
+{
+  "name": "Priority App",
+  "short_name": "Priority",
+  "description": "A smart purchase planner that helps you prioritize and plan your purchases intelligently.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8E0D2",
+  "theme_color": "#8B7A9A",
+  "icons": [
+    {
+      "src": "/assets/logos/basic_logo_primary.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/logos/basic_logo_primary.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
