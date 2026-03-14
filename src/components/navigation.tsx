@@ -46,8 +46,8 @@ export default function Navigation() {
             <img
               src={
                 theme === "dark"
-                  ? "/assets/logos/basic_logo_light_azure.png"
-                  : "/assets/logos/basic_logo_deep_navy.png"
+                  ? "/assets/logos/basic_logo_foregound.png"
+                  : "/assets/logos/basic_logo_foregound.png"
               }
               alt="Priority Logo"
               onClick={collapsed ? toggle : undefined}

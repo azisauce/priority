@@ -23,9 +23,9 @@ export const metadata: Metadata = {
   title: "Priority - Smart Purchase Planner",
   description: "Prioritize and plan your purchases intelligently",
   icons: {
-    icon: "/assets/logos/basic_logo_light_azure.png",
-    shortcut: "/assets/logos/general_logo_azure.png",
-    apple: "/assets/logos/general_logo_azure.png",
+    icon: "/assets/logos/basic_logo_primary.png",
+    shortcut: "/assets/logos/general_logo_primary.png",
+    apple: "/assets/logos/general_logo_primary.png",
   },
 };
 

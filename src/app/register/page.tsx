@@ -94,7 +94,7 @@ export default function RegisterPage() {
         <div className="bg-card rounded-xl border border-border p-8">
           <div className="flex items-center justify-center gap-4 mb-4">
             <img
-              src="/assets/logos/general_logo_azure.png"
+              src="/assets/logos/general_logo_primary.png"
               alt="Priority Logo"
               className="w-32 h-32 object-contain"
             />
