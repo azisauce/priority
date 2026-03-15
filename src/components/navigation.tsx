@@ -24,7 +24,14 @@ export default function Navigation() {
   const getActiveRoute = (): string => {
     if (pathname.startsWith("/dashboard")) return "dashboard";
     if (pathname.startsWith("/items") || pathname.startsWith("/groups") || pathname.startsWith("/priority-params")) return "wishlist";
-    if (pathname.startsWith("/debts") || pathname.startsWith("/assets")) return "tracking";
+    if (
+      pathname.startsWith("/tracking") ||
+      pathname.startsWith("/counterparties") ||
+      pathname.startsWith("/debts") ||
+      pathname.startsWith("/assets")
+    ) {
+      return "tracking";
+    }
     if (pathname.startsWith("/simulation")) return "simulation";
     return "dashboard";
   };
@@ -36,7 +43,7 @@ export default function Navigation() {
         hidden lg:flex lg:flex-col lg:fixed lg:top-4 lg:left-4 lg:bottom-4
         bg-card border border-border rounded-2xl shadow-lg
         transition-all duration-300 ease-in-out z-40 overflow-hidden
-        ${collapsed ? "lg:w-[72px]" : "lg:w-64"}
+        ${collapsed ? "lg:w-18" : "lg:w-64"}
       `}
     >
       <div className="flex flex-col h-full">

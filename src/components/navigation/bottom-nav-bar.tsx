@@ -17,7 +17,7 @@ interface BottomNavBarProps {
 const navItems = [
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
     { key: "wishlist", label: "Wishlist", icon: Package, href: "/items" },
-    { key: "tracking", label: "Tracking", icon: CreditCard, href: "/counterparties" },
+    { key: "tracking", label: "Tracking", icon: CreditCard, href: "/tracking/balance" },
     { key: "simulation", label: "Simulation", icon: Calculator, href: "/simulation" },
 ];
 
