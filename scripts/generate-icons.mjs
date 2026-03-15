@@ -1,7 +1,7 @@
     import sharp from 'sharp'
 
-const sizes = [192, 512]
-const src = './public/assets/logos/basic_logo_primary.png'
+const sizes = [512]
+const src = './public/assets/logos/general_logo_primary.png'
 
 for (const size of sizes) {
   await sharp(src)
