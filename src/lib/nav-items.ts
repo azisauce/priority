@@ -41,10 +41,9 @@ export const mainNavItems: NavItem[] = [
         label: "Tracking",
         icon: CreditCard,
         children: [
-            { href: "/debts", label: "Debts" },
-            { href: "/assets", label: "Assets" },
+            { href: "/counterparties", label: "Ledger" },
         ],
-        defaultChild: "/debts",
+        defaultChild: "/counterparties",
     },
     { href: "/simulation", label: "Simulation", icon: Calculator },
 ];

@@ -49,7 +49,12 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   const userId = session.user.id;
   const { id } = await context.params;
 
-  const debt = await db("debts").where({ id }).first();
+  const debt = await db("debts")
+    .join("counterparties", "debts.counterparty_id", "counterparties.id")
+    .where("debts.id", id)
+    .select("debts.*", "counterparties.name as counterparty")
+    .first();
+
   if (!debt) {
     return NextResponse.json({ error: "Debt not found" }, { status: 404 });
   }
@@ -106,13 +111,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const updateData: Record<string, unknown> = {};
   if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
   if (parsed.data.purpose !== undefined) updateData.purpose = parsed.data.purpose;
-  if (parsed.data.counterparty !== undefined) updateData.counterparty = parsed.data.counterparty;
   if (parsed.data.startDate !== undefined) updateData.start_date = parsed.data.startDate;
   if (parsed.data.deadline !== undefined) updateData.deadline = parsed.data.deadline;
   if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
   if (parsed.data.paymentPeriod !== undefined) updateData.payment_period = parsed.data.paymentPeriod;
   if (parsed.data.fixedInstallmentAmount !== undefined) updateData.fixed_installment_amount = parsed.data.fixedInstallmentAmount;
   if (parsed.data.notes !== undefined) updateData.notes = parsed.data.notes;
+
+  if (parsed.data.counterparty !== undefined) {
+    let cpRow = await db("counterparties").where({ user_id: userId, name: parsed.data.counterparty }).first();
+    if (!cpRow) {
+      [cpRow] = await db("counterparties").insert({ user_id: userId, name: parsed.data.counterparty }).returning("*");
+    }
+    updateData.counterparty_id = cpRow.id;
+  }
 
   // If totalAmount changes, recalculate remaining_balance
   if (parsed.data.totalAmount !== undefined) {
@@ -128,7 +140,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     await recalcDebt(id);
   }
 
-  const updated = await db("debts").where({ id }).first();
+  const updated = await db("debts")
+    .join("counterparties", "debts.counterparty_id", "counterparties.id")
+    .where("debts.id", id)
+    .select("debts.*", "counterparties.name as counterparty")
+    .first();
 
   return NextResponse.json({ debt: formatDebt(updated) });
 }

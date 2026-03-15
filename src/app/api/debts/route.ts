@@ -50,7 +50,11 @@ export async function GET(request: NextRequest) {
   const statusFilter = searchParams.get("status");
   const typeFilter = searchParams.get("type") || "debt";
 
-  let query = db("debts").where("debts.user_id", userId).andWhere("debts.type", typeFilter);
+  let query = db("debts")
+    .join("counterparties", "debts.counterparty_id", "counterparties.id")
+    .where("debts.user_id", userId)
+    .andWhere("debts.type", typeFilter)
+    .select("debts.*", "counterparties.name as counterparty");
 
   if (statusFilter && ["active", "paid", "overdue"].includes(statusFilter)) {
     query = query.andWhere("debts.status", statusFilter);
@@ -66,7 +70,7 @@ export async function GET(request: NextRequest) {
     .whereNot("status", "paid")
     .update({ status: "overdue" });
 
-  const debts = await query.orderBy("created_at", "desc");
+  const debts = await query.orderBy("debts.created_at", "desc");
 
   // For each debt, get the next scheduled payment date
   const debtIds = debts.map((d: any) => d.id);
@@ -123,13 +127,18 @@ export async function POST(request: NextRequest) {
     type,
   } = parsed.data;
 
+  let cpRow = await db("counterparties").where({ user_id: userId, name: counterparty }).first();
+  if (!cpRow) {
+    [cpRow] = await db("counterparties").insert({ user_id: userId, name: counterparty }).returning("*");
+  }
+
   const [debt] = await db("debts")
     .insert({
       name,
       purpose: purpose || null,
       total_amount: totalAmount,
       remaining_balance: totalAmount, // starts at full amount
-      counterparty: counterparty,
+      counterparty_id: cpRow.id,
       type: type,
       start_date: startDate,
       deadline: deadline || null,
@@ -140,6 +149,8 @@ export async function POST(request: NextRequest) {
       user_id: userId,
     })
     .returning("*");
+
+  debt.counterparty = cpRow.name;
 
   return NextResponse.json({ debt: formatDebt(debt) }, { status: 201 });
 }
