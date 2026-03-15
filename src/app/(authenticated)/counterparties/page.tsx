@@ -514,7 +514,7 @@ export default function CounterpartiesPage() {
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div className="absolute inset-0 bg-black/70" onClick={() => setDeleteCp(null)} />
                 <div className="relative w-full max-w-md rounded-xl bg-popover border border-border p-6 shadow-2xl">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
                         <Trash2 className="h-6 w-6 text-destructive" />
                     </div>
                     <h2 className="mb-2 text-xl font-bold text-foreground">Delete Counterparty</h2>
@@ -690,7 +690,7 @@ export default function CounterpartiesPage() {
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div className="absolute inset-0 bg-black/70" onClick={() => setDeleteRecord(null)} />
                 <div className="relative w-full max-w-md rounded-xl bg-popover border border-border p-6 shadow-2xl">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
                         <Trash2 className="h-6 w-6 text-destructive" />
                     </div>
                     <h2 className="mb-2 text-xl font-bold text-foreground">Delete Record</h2>
@@ -821,7 +821,7 @@ export default function CounterpartiesPage() {
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div className="absolute inset-0 bg-black/70" onClick={() => setDeletePayment(null)} />
                 <div className="relative w-full max-w-md rounded-xl bg-popover border border-border p-6 shadow-2xl">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
                         <Trash2 className="h-6 w-6 text-destructive" />
                     </div>
                     <h2 className="mb-2 text-xl font-bold text-foreground">Delete Payment</h2>
@@ -892,8 +892,9 @@ export default function CounterpartiesPage() {
                             </div>
                         </div>
 
-                        {/* Records */}
-                        <div className="rounded-xl bg-card border border-border overflow-hidden">
+                        <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+                            {/* Records */}
+                            <div className="rounded-xl bg-card border border-border overflow-hidden xl:flex-1 xl:min-w-0">
                             <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                     <Banknote className="w-4 h-4 text-primary" />
@@ -1009,10 +1010,10 @@ export default function CounterpartiesPage() {
                                     })}
                                 </div>
                             )}
-                        </div>
+                            </div>
 
-                        {/* Payments */}
-                        <div className="rounded-xl bg-card border border-border overflow-hidden mt-6">
+                            {/* Payments */}
+                            <div className="rounded-xl bg-card border border-border overflow-hidden xl:flex-1 xl:min-w-0">
                             <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                     <Clock className="w-4 h-4 text-primary" />
@@ -1048,8 +1049,8 @@ export default function CounterpartiesPage() {
                                                                 {parentRecord ? parentRecord.label : "Unknown Item"}
                                                             </span>
                                                             <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-medium ${p.status === 'paid' ? 'bg-green-500/15 text-green-600' :
-                                                                    p.status === 'missed' ? 'bg-red-500/15 text-red-600' :
-                                                                        'bg-blue-500/15 text-blue-600'
+                                                                p.status === 'missed' ? 'bg-red-500/15 text-red-600' :
+                                                                    'bg-blue-500/15 text-blue-600'
                                                                 }`}>
                                                                 {p.status.toUpperCase()}
                                                             </span>
@@ -1088,6 +1089,7 @@ export default function CounterpartiesPage() {
                                     })}
                                 </div>
                             )}
+                            </div>
                         </div>
                     </>
                 )}

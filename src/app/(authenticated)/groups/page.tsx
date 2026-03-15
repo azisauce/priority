@@ -472,7 +472,7 @@ export default function GroupsPage() {
             }}
           />
           <div className="relative w-full max-w-sm rounded-xl bg-popover border border-border p-6 shadow-2xl">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
               <Trash2 className="h-6 w-6 text-destructive" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">

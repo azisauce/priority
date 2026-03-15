@@ -842,7 +842,7 @@ export default function ItemsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/70" onClick={() => setDeleteItem(null)} />
           <div className="relative w-full max-w-md rounded-xl bg-popover border border-border p-6 shadow-2xl">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
               <Trash2 className="h-6 w-6 text-destructive" />
             </div>
             <h2 className="mb-2 text-xl font-bold text-foreground">Delete Item</h2>
