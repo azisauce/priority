@@ -3,14 +3,32 @@
 import { useState } from "react";
 import { Filter, Search } from "lucide-react";
 
+type SortBy = "priority" | "pricing" | "createdAt" | "valueScore";
+type SortOrder = "asc" | "desc";
+
+type ItemsFilters = {
+  groupId: string;
+  minPriority: string;
+  maxPriority: string;
+  minPrice: string;
+  maxPrice: string;
+  sortBy: SortBy;
+  sortOrder: SortOrder;
+};
+
+type GroupOption = {
+  id: string;
+  groupName: string;
+};
+
 type Props = {
-  filters: any;
-  setFilters: (f: any) => void;
+  filters: ItemsFilters;
+  setFilters: React.Dispatch<React.SetStateAction<ItemsFilters>>;
   showDoneFilter: DoneFilter;
   setShowDoneFilter: React.Dispatch<React.SetStateAction<DoneFilter>>;
   searchQuery: string;
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  groups: any[];
+  groups: GroupOption[];
 };
 
 export type DoneFilter = "all" | "done" | "undone";
@@ -34,8 +52,8 @@ export default function ItemsFilter({
     Boolean(filters.minPrice) ||
     Boolean(filters.maxPrice);
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters((prev: any) => ({ ...prev, [key]: value }));
+  const handleFilterChange = (key: keyof ItemsFilters, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const clearFilters = () => {
@@ -123,7 +141,7 @@ export default function ItemsFilter({
                 className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
               >
                 <option value="">All Groups</option>
-                {groups.map((group: any) => (
+                {groups.map((group) => (
                   <option key={group.id} value={group.id}>
                     {group.groupName}
                   </option>
@@ -179,6 +197,33 @@ export default function ItemsFilter({
                   className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
                 />
               </div>
+            </div>
+
+            {/* Mobile-only sorting controls */}
+            <div className="md:hidden">
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Sort By</label>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange("sortBy", e.target.value)}
+                className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+              >
+                <option value="priority">Priority</option>
+                <option value="pricing">Price</option>
+                <option value="valueScore">Value Score</option>
+                <option value="createdAt">Created Date</option>
+              </select>
+            </div>
+
+            <div className="md:hidden">
+              <label className="mb-1 block text-sm font-medium text-muted-foreground">Order</label>
+              <select
+                value={filters.sortOrder}
+                onChange={(e) => handleFilterChange("sortOrder", e.target.value)}
+                className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
+              >
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
+              </select>
             </div>
 
             <div className="flex items-end">
