@@ -3,7 +3,8 @@ import {
     Package,
     Calculator,
     CreditCard,
-    User,
+    Wallet,
+    Receipt,
     type LucideIcon,
 } from "lucide-react";
 
@@ -28,23 +29,42 @@ export type NavItem = NavLeaf | NavParent;
 export const mainNavItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     {
+        label: "Payments",
+        icon: Wallet,
+        children: [
+            { href: "/payments/overview", label: "Overview" },
+            { href: "/payments/history", label: "History" },
+        ],
+        defaultChild: "/payments/overview",
+    },
+    {
+        label: "Expenses",
+        icon: Receipt,
+        children: [
+            { href: "/expenses/daily", label: "Daily" },
+            { href: "/expenses/budgets", label: "Budgets" },
+        ],
+        defaultChild: "/expenses/daily",
+    },
+    {
+        label: "Debts",
+        icon: CreditCard,
+        children: [
+            { href: "/debts/summary", label: "Summary" },
+            { href: "/debts/counterparties", label: "Counterparties" },
+            { href: "/debts/entries", label: "Entries" },
+        ],
+        defaultChild: "/debts/summary",
+    },
+    {
         label: "Wishlist",
         icon: Package,
         children: [
-            { href: "/items", label: "Items" },
-            { href: "/groups", label: "Groups" },
-            { href: "/priority-params", label: "Params" },
+            { href: "/wishlist/items", label: "Items" },
+            { href: "/wishlist/groups", label: "Groups" },
+            { href: "/wishlist/parameters", label: "Parameters" },
         ],
-        defaultChild: "/items",
-    },
-    {
-        label: "Tracking",
-        icon: CreditCard,
-        children: [
-            { href: "/tracking/balance", label: "Balance" },
-            { href: "/counterparties", label: "Counterparties" },
-        ],
-        defaultChild: "/tracking/balance",
+        defaultChild: "/wishlist/items",
     },
     { href: "/simulation", label: "Simulation", icon: Calculator },
 ];

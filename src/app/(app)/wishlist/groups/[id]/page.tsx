@@ -193,7 +193,7 @@ export default function GroupDetailPage() {
     return (
       <div className="space-y-6 py-4">
         <button
-          onClick={() => router.push("/groups")}
+          onClick={() => router.push("/wishlist/groups")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -217,7 +217,7 @@ export default function GroupDetailPage() {
     <div className="space-y-6 py-4">
       {/* Back button */}
       <button
-        onClick={() => router.push("/groups")}
+        onClick={() => router.push("/wishlist/groups")}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -274,7 +274,7 @@ export default function GroupDetailPage() {
           )}
         </div>
         <button
-          onClick={() => router.push(`/items?groupId=${groupId}`)}
+          onClick={() => router.push(`/wishlist/items?groupId=${groupId}`)}
           className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />

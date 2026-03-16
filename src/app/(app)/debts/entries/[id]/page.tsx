@@ -246,7 +246,7 @@ export default function BalanceDetailPage() {
         return;
       }
 
-      router.push("/tracking/balance");
+      router.push("/debts/entries");
     } catch (err) {
       console.error("Failed to delete debt:", err);
       alert("Failed to delete debt/asset");
@@ -737,7 +737,7 @@ export default function BalanceDetailPage() {
   return (
     <div className="space-y-6 py-4">
       <button
-        onClick={() => router.push("/tracking/balance")}
+        onClick={() => router.push("/debts/entries")}
         className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />

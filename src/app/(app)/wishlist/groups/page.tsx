@@ -286,7 +286,7 @@ export default function GroupsPage() {
             <div
               key={group.id}
               className="bg-card border border-border rounded-lg p-6 hover:border-muted-foreground/30 transition-colors cursor-pointer group/card"
-              onClick={() => router.push(`/groups/${group.id}`)}
+              onClick={() => router.push(`/wishlist/groups/${group.id}`)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">

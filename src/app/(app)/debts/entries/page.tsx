@@ -314,7 +314,7 @@ export default function BalanceOverviewPage() {
               {displayedItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => router.push(`/tracking/balance/${item.id}`)}
+                  onClick={() => router.push(`/debts/entries/${item.id}`)}
                   className="w-full p-4 text-left transition-colors hover:bg-muted/40"
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -382,7 +382,7 @@ export default function BalanceOverviewPage() {
                     <tr
                       key={item.id}
                       className="cursor-pointer transition-colors hover:bg-muted/40"
-                      onClick={() => router.push(`/tracking/balance/${item.id}`)}
+                      onClick={() => router.push(`/debts/entries/${item.id}`)}
                     >
                       <td className="px-6 py-4">
                         <p className="font-medium text-foreground">{item.name}</p>

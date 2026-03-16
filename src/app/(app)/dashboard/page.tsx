@@ -248,7 +248,7 @@ function CarouselCard() {
           <div className="space-y-2 text-foreground/80">
             <h3 className="font-semibold text-foreground">How it works</h3>
             <p className="text-sm leading-relaxed">
-              The <span className="text-primary font-medium">Priority Score</span> is a weighted average of your custom parameters. Configure them in <Link className="text-primary font-medium" href="/priority-params">Params</Link>.
+              The <span className="text-primary font-medium">Priority Score</span> is a weighted average of your custom parameters. Configure them in <Link className="text-primary font-medium" href="/wishlist/parameters">Params</Link>.
             </p>
             <p className="text-sm leading-relaxed">
               The <span className="text-primary font-medium">Value Score</span> exponentially weights high-priority items against cost so small, critical purchases bubble up.
