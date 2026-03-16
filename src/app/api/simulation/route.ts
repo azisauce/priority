@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { simulatePurchases, simulatePurchasesOptimal } from "@/lib/priority";
-import { z } from "zod";
-import db from "@/lib/db";
-
-const simulationSchema = z.object({
-  initialBudget: z.number().min(0, "Initial budget must be non-negative"),
-  monthlyIncome: z.number().min(0, "Monthly income must be non-negative"),
-  deadlineMonths: z.number().int().positive().optional(),
-  maxPriceThreshold: z.number().min(0).optional(),
-  useEase: z.boolean().optional(),
-  formula: z.enum(["greedy", "optimal"]).optional(),
-  groupIds: z.array(z.string()).optional(),
-});
+import { requireAuthenticatedUserId } from "@/server/services/auth.service";
+import { runSimulationForUser } from "@/server/services/simulation.service";
+import { simulationSchema } from "@/server/validators/simulation.validator";
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  const userId = await requireAuthenticatedUserId();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
 
   const body = await request.json();
   const parsed = simulationSchema.safeParse(body);
@@ -28,64 +15,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten().fieldErrors }, { status: 400 });
   }
 
-  const { initialBudget, monthlyIncome, deadlineMonths, maxPriceThreshold, groupIds, useEase, formula } = parsed.data as any;
-
-  let query = db("items").where("items.user_id", userId);
-  // Exclude items marked as done from simulations
-  query = query.andWhere("items.is_done", false);
-  if (groupIds && groupIds.length > 0) {
-    query = query.whereIn("group_id", groupIds);
-  }
-  if (typeof maxPriceThreshold === "number") {
-    query = query.andWhere("items.price", "<=", maxPriceThreshold);
-  }
-
-  const items = await query.select(
-    "id",
-    "name",
-    "price",
-    "priority",
-    "enabled_ease_option",
-    "price_with_interest",
-    "interest_percentage",
-    "ease_period"
-  );
-
-  const formattedItems = items.map((item) => ({
-    id: item.id,
-    itemName: item.name,
-    pricing: Number(item.price),
-    priority: Number(item.priority),
-    ease: item.enabled_ease_option
-      ? {
-          priceWithInterest: item.price_with_interest ? Number(item.price_with_interest) : undefined,
-          interestPercentage: item.interest_percentage ? Number(item.interest_percentage) : undefined,
-          easePeriod: Number(item.ease_period) || 0,
-        }
-      : undefined,
-  }));
-
-  const useEaseBool = typeof useEase === "boolean" ? useEase : true;
-  let result;
-  if (formula === "optimal") {
-    result = simulatePurchasesOptimal(
-      formattedItems,
-      initialBudget,
-      monthlyIncome,
-      deadlineMonths,
-      maxPriceThreshold,
-      useEaseBool
-    );
-  } else {
-    result = simulatePurchases(
-      formattedItems,
-      initialBudget,
-      monthlyIncome,
-      deadlineMonths,
-      maxPriceThreshold,
-      useEaseBool
-    );
-  }
-
-  return NextResponse.json({ simulation: result });
+  const result = await runSimulationForUser(userId, parsed.data);
+  return NextResponse.json(result.body, { status: result.status });
 }
