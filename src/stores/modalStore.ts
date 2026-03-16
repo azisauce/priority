@@ -2,7 +2,11 @@
 
 import { useSyncExternalStore } from "react";
 
-export type ModalType = "ADD_BUDGET" | "ADD_EXPENSE";
+export type ModalType =
+  | "ADD_BUDGET"
+  | "ADD_EXPENSE"
+  | "ADD_PAYMENT"
+  | "MARK_AS_PAID";
 
 type ModalStoreState = {
   activeModal: ModalType | null;
