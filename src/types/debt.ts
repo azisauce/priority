@@ -57,9 +57,9 @@ export interface DebtSummaryUpcomingDue {
   name: string;
   counterparty: string;
   direction: DebtDirection;
-  deadline: string;
-  remaining_amount: number;
-  days_until_deadline: number;
+  payment_date: string;
+  amount: number;
+  days_until_payment: number;
 }
 
 export interface DebtSummary {

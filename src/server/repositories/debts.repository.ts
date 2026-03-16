@@ -36,21 +36,20 @@ export async function findSummaryByUser(userId: string) {
   const todayIso = today.toISOString().split("T")[0];
   const nextThirtyDaysIso = nextThirtyDays.toISOString().split("T")[0];
 
-  const upcomingDues = await db("debts")
+  const upcomingDues = await db("debt_payments")
+    .join("debts", "debt_payments.debt_id", "debts.id")
     .join("counterparties", "debts.counterparty_id", "counterparties.id")
     .where("debts.user_id", userId)
-    .whereNotNull("debts.deadline")
-    .where("debts.deadline", ">=", todayIso)
-    .where("debts.deadline", "<=", nextThirtyDaysIso)
-    .whereNot("debts.status", "paid")
-    .orderBy("debts.deadline", "asc")
+    .where("debt_payments.status", "scheduled")
+    .where("debt_payments.payment_date", ">=", todayIso)
+    .where("debt_payments.payment_date", "<=", nextThirtyDaysIso)
+    .orderBy("debt_payments.payment_date", "asc")
     .select(
-      "debts.id",
+      "debt_payments.id",
       "debts.name",
       "debts.direction",
-      "debts.total_amount",
-      "debts.paid_amount",
-      "debts.deadline",
+      "debt_payments.amount",
+      "debt_payments.payment_date",
       "counterparties.name as counterparty"
     );
 

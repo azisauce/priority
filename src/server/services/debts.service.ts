@@ -124,9 +124,9 @@ export async function getSummary(
       name: string;
       counterparty: string;
       direction: "i_owe" | "they_owe";
-      deadline: string;
-      remaining_amount: number;
-      days_until_deadline: number;
+      payment_date: string;
+      amount: number;
+      days_until_payment: number;
     }>;
   }>
 > {
@@ -148,16 +148,14 @@ export async function getSummary(
   }
 
   const formattedUpcomingDues = (upcomingDues as Array<any>).map((row) => {
-    const remainingAmount = Math.max(Number(row.total_amount) - Number(row.paid_amount), 0);
-
     return {
       id: row.id,
       name: row.name,
       counterparty: row.counterparty,
       direction: row.direction,
-      deadline: row.deadline,
-      remaining_amount: remainingAmount,
-      days_until_deadline: daysUntil(row.deadline),
+      payment_date: row.payment_date,
+      amount: Number(row.amount),
+      days_until_payment: daysUntil(row.payment_date),
     };
   });
 

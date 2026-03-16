@@ -28,10 +28,13 @@ export default function UpcomingDueItem({ due }: UpcomingDueItemProps) {
       <div className="text-right">
         <p className={`text-sm font-semibold ${due.direction === "they_owe" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
           {due.direction === "they_owe" ? "+" : "-"}
-          {formatCurrency(due.remaining_amount)}
+          {formatCurrency(due.amount)}
         </p>
         <p className="text-xs text-muted-foreground">
-          {due.days_until_deadline}d • {formatDate(due.deadline)}
+          {due.days_until_payment}d • {formatDate(due.payment_date)}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {due.direction === "i_owe" ? "You owe" : "Owed to you"}
         </p>
       </div>
     </div>
