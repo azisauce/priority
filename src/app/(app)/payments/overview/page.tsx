@@ -20,6 +20,16 @@ function getCurrentMonthStart() {
     return monthStart.toISOString().slice(0, 10);
 }
 
+function toMonthStart(value: string) {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    const monthStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+    return monthStart.toISOString().slice(0, 10);
+}
+
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -40,6 +50,7 @@ export default function PaymentsOverviewPage() {
     const [actionError, setActionError] = useState<string | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<MonthlyPayment | null>(null);
     const [markingPaymentId, setMarkingPaymentId] = useState<string | null>(null);
+    const [optimisticPaidIds, setOptimisticPaidIds] = useState<string[]>([]);
 
     const incomePayments = useMemo(
         () => payments.filter((payment) => payment.type === "income"),
@@ -50,6 +61,18 @@ export default function PaymentsOverviewPage() {
         () => payments.filter((payment) => payment.type === "expense"),
         [payments]
     );
+
+    const paidPaymentIds = useMemo(() => {
+        const paidIds = new Set(optimisticPaidIds);
+
+        for (const entry of summary?.entries ?? []) {
+            if (entry.month === currentMonth && entry.isPaid) {
+                paidIds.add(entry.monthlyPaymentId);
+            }
+        }
+
+        return paidIds;
+    }, [currentMonth, optimisticPaidIds, summary]);
 
     const loadSummary = useCallback(async () => {
         setSummaryLoading(true);
@@ -95,7 +118,18 @@ export default function PaymentsOverviewPage() {
 
         try {
             await markPaymentAsPaid(paymentId, data);
-            await loadSummary();
+
+            if (toMonthStart(data.month) === currentMonth) {
+                setOptimisticPaidIds((prev) => {
+                    if (prev.includes(paymentId)) {
+                        return prev;
+                    }
+
+                    return [...prev, paymentId];
+                });
+            }
+
+            await Promise.all([refetch(), loadSummary()]);
         } catch (markError) {
             setActionError(markError instanceof Error ? markError.message : "Failed to mark as paid.");
             throw markError;
@@ -210,6 +244,7 @@ export default function PaymentsOverviewPage() {
                         ) : (
                             <PaymentList
                                 payments={incomePayments}
+                                paidPaymentIds={paidPaymentIds}
                                 onPaymentClick={(payment) => router.push(`/payments/${payment.id}`)}
                                 onMarkAsPaid={(payment) => {
                                     if (!payment.isActive) return;
@@ -229,6 +264,7 @@ export default function PaymentsOverviewPage() {
                         ) : (
                             <PaymentList
                                 payments={expensePayments}
+                                paidPaymentIds={paidPaymentIds}
                                 onPaymentClick={(payment) => router.push(`/payments/${payment.id}`)}
                                 onMarkAsPaid={(payment) => {
                                     if (!payment.isActive) return;

@@ -11,6 +11,7 @@ interface PaymentCardProps {
   onClick?: () => void;
   onMarkAsPaid?: () => void;
   markAsPaidLoading?: boolean;
+  isPaid?: boolean;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -24,6 +25,7 @@ export default function PaymentCard({
   onClick,
   onMarkAsPaid,
   markAsPaidLoading = false,
+  isPaid = false,
 }: PaymentCardProps) {
   return (
     <CardBase onClick={onClick} className="space-y-4">
@@ -48,6 +50,7 @@ export default function PaymentCard({
             label={payment.type === "income" ? "Income" : "Expense"}
             variant={payment.type === "income" ? "success" : "warning"}
           />
+          {isPaid && <StatusBadge label="Paid" variant="success" />}
           <StatusBadge
             label={payment.isActive ? "Active" : "Ended"}
             variant={payment.isActive ? "info" : "default"}
@@ -75,7 +78,7 @@ export default function PaymentCard({
           : " • No end date"}
       </p>
 
-      {onMarkAsPaid && (
+      {onMarkAsPaid && !isPaid && (
         <div
           onClick={(event) => {
             event.stopPropagation();

@@ -10,6 +10,7 @@ interface PaymentListProps {
   onPaymentClick?: (payment: MonthlyPayment) => void;
   onMarkAsPaid?: (payment: MonthlyPayment) => void;
   markingPaymentId?: string | null;
+  paidPaymentIds?: Set<string>;
 }
 
 export default function PaymentList({
@@ -17,6 +18,7 @@ export default function PaymentList({
   onPaymentClick,
   onMarkAsPaid,
   markingPaymentId,
+  paidPaymentIds,
 }: PaymentListProps) {
   if (payments.length === 0) {
     return (
@@ -30,17 +32,24 @@ export default function PaymentList({
 
   return (
     <div className="space-y-3">
-      {payments.map((payment) => (
-        <PaymentCard
-          key={payment.id}
-          payment={payment}
-          onClick={onPaymentClick ? () => onPaymentClick(payment) : undefined}
-          onMarkAsPaid={
-            onMarkAsPaid && payment.isActive ? () => onMarkAsPaid(payment) : undefined
-          }
-          markAsPaidLoading={markingPaymentId === payment.id}
-        />
-      ))}
+      {payments.map((payment) => {
+        const isPaidForCurrentMonth = paidPaymentIds?.has(payment.id) ?? false;
+
+        return (
+          <PaymentCard
+            key={payment.id}
+            payment={payment}
+            isPaid={isPaidForCurrentMonth}
+            onClick={onPaymentClick ? () => onPaymentClick(payment) : undefined}
+            onMarkAsPaid={
+              onMarkAsPaid && payment.isActive && !isPaidForCurrentMonth
+                ? () => onMarkAsPaid(payment)
+                : undefined
+            }
+            markAsPaidLoading={markingPaymentId === payment.id}
+          />
+        );
+      })}
     </div>
   );
 }

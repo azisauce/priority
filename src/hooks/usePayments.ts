@@ -57,7 +57,7 @@ export function usePayments() {
     setError(null);
 
     try {
-      const response = await fetch("/api/payments");
+      const response = await fetch("/api/payments", { cache: "no-store" });
       const payload = (await parseJsonSafely(response)) as PaymentsListResponse | null;
 
       if (!response.ok) {
@@ -78,7 +78,7 @@ export function usePayments() {
   }, [fetchPayments]);
 
   const getPayment = useCallback(async (id: string) => {
-    const response = await fetch(`/api/payments/${id}`);
+    const response = await fetch(`/api/payments/${id}`, { cache: "no-store" });
     const payload = (await parseJsonSafely(response)) as PaymentDetailResponse | null;
 
     if (!response.ok) {
@@ -164,7 +164,9 @@ export function usePayments() {
   }, []);
 
   const getMonthSummary = useCallback(async (month: string) => {
-    const response = await fetch(`/api/payments/month-summary?month=${encodeURIComponent(month)}`);
+    const response = await fetch(`/api/payments/month-summary?month=${encodeURIComponent(month)}`, {
+      cache: "no-store",
+    });
     const payload = (await parseJsonSafely(response)) as MonthSummaryResponse | null;
 
     if (!response.ok) {
