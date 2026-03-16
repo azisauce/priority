@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Package, FolderOpen, DollarSign, TrendingUp } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import PageHeader from "@/components/layout/page-header";
+import DashboardCard from "@/components/cards/dashboard-card";
+import BalanceStrip from "@/components/dashboard/BalanceStrip";
+import PaymentsStatus from "@/components/dashboard/PaymentsStatus";
+import BudgetOverview from "@/components/dashboard/BudgetOverview";
+import RecentExpenses from "@/components/dashboard/RecentExpenses";
+import DebtsDueSoon from "@/components/dashboard/DebtsDueSoon";
 
 interface DashboardData {
   totalItems: number;
@@ -17,129 +23,171 @@ interface DashboardData {
     pricing: number;
     score: number;
   }[];
-  recentItems: {
+  paymentsSummary: {
+    month: string;
+    totalIncome: number;
+    totalExpenses: number;
+    fixedExpenses: number;
+    net: number;
+    paidCount: number;
+    unpaidCount: number;
+    payments: {
+      id: string;
+      name: string;
+      type: "income" | "expense";
+      category: string | null;
+      dayOfMonth: number;
+      amount: number;
+      isVariable: boolean;
+      isPaid: boolean;
+      paidAt: string | null;
+    }[];
+  };
+  budgetsSummary: {
     id: string;
-    itemName: string;
-    pricing: number;
+    category: string;
+    month: string;
+    allocatedAmount: number;
+    rolledOverAmount: number;
+    totalAllocatedAmount: number;
+    spentAmount: number;
+    remainingAmount: number;
+    spentPercent: number;
+    isOver80Percent: boolean;
+  }[];
+  recentExpenses: {
+    id: string;
+    amount: number;
+    note: string | null;
+    date: string;
     createdAt: string;
-    group: { id: string; groupName: string } | null;
+    budgetCategory: string | null;
+  }[];
+  upcomingDues: {
+    id: string;
+    name: string;
+    counterparty: string | null;
+    direction: "i_owe" | "they_owe";
+    status: "active" | "paid" | "overdue";
+    deadline: string;
+    totalAmount: number;
+    paidAmount: number;
+    remainingAmount: number;
+    daysUntilDeadline: number;
   }[];
 }
 
-function StatSkeleton() {
-  return (
-    <div className="bg-card border border-border rounded-lg p-6 animate-pulse">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-muted rounded-lg" />
-        <div className="h-4 w-24 bg-muted rounded" />
-      </div>
-      <div className="h-8 w-20 bg-muted rounded" />
-    </div>
-  );
+function SectionSkeleton() {
+  return <div className="h-40 animate-pulse rounded-2xl border border-border bg-card" />;
 }
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/dashboard")
-      .then((res) => res.json())
-      .then((json) => setData(json))
-      .catch(console.error)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load dashboard");
+        }
+
+        const json = (await res.json()) as DashboardData;
+        setData(json);
+      })
+      .catch((fetchError) => {
+        setError(fetchError instanceof Error ? fetchError.message : "Failed to load dashboard");
+      })
       .finally(() => setLoading(false));
   }, []);
 
-  const stats = data
-    ? [
-      {
-        label: "Total Items",
-        value: data.totalItems.toString(),
-        icon: Package,
-      },
-      {
-        label: "Total Groups",
-        value: data.totalGroups.toString(),
-        icon: FolderOpen,
-      },
-      {
-        label: "Total Value",
-        value: `$${data.totalValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-        icon: DollarSign,
-      },
-      {
-        label: "Avg Priority",
-        value: data.averagePriority.toFixed(2),
-        icon: TrendingUp,
-      },
-    ]
-    : [];
+  if (loading) {
+    return (
+      <div className="space-y-6 py-4">
+        <PageHeader title="Dashboard" description="Overview of your purchase priorities" />
+        {Array.from({ length: 7 }).map((_, index) => (
+          <SectionSkeleton key={index} />
+        ))}
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="space-y-6 py-4">
+        <PageHeader title="Dashboard" description="Overview of your purchase priorities" />
+        <div className="rounded-2xl border border-border bg-card p-4 text-sm text-destructive">
+          {error || "Unable to load dashboard data."}
+        </div>
+      </div>
+    );
+  }
+
+  const balanceNet = data.paymentsSummary.totalIncome - data.paymentsSummary.fixedExpenses;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 py-4">
       <PageHeader title="Dashboard" description="Overview of your purchase priorities" />
 
-      {/* Formula Display Carousel */}
-      <div className="bg-linear-to-br from-card to-background border border-border rounded-xl p-3 sm:p-6 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-8 hidden sm:block">
-          <TrendingUp className="w-36 h-36 text-primary" />
+      <BalanceStrip
+        totalIncome={data.paymentsSummary.totalIncome}
+        fixedExpenses={data.paymentsSummary.fixedExpenses}
+        net={balanceNet}
+        paymentsCount={data.paymentsSummary.payments.length}
+      />
+
+      <PaymentsStatus
+        payments={data.paymentsSummary.payments}
+        paidCount={data.paymentsSummary.paidCount}
+        unpaidCount={data.paymentsSummary.unpaidCount}
+      />
+
+      <BudgetOverview budgets={data.budgetsSummary} />
+
+      <RecentExpenses expenses={data.recentExpenses} />
+
+      <DebtsDueSoon debts={data.upcomingDues} />
+
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-foreground">Wishlist Snapshot</h2>
+          <Link
+            href="/wishlist"
+            className="text-sm font-medium text-primary underline-offset-2 hover:underline"
+          >
+            See all -&gt;
+          </Link>
         </div>
 
-        <CarouselCard />
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {loading
-          ? Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
-          : stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                className="bg-card border border-border rounded-lg p-6"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">{stat.label}</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">
-                  {stat.value}
-                </p>
-              </div>
-            );
-          })}
-      </div>
-
-      {/* Top Priority Items */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-          <h2 className="text-base sm:text-lg font-semibold text-foreground">
-            Top Priority Items
-          </h2>
-        </div>
-        {loading ? (
-          <div className="p-6 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-6 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-        ) : !data?.topItems.length ? (
-          <div className="p-6 text-center text-muted-foreground">
-            No items yet. Add some items to see your top priorities.
-          </div>
+        {!data.topItems.length ? (
+          <DashboardCard
+            title="No wishlist items"
+            value="Add priorities"
+            icon={Sparkles}
+            description="Add wishlist items to see your top priorities here."
+          >
+            <Link
+              href="/wishlist"
+              className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+              style={{
+                backgroundColor: "rgb(var(--m3-secondary-container))",
+                color: "rgb(var(--m3-on-secondary-container))",
+              }}
+            >
+              Add wishlist item
+            </Link>
+          </DashboardCard>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-lg border border-border bg-card">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-muted-foreground border-b border-border">
-                  <th className="px-3 sm:px-6 py-3 font-medium">Rank</th>
-                  <th className="px-3 sm:px-6 py-3 font-medium">Item Name</th>
-                  <th className="px-3 sm:px-6 py-3 font-medium">Priority</th>
-                  <th className="hidden sm:table-cell px-3 sm:px-6 py-3 font-medium">Price</th>
-                  <th className="hidden sm:table-cell px-3 sm:px-6 py-3 font-medium">Value Score</th>
+                <tr className="border-b border-border text-left text-muted-foreground">
+                  <th className="px-3 py-3 font-medium sm:px-6">Rank</th>
+                  <th className="px-3 py-3 font-medium sm:px-6">Item Name</th>
+                  <th className="px-3 py-3 font-medium sm:px-6">Priority</th>
+                  <th className="hidden px-3 py-3 font-medium sm:table-cell sm:px-6">Price</th>
+                  <th className="hidden px-3 py-3 font-medium sm:table-cell sm:px-6">Value Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -148,20 +196,27 @@ export default function DashboardPage() {
                     key={item.id}
                     className="border-b border-border last:border-0 hover:bg-accent/50"
                   >
-                    <td className="px-3 sm:px-6 py-3 text-muted-foreground">{index + 1}</td>
-                    <td className="px-3 sm:px-6 py-3 text-foreground font-medium">
+                    <td className="px-3 py-3 text-muted-foreground sm:px-6">{index + 1}</td>
+                    <td className="px-3 py-3 font-medium text-foreground sm:px-6">
                       <div>{item.itemName}</div>
-                      <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
-                        ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · VS: {item.score.toFixed(2)}
+                      <div className="mt-0.5 text-xs text-muted-foreground sm:hidden">
+                        ${item.pricing.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        - VS: {item.score.toFixed(2)}
                       </div>
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-muted-foreground">
+                    <td className="px-3 py-3 text-muted-foreground sm:px-6">
                       {item.priority.toFixed(2)}
                     </td>
-                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 text-muted-foreground">
-                      ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <td className="hidden px-3 py-3 text-muted-foreground sm:table-cell sm:px-6">
+                      ${item.pricing.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </td>
-                    <td className="hidden sm:table-cell px-3 sm:px-6 py-3 text-primary font-medium">
+                    <td className="hidden px-3 py-3 font-medium text-primary sm:table-cell sm:px-6">
                       {item.score.toFixed(4)}
                     </td>
                   </tr>
@@ -170,210 +225,37 @@ export default function DashboardPage() {
             </table>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Recent Items */}
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
-          <h2 className="text-base sm:text-lg font-semibold text-foreground">Recent Items</h2>
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-foreground">Simulation CTA</h2>
+          <Link
+            href="/simulation"
+            className="text-sm font-medium text-primary underline-offset-2 hover:underline"
+          >
+            See all -&gt;
+          </Link>
         </div>
-        {loading ? (
-          <div className="p-6 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-6 bg-muted rounded animate-pulse" />
-            ))}
-          </div>
-        ) : !data?.recentItems.length ? (
-          <div className="p-6 text-center text-muted-foreground">
-            No recent items.
-          </div>
-        ) : (
-          <ul className="divide-y divide-border">
-            {data.recentItems.map((item) => (
-              <li
-                key={item.id}
-                className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 hover:bg-accent/50"
-              >
-                <div>
-                  <p className="text-foreground font-medium">{item.itemName}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.group?.groupName ?? "No group"}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-muted-foreground">
-                    ${item.pricing.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-}
 
-function CarouselCard() {
-  const [index, setIndex] = useState(0);
-  const slides = [
-    {
-      title: "Scoring",
-      content: (
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="bg-muted/50 rounded-lg p-4 border border-border">
-              <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wider">Priority Score Calculation</p>
-              <div className="font-mono text-sm space-y-2">
-                <div className="flex flex-wrap items-center gap-2 text-foreground/80">
-                  <span>Σ(Answer × <span className="text-primary">Weight</span>)</span>
-                  <span>/</span>
-                  <span>Σ(<span className="text-primary">Weight</span>)</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Weighted average across all configured parameters per group</p>
-              </div>
-            </div>
-
-            <div className="bg-muted/50 rounded-lg p-4 border border-border">
-              <p className="text-sm text-muted-foreground mb-2 font-medium uppercase tracking-wider">Value Score</p>
-              <p className="font-mono text-lg text-foreground">
-                Priority<sup className="text-primary">5</sup> / Price
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2 text-foreground/80">
-            <h3 className="font-semibold text-foreground">How it works</h3>
-            <p className="text-sm leading-relaxed">
-              The <span className="text-primary font-medium">Priority Score</span> is a weighted average of your custom parameters. Configure them in <Link className="text-primary font-medium" href="/wishlist/parameters">Params</Link>.
-            </p>
-            <p className="text-sm leading-relaxed">
-              The <span className="text-primary font-medium">Value Score</span> exponentially weights high-priority items against cost so small, critical purchases bubble up.
-            </p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Simulation",
-      content: (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Simulation selects which items to buy each month.</p>
-          <div className="mt-2 rounded-lg bg-muted/50 p-4 border border-border">
-            <p className="text-sm font-medium text-foreground mb-2">Greedy (default)</p>
-            <p className="text-sm text-foreground/80">Picks highest-scoring items (Priority^5 / Price) and acquires them when cash or first installment is affordable.</p>
-          </div>
-          <div className="mt-2 rounded-lg bg-muted/50 p-4 border border-border">
-            <p className="text-sm font-medium text-foreground mb-2">Optimal (knapsack)</p>
-            <p className="text-sm text-foreground/80">Solves a knapsack per month to maximise acquired priority; exact for small sets, fast approximation for larger ones.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/simulation" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Run Simulation</Link>
-            <Link href="/simulation" className="text-sm text-muted-foreground underline">Advanced options</Link>
-          </div>
-        </div>
-      ),
-    },
-  ];
-
-  const prev = () => setIndex((i) => (i - 1 + slides.length) % slides.length);
-  const next = () => setIndex((i) => (i + 1) % slides.length);
-
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [dragOffset, setDragOffset] = useState(0);
-
-  const onPointerDown = (e: React.PointerEvent) => {
-    const el = trackRef.current;
-    if (!el) return;
-    (e.target as Element).setPointerCapture(e.pointerId);
-    setDragging(true);
-    setStartX(e.clientX);
-    setDragOffset(0);
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragging || !trackRef.current) return;
-    const delta = e.clientX - startX;
-    setDragOffset(delta);
-  };
-
-  const onPointerUp = (e: React.PointerEvent) => {
-    if (!dragging) return;
-    const delta = dragOffset;
-    const threshold = 50; // px
-    setDragging(false);
-    setDragOffset(0);
-    try {
-      (e.target as Element).releasePointerCapture(e.pointerId);
-    } catch { }
-    if (delta < -threshold) {
-      next();
-    } else if (delta > threshold) {
-      prev();
-    }
-  };
-
-  const percentOffset = () => {
-    const el = trackRef.current;
-    if (!el) return 0;
-    const w = el.getBoundingClientRect().width || 1;
-    return (dragOffset / w) * 100;
-  };
-
-  return (
-    <div className="relative">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base sm:text-xl font-bold text-foreground mb-0 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-primary" />
-          <span className="hidden sm:inline">Priority Intelligence Formula</span>
-          <span className="sm:hidden">Formula</span>
-        </h2>
-      </div>
-
-      {/* edge arrows
-      <button
-        onClick={prev}
-        aria-label="Previous"
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 bg-input border border-border hover:bg-muted"
-      >
-        ‹
-      </button>
-      <button
-        onClick={next}
-        aria-label="Next"
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 rounded-full p-2 bg-input border border-border hover:bg-muted"
-      >
-        ›
-      </button> */}
-
-      <div className="overflow-hidden rounded-lg" ref={trackRef} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onPointerLeave={onPointerUp} style={{ cursor: dragging ? "grabbing" : "grab" }}>
-        <div
-          className="flex transition-transform duration-300"
-          style={{ transform: `translateX(calc(-${index * 100}% + ${percentOffset()}%))` }}
+        <DashboardCard
+          title="Future Planning"
+          value="Simulate upcoming months"
+          icon={Sparkles}
+          description="Preview how your income, expenses, and debts could evolve over time."
         >
-          {slides.map((s, i) => (
-            <div key={i} className="w-full shrink-0 p-4">
-              {s.content}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-center gap-2">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            className={`h-2 w-8 rounded-full ${i === index ? "bg-primary" : "bg-muted/50"}`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
+          <Link
+            href="/simulation"
+            className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+            style={{
+              backgroundColor: "rgb(var(--m3-primary))",
+              color: "rgb(var(--m3-on-primary))",
+            }}
+          >
+            Simulate future months -&gt;
+          </Link>
+        </DashboardCard>
+      </section>
     </div>
   );
 }

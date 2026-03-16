@@ -2,6 +2,7 @@
 
 import CardBase from "./card-base";
 import type { LucideIcon } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface DashboardCardProps {
     title: string;
@@ -10,6 +11,8 @@ interface DashboardCardProps {
     description?: string;
     trend?: { value: number; label: string };
     className?: string;
+    valueStyle?: CSSProperties;
+    children?: ReactNode;
 }
 
 export default function DashboardCard({
@@ -19,6 +22,8 @@ export default function DashboardCard({
     description,
     trend,
     className = "",
+    valueStyle,
+    children,
 }: DashboardCardProps) {
     return (
         <CardBase className={className}>
@@ -42,6 +47,7 @@ export default function DashboardCard({
                             fontWeight: 400,
                             color: "rgb(var(--m3-on-surface))",
                             margin: 0,
+                            ...(valueStyle ?? {}),
                         }}
                     >
                         {value}
@@ -70,6 +76,8 @@ export default function DashboardCard({
                             {trend.value >= 0 ? "↑" : "↓"} {Math.abs(trend.value)}% {trend.label}
                         </p>
                     )}
+
+                    {children && <div className="mt-3">{children}</div>}
                 </div>
                 <div
                     className="shrink-0 flex items-center justify-center rounded-full"

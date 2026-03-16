@@ -1,12 +1,14 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, PiggyBank } from "lucide-react";
 import CardBase from "@/components/cards/card-base";
+import DashboardCard from "@/components/cards/dashboard-card";
 import type { Budget } from "@/types/budget";
 
 interface BudgetCardProps {
   budget: Budget;
   onClick?: () => void;
+  variant?: "default" | "mini";
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -15,7 +17,7 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-export default function BudgetCard({ budget, onClick }: BudgetCardProps) {
+export default function BudgetCard({ budget, onClick, variant = "default" }: BudgetCardProps) {
   const progressRaw =
     budget.allocatedAmount > 0
       ? (budget.spentAmount / budget.allocatedAmount) * 100
@@ -30,6 +32,42 @@ export default function BudgetCard({ budget, onClick }: BudgetCardProps) {
     : isWarning
       ? "rgb(var(--m3-tertiary))"
       : "rgb(var(--m3-primary))";
+
+  if (variant === "mini") {
+    return (
+      <div onClick={onClick} className={onClick ? "cursor-pointer" : ""}>
+        <DashboardCard
+          title={budget.category}
+          value={`${Math.round(progressRaw)}%`}
+          icon={PiggyBank}
+          description={`${currencyFormatter.format(budget.spentAmount)} spent of ${currencyFormatter.format(
+            budget.allocatedAmount
+          )}`}
+        >
+          <div className="space-y-2">
+            <div
+              className="h-2 w-full overflow-hidden rounded-full"
+              style={{ backgroundColor: "rgb(var(--m3-surface-variant))" }}
+            >
+              <div
+                style={{
+                  width: `${progress}%`,
+                  height: "100%",
+                  backgroundColor: progressColor,
+                  transition: "width 180ms ease",
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Remaining {currencyFormatter.format(budget.remainingAmount)}</span>
+              {isWarning ? <span>Over 80%</span> : null}
+            </div>
+          </div>
+        </DashboardCard>
+      </div>
+    );
+  }
 
   return (
     <CardBase onClick={onClick} className="space-y-4">
