@@ -9,6 +9,8 @@ import type { Expense } from "@/types/expense";
 
 interface ExpenseListProps {
   expenses: Expense[];
+  onEditExpense?: (expense: Expense) => void;
+  onDeleteExpense?: (expense: Expense) => void;
 }
 
 function sortByDateDesc(a: Expense, b: Expense) {
@@ -22,7 +24,11 @@ function sortByDateDesc(a: Expense, b: Expense) {
   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 }
 
-export default function ExpenseList({ expenses }: ExpenseListProps) {
+export default function ExpenseList({
+  expenses,
+  onEditExpense,
+  onDeleteExpense,
+}: ExpenseListProps) {
   const groupedExpenses = useMemo(() => {
     const grouped = new Map<string, Expense[]>();
 
@@ -65,7 +71,12 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
 
           <div className="space-y-2">
             {dayExpenses.map((expense) => (
-              <ExpenseCard key={expense.id} expense={expense} />
+              <ExpenseCard
+                key={expense.id}
+                expense={expense}
+                onEdit={onEditExpense ? () => onEditExpense(expense) : undefined}
+                onDelete={onDeleteExpense ? () => onDeleteExpense(expense) : undefined}
+              />
             ))}
           </div>
         </section>

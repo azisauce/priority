@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AlertTriangle, Plus } from "lucide-react";
+import ConfirmDialog from "@/components/dialogs/confirm-dialog";
 import ExpenseList from "@/components/expenses/ExpenseList";
 import PageHeader from "@/components/layout/page-header";
 import AddExpenseModal from "@/components/modals/expenses/AddExpenseModal";
@@ -9,9 +10,9 @@ import ErrorState from "@/components/states/error-state";
 import LoadingState from "@/components/states/loading-state";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useExpenses } from "@/hooks/useExpenses";
-import { formatMonthYear } from "@/lib/utils";
+import { formatDate, formatMonthYear } from "@/lib/utils";
 import { useModalStore } from "@/stores/modalStore";
-import type { CreateExpenseInput } from "@/types/expense";
+import type { CreateExpenseInput, Expense } from "@/types/expense";
 
 function getCurrentMonthStart() {
     const now = new Date();
@@ -27,22 +28,81 @@ function inputValueToMonthStart(value: string) {
     return `${value}-01`;
 }
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+});
+
 export default function ExpensesDailyPage() {
     const [month, setMonth] = useState(getCurrentMonthStart);
     const [bannerWarning, setBannerWarning] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+    const [deleteTargetExpense, setDeleteTargetExpense] = useState<Expense | null>(null);
+    const [deletingExpense, setDeletingExpense] = useState(false);
 
-    const { expenses, loading, error, refetch, createExpense } = useExpenses(month);
+    const {
+        expenses,
+        loading,
+        error,
+        refetch,
+        createExpense,
+        updateExpense,
+        deleteExpense,
+    } = useExpenses(month);
     const { budgets } = useBudgets(month);
     const { activeModal, openModal, closeModal } = useModalStore();
 
     const monthInputValue = useMemo(() => monthStartToInputValue(month), [month]);
 
-    const handleCreateExpense = async (data: CreateExpenseInput) => {
+    const openAddExpenseModal = () => {
+        setEditingExpense(null);
+        setActionError(null);
+        openModal("ADD_EXPENSE");
+    };
+
+    const openEditExpenseModal = (expense: Expense) => {
+        setEditingExpense(expense);
+        setActionError(null);
+        openModal("ADD_EXPENSE");
+    };
+
+    const closeExpenseModal = () => {
+        setEditingExpense(null);
+        closeModal();
+    };
+
+    const handleSubmitExpense = async (data: CreateExpenseInput) => {
+        setActionError(null);
+
+        if (editingExpense) {
+            await updateExpense(editingExpense.id, data);
+            setBannerWarning(null);
+            return;
+        }
+
         const result = await createExpense(data);
         if (result.warning === "budget_threshold_reached") {
             setBannerWarning("Warning: a budget has reached at least 80% of its allocation.");
         } else {
             setBannerWarning(null);
+        }
+    };
+
+    const handleDeleteExpense = async () => {
+        if (!deleteTargetExpense) return;
+
+        setDeletingExpense(true);
+        setActionError(null);
+
+        try {
+            await deleteExpense(deleteTargetExpense.id);
+            setDeleteTargetExpense(null);
+        } catch (deleteError) {
+            setActionError(deleteError instanceof Error ? deleteError.message : "Failed to delete expense.");
+        } finally {
+            setDeletingExpense(false);
         }
     };
 
@@ -54,7 +114,7 @@ export default function ExpensesDailyPage() {
                     description="Track daily spending grouped by day and tied to monthly budgets."
                 />
                 <button
-                    onClick={() => openModal("ADD_EXPENSE")}
+                    onClick={openAddExpenseModal}
                     className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                     <Plus className="h-4 w-4" />
@@ -76,6 +136,7 @@ export default function ExpensesDailyPage() {
                             if (!event.target.value) return;
                             setMonth(inputValueToMonthStart(event.target.value));
                             setBannerWarning(null);
+                            setActionError(null);
                         }}
                         className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/40"
                     />
@@ -99,20 +160,53 @@ export default function ExpensesDailyPage() {
                 </div>
             )}
 
+            {actionError && (
+                <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{actionError}</p>
+            )}
+
             {loading ? (
                 <LoadingState variant="skeleton" count={4} />
             ) : error ? (
                 <ErrorState message={error} onRetry={() => void refetch()} />
             ) : (
-                <ExpenseList expenses={expenses} />
+                <ExpenseList
+                    expenses={expenses}
+                    onEditExpense={openEditExpenseModal}
+                    onDeleteExpense={(expense) => {
+                        setActionError(null);
+                        setDeleteTargetExpense(expense);
+                    }}
+                />
             )}
 
             <AddExpenseModal
                 open={activeModal === "ADD_EXPENSE"}
                 month={month}
                 budgets={budgets}
-                onClose={closeModal}
-                onSubmit={handleCreateExpense}
+                onClose={closeExpenseModal}
+                onSubmit={handleSubmitExpense}
+                initialData={editingExpense}
+                isEditing={Boolean(editingExpense)}
+            />
+
+            <ConfirmDialog
+                open={Boolean(deleteTargetExpense)}
+                onClose={() => {
+                    if (deletingExpense) return;
+                    setDeleteTargetExpense(null);
+                }}
+                title="Delete Expense"
+                message={
+                    deleteTargetExpense
+                        ? `Are you sure you want to delete this expense of ${currencyFormatter.format(deleteTargetExpense.amount)} from ${formatDate(deleteTargetExpense.date)}? This action cannot be undone.`
+                        : "Are you sure you want to delete this expense?"
+                }
+                confirmLabel="Delete Expense"
+                variant="destructive"
+                loading={deletingExpense}
+                onConfirm={() => {
+                    void handleDeleteExpense();
+                }}
             />
         </div>
     );

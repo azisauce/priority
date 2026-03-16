@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import FormDialog from "@/components/dialogs/form-dialog";
-import type { CreateMonthlyPaymentInput } from "@/types/payment";
+import type { CreateMonthlyPaymentInput, MonthlyPayment } from "@/types/payment";
 
 interface AddPaymentModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateMonthlyPaymentInput) => Promise<void>;
+  initialData?: MonthlyPayment | null;
+  isEditing?: boolean;
 }
 
 function getCurrentMonthStart() {
@@ -16,7 +18,21 @@ function getCurrentMonthStart() {
   return monthStart.toISOString().slice(0, 10);
 }
 
-export default function AddPaymentModal({ open, onClose, onSubmit }: AddPaymentModalProps) {
+function toDateInputValue(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  return value.slice(0, 10);
+}
+
+export default function AddPaymentModal({
+  open,
+  onClose,
+  onSubmit,
+  initialData,
+  isEditing = false,
+}: AddPaymentModalProps) {
   const defaultStartMonth = useMemo(() => getCurrentMonthStart(), []);
 
   const [name, setName] = useState("");
@@ -33,6 +49,19 @@ export default function AddPaymentModal({ open, onClose, onSubmit }: AddPaymentM
   useEffect(() => {
     if (!open) return;
 
+    if (isEditing && initialData) {
+      setName(initialData.name);
+      setCategory(initialData.category ?? "");
+      setType(initialData.type);
+      setIsVariable(initialData.isVariable);
+      setDefaultAmount(initialData.defaultAmount.toString());
+      setDayOfMonth(initialData.dayOfMonth.toString());
+      setStartMonth(toDateInputValue(initialData.startMonth) || defaultStartMonth);
+      setEndMonth(toDateInputValue(initialData.endMonth));
+      setError("");
+      return;
+    }
+
     setName("");
     setCategory("");
     setType("expense");
@@ -42,7 +71,7 @@ export default function AddPaymentModal({ open, onClose, onSubmit }: AddPaymentM
     setStartMonth(defaultStartMonth);
     setEndMonth("");
     setError("");
-  }, [open, defaultStartMonth]);
+  }, [open, defaultStartMonth, initialData, isEditing]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -95,7 +124,7 @@ export default function AddPaymentModal({ open, onClose, onSubmit }: AddPaymentM
       });
       onClose();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to add payment.");
+      setError(submitError instanceof Error ? submitError.message : "Failed to save payment.");
     } finally {
       setSubmitting(false);
     }
@@ -105,9 +134,9 @@ export default function AddPaymentModal({ open, onClose, onSubmit }: AddPaymentM
     <FormDialog
       open={open}
       onClose={onClose}
-      title="Add Monthly Payment"
+      title={isEditing ? "Edit Monthly Payment" : "Add Monthly Payment"}
       onSubmit={handleSubmit}
-      submitLabel="Add Payment"
+      submitLabel={isEditing ? "Save Changes" : "Add Payment"}
       loading={submitting}
     >
       <div className="space-y-1">

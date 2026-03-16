@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import FormDialog from "@/components/dialogs/form-dialog";
 import type { Budget } from "@/types/budget";
-import type { CreateExpenseInput } from "@/types/expense";
+import type { CreateExpenseInput, Expense } from "@/types/expense";
 
 interface AddExpenseModalProps {
   open: boolean;
@@ -11,10 +11,20 @@ interface AddExpenseModalProps {
   budgets: Budget[];
   onClose: () => void;
   onSubmit: (data: CreateExpenseInput) => Promise<void>;
+  initialData?: Expense | null;
+  isEditing?: boolean;
 }
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function toDateInputValue(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  return value.slice(0, 10);
 }
 
 export default function AddExpenseModal({
@@ -23,6 +33,8 @@ export default function AddExpenseModal({
   budgets,
   onClose,
   onSubmit,
+  initialData,
+  isEditing = false,
 }: AddExpenseModalProps) {
   const defaultDate = useMemo(() => {
     const today = getTodayDate();
@@ -43,12 +55,21 @@ export default function AddExpenseModal({
   useEffect(() => {
     if (!open) return;
 
+    if (isEditing && initialData) {
+      setAmount(initialData.amount.toString());
+      setBudgetId(initialData.budgetId ?? "");
+      setNote(initialData.note ?? "");
+      setDate(toDateInputValue(initialData.date) || defaultDate);
+      setError("");
+      return;
+    }
+
     setAmount("");
     setBudgetId("");
     setNote("");
     setDate(defaultDate);
     setError("");
-  }, [open, defaultDate]);
+  }, [open, defaultDate, initialData, isEditing]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -75,7 +96,7 @@ export default function AddExpenseModal({
       });
       onClose();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to add expense.");
+      setError(submitError instanceof Error ? submitError.message : "Failed to save expense.");
     } finally {
       setSubmitting(false);
     }
@@ -85,9 +106,9 @@ export default function AddExpenseModal({
     <FormDialog
       open={open}
       onClose={onClose}
-      title="Add Expense"
+      title={isEditing ? "Edit Expense" : "Add Expense"}
       onSubmit={handleSubmit}
-      submitLabel="Add Expense"
+      submitLabel={isEditing ? "Save Changes" : "Add Expense"}
       loading={submitting}
     >
       <div className="space-y-1">

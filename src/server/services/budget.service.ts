@@ -20,7 +20,7 @@ type BudgetRecord = {
   id: string;
   user_id: string;
   category: string;
-  month: string;
+  month: string | Date;
   allocated_amount: string | number;
   rollover: boolean;
   rolled_over_amount: string | number;
@@ -51,6 +51,32 @@ function toNumber(value: string | number | null | undefined): number {
   return Number(value ?? 0);
 }
 
+function pad2(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+function toDateOnly(value: string | Date): string {
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      throw new RangeError("Invalid budget month value");
+    }
+
+    return `${value.getFullYear()}-${pad2(value.getMonth() + 1)}-${pad2(value.getDate())}`;
+  }
+
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new RangeError("Invalid budget month value");
+  }
+
+  return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}-${pad2(parsed.getDate())}`;
+}
+
 function formatExpense(expense: ExpenseRecord) {
   return {
     id: expense.id,
@@ -75,7 +101,7 @@ function formatBudget(budget: BudgetRecord, spentAmount: number) {
     id: budget.id,
     userId: budget.user_id,
     category: budget.category,
-    month: budget.month,
+    month: toDateOnly(budget.month),
     allocatedAmount,
     rolledOverAmount,
     totalAllocatedAmount,

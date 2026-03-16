@@ -5,13 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Copy, Plus } from "lucide-react";
 import BudgetList from "@/components/expenses/BudgetList";
 import ActionButton from "@/components/common/action-button";
+import ConfirmDialog from "@/components/dialogs/confirm-dialog";
 import PageHeader from "@/components/layout/page-header";
 import AddBudgetModal from "@/components/modals/expenses/AddBudgetModal";
 import ErrorState from "@/components/states/error-state";
 import LoadingState from "@/components/states/loading-state";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useModalStore } from "@/stores/modalStore";
-import type { CreateBudgetInput } from "@/types/budget";
+import type { Budget, CreateBudgetInput } from "@/types/budget";
 
 function getCurrentMonthStart() {
     const now = new Date();
@@ -40,6 +41,10 @@ export default function ExpensesBudgetsPage() {
     const [month, setMonth] = useState(monthFromQuery || getCurrentMonthStart());
     const [copying, setCopying] = useState(false);
     const [copyMessage, setCopyMessage] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+    const [deleteTargetBudget, setDeleteTargetBudget] = useState<Budget | null>(null);
+    const [deletingBudget, setDeletingBudget] = useState(false);
 
     const {
         budgets,
@@ -47,6 +52,8 @@ export default function ExpensesBudgetsPage() {
         error,
         refetch,
         createBudget,
+        updateBudget,
+        deleteBudget,
         copyPreviousMonth,
     } = useBudgets(month);
 
@@ -64,8 +71,48 @@ export default function ExpensesBudgetsPage() {
         [budgets]
     );
 
-    const handleCreateBudget = async (data: CreateBudgetInput) => {
+    const openAddBudgetModal = () => {
+        setEditingBudget(null);
+        setActionError(null);
+        openModal("ADD_BUDGET");
+    };
+
+    const openEditBudgetModal = (budget: Budget) => {
+        setEditingBudget(budget);
+        setActionError(null);
+        openModal("ADD_BUDGET");
+    };
+
+    const closeBudgetModal = () => {
+        setEditingBudget(null);
+        closeModal();
+    };
+
+    const handleSubmitBudget = async (data: CreateBudgetInput) => {
+        setActionError(null);
+
+        if (editingBudget) {
+            await updateBudget(editingBudget.id, data);
+            return;
+        }
+
         await createBudget(data);
+    };
+
+    const handleDeleteBudget = async () => {
+        if (!deleteTargetBudget) return;
+
+        setDeletingBudget(true);
+        setActionError(null);
+
+        try {
+            await deleteBudget(deleteTargetBudget.id);
+            setDeleteTargetBudget(null);
+        } catch (deleteError) {
+            setActionError(deleteError instanceof Error ? deleteError.message : "Failed to delete budget.");
+        } finally {
+            setDeletingBudget(false);
+        }
     };
 
     const handleCopyPrevious = async () => {
@@ -94,7 +141,7 @@ export default function ExpensesBudgetsPage() {
                     description="Allocate monthly limits and monitor spending progress by category."
                 />
                 <button
-                    onClick={() => openModal("ADD_BUDGET")}
+                    onClick={openAddBudgetModal}
                     className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                     <Plus className="h-4 w-4" />
@@ -116,6 +163,7 @@ export default function ExpensesBudgetsPage() {
                             if (!event.target.value) return;
                             setMonth(inputValueToMonthStart(event.target.value));
                             setCopyMessage(null);
+                            setActionError(null);
                         }}
                         className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/40"
                     />
@@ -132,6 +180,10 @@ export default function ExpensesBudgetsPage() {
 
             {copyMessage && (
                 <p className="rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground">{copyMessage}</p>
+            )}
+
+            {actionError && (
+                <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{actionError}</p>
             )}
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -158,14 +210,41 @@ export default function ExpensesBudgetsPage() {
                 <BudgetList
                     budgets={budgets}
                     onBudgetClick={(budget) => router.push(`/expenses/budgets/${budget.id}?month=${month}`)}
+                    onEditBudget={openEditBudgetModal}
+                    onDeleteBudget={(budget) => {
+                        setActionError(null);
+                        setDeleteTargetBudget(budget);
+                    }}
                 />
             )}
 
             <AddBudgetModal
                 open={activeModal === "ADD_BUDGET"}
                 month={month}
-                onClose={closeModal}
-                onSubmit={handleCreateBudget}
+                onClose={closeBudgetModal}
+                onSubmit={handleSubmitBudget}
+                initialData={editingBudget}
+                isEditing={Boolean(editingBudget)}
+            />
+
+            <ConfirmDialog
+                open={Boolean(deleteTargetBudget)}
+                onClose={() => {
+                    if (deletingBudget) return;
+                    setDeleteTargetBudget(null);
+                }}
+                title="Delete Budget"
+                message={
+                    deleteTargetBudget
+                        ? `Are you sure you want to delete the \"${deleteTargetBudget.category}\" budget? This action cannot be undone.`
+                        : "Are you sure you want to delete this budget?"
+                }
+                confirmLabel="Delete Budget"
+                variant="destructive"
+                loading={deletingBudget}
+                onConfirm={() => {
+                    void handleDeleteBudget();
+                }}
             />
         </div>
     );

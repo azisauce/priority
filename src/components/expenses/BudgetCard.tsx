@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, PiggyBank } from "lucide-react";
+import { AlertTriangle, Pencil, PiggyBank, Trash2 } from "lucide-react";
 import CardBase from "@/components/cards/card-base";
 import DashboardCard from "@/components/cards/dashboard-card";
 import { formatMonthYear } from "@/lib/utils";
@@ -9,6 +9,8 @@ import type { Budget } from "@/types/budget";
 interface BudgetCardProps {
   budget: Budget;
   onClick?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   variant?: "default" | "mini";
 }
 
@@ -18,7 +20,13 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-export default function BudgetCard({ budget, onClick, variant = "default" }: BudgetCardProps) {
+export default function BudgetCard({
+  budget,
+  onClick,
+  onEdit,
+  onDelete,
+  variant = "default",
+}: BudgetCardProps) {
   const progressRaw =
     budget.allocatedAmount > 0
       ? (budget.spentAmount / budget.allocatedAmount) * 100
@@ -97,15 +105,49 @@ export default function BudgetCard({ budget, onClick, variant = "default" }: Bud
           </p>
         </div>
 
-        <span
-          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-          style={{
-            backgroundColor: "rgb(var(--m3-secondary-container))",
-            color: "rgb(var(--m3-on-secondary-container))",
-          }}
-        >
-          {Math.round(progressRaw)}%
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+            style={{
+              backgroundColor: "rgb(var(--m3-secondary-container))",
+              color: "rgb(var(--m3-on-secondary-container))",
+            }}
+          >
+            {Math.round(progressRaw)}%
+          </span>
+
+          {(onEdit || onDelete) && (
+            <div className="flex items-center gap-1">
+              {onEdit && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onEdit();
+                  }}
+                  className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+                  aria-label="Edit budget"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
+
+              {onDelete && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onDelete();
+                  }}
+                  className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive"
+                  aria-label="Delete budget"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">

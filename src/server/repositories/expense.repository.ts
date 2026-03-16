@@ -9,24 +9,60 @@ type ExpenseCreateData = {
 
 type ExpenseUpdateData = Partial<ExpenseCreateData>;
 
-function getNextMonthStart(month: string): string {
-  const monthStart = new Date(`${month}T00:00:00.000Z`);
+function toIsoDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+
+function parseDateInput(value: string | Date, label: string): Date {
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) {
+      throw new RangeError(`Invalid ${label} value`);
+    }
+    return value;
+  }
+
+  const trimmed = value.trim();
+  const directParsed = new Date(trimmed);
+
+  if (!Number.isNaN(directParsed.getTime())) {
+    return directParsed;
+  }
+
+  const normalizedParsed = new Date(`${trimmed}T00:00:00.000Z`);
+  if (!Number.isNaN(normalizedParsed.getTime())) {
+    return normalizedParsed;
+  }
+
+  throw new RangeError(`Invalid ${label} value`);
+}
+
+function normalizeToMonthStart(value: string | Date): string {
+  const parsed = parseDateInput(value, "month");
+  const monthStart = new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), 1));
+
+  return toIsoDate(monthStart);
+}
+
+function getNextMonthStart(month: string | Date): string {
+  const monthStartIso = normalizeToMonthStart(month);
+  const monthStart = parseDateInput(monthStartIso, "month");
   const nextMonthStart = new Date(
     Date.UTC(monthStart.getUTCFullYear(), monthStart.getUTCMonth() + 1, 1)
   );
 
-  return nextMonthStart.toISOString().slice(0, 10);
+  return toIsoDate(nextMonthStart);
 }
 
-function getMonthStartFromDate(date: string): string {
-  const targetDate = new Date(`${date}T00:00:00.000Z`);
+function getMonthStartFromDate(date: string | Date): string {
+  const targetDate = parseDateInput(date, "date");
   const monthStart = new Date(Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), 1));
 
-  return monthStart.toISOString().slice(0, 10);
+  return toIsoDate(monthStart);
 }
 
 export async function findAllByUserAndMonth(userId: string, month: string) {
-  const nextMonth = getNextMonthStart(month);
+  const monthStart = normalizeToMonthStart(month);
+  const nextMonth = getNextMonthStart(monthStart);
 
   return db("expenses")
     .leftJoin("budgets", function joinBudgets() {
@@ -37,7 +73,7 @@ export async function findAllByUserAndMonth(userId: string, month: string) {
       );
     })
     .where("expenses.user_id", userId)
-    .andWhere("expenses.date", ">=", month)
+    .andWhere("expenses.date", ">=", monthStart)
     .andWhere("expenses.date", "<", nextMonth)
     .select("expenses.*", "budgets.category as budget_category")
     .orderBy("expenses.date", "desc")
@@ -92,12 +128,13 @@ export async function deleteById(userId: string, id: string) {
 
 export { deleteById as delete };
 
-export async function sumByBudget(userId: string, budgetId: string, month: string) {
-  const nextMonth = getNextMonthStart(month);
+export async function sumByBudget(userId: string, budgetId: string, month: string | Date) {
+  const monthStart = normalizeToMonthStart(month);
+  const nextMonth = getNextMonthStart(monthStart);
 
   const row = await db("expenses")
     .where({ user_id: userId, budget_id: budgetId })
-    .andWhere("date", ">=", month)
+    .andWhere("date", ">=", monthStart)
     .andWhere("date", "<", nextMonth)
     .sum<{ total_spent: string | number | null }>("amount as total_spent")
     .first();
@@ -105,6 +142,6 @@ export async function sumByBudget(userId: string, budgetId: string, month: strin
   return Number(row?.total_spent ?? 0);
 }
 
-export function deriveMonthFromExpenseDate(date: string) {
+export function deriveMonthFromExpenseDate(date: string | Date) {
   return getMonthStartFromDate(date);
 }

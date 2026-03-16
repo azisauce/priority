@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import FormDialog from "@/components/dialogs/form-dialog";
-import type { CreateBudgetInput } from "@/types/budget";
+import type { Budget, CreateBudgetInput } from "@/types/budget";
 
 interface AddBudgetModalProps {
   open: boolean;
   month: string;
   onClose: () => void;
   onSubmit: (data: CreateBudgetInput) => Promise<void>;
+  initialData?: Budget | null;
+  isEditing?: boolean;
 }
 
 function toMonthInputValue(month: string) {
@@ -19,7 +21,36 @@ function toMonthStartDate(monthInput: string) {
   return `${monthInput}-01`;
 }
 
-export default function AddBudgetModal({ open, month, onClose, onSubmit }: AddBudgetModalProps) {
+function pad2(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+function toMonthInputFromValue(value: string | null | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}(-\d{2})?$/.test(trimmed)) {
+    return trimmed.slice(0, 7);
+  }
+
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  return `${parsed.getFullYear()}-${pad2(parsed.getMonth() + 1)}`;
+}
+
+export default function AddBudgetModal({
+  open,
+  month,
+  onClose,
+  onSubmit,
+  initialData,
+  isEditing = false,
+}: AddBudgetModalProps) {
   const initialMonthInput = useMemo(() => toMonthInputValue(month), [month]);
 
   const [category, setCategory] = useState("");
@@ -32,12 +63,21 @@ export default function AddBudgetModal({ open, month, onClose, onSubmit }: AddBu
   useEffect(() => {
     if (!open) return;
 
+    if (isEditing && initialData) {
+      setCategory(initialData.category);
+      setAllocatedAmount(initialData.allocatedAmount.toString());
+      setMonthInput(toMonthInputFromValue(initialData.month) || initialMonthInput);
+      setRollover(initialData.rollover);
+      setError("");
+      return;
+    }
+
     setCategory("");
     setAllocatedAmount("");
     setMonthInput(initialMonthInput);
     setRollover(false);
     setError("");
-  }, [open, initialMonthInput]);
+  }, [open, initialData, initialMonthInput, isEditing]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -71,7 +111,7 @@ export default function AddBudgetModal({ open, month, onClose, onSubmit }: AddBu
       });
       onClose();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create budget.");
+      setError(submitError instanceof Error ? submitError.message : "Failed to save budget.");
     } finally {
       setSubmitting(false);
     }
@@ -81,9 +121,9 @@ export default function AddBudgetModal({ open, month, onClose, onSubmit }: AddBu
     <FormDialog
       open={open}
       onClose={onClose}
-      title="Add Budget"
+      title={isEditing ? "Edit Budget" : "Add Budget"}
       onSubmit={handleSubmit}
-      submitLabel="Add Budget"
+      submitLabel={isEditing ? "Save Changes" : "Add Budget"}
       loading={submitting}
     >
       <div className="space-y-1">

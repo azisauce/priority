@@ -8,9 +8,16 @@ import type { Budget } from "@/types/budget";
 interface BudgetListProps {
   budgets: Budget[];
   onBudgetClick?: (budget: Budget) => void;
+  onEditBudget?: (budget: Budget) => void;
+  onDeleteBudget?: (budget: Budget) => void;
 }
 
-export default function BudgetList({ budgets, onBudgetClick }: BudgetListProps) {
+export default function BudgetList({
+  budgets,
+  onBudgetClick,
+  onEditBudget,
+  onDeleteBudget,
+}: BudgetListProps) {
   if (budgets.length === 0) {
     return (
       <EmptyState
@@ -28,6 +35,8 @@ export default function BudgetList({ budgets, onBudgetClick }: BudgetListProps) 
           key={budget.id}
           budget={budget}
           onClick={onBudgetClick ? () => onBudgetClick(budget) : undefined}
+          onEdit={onEditBudget ? () => onEditBudget(budget) : undefined}
+          onDelete={onDeleteBudget ? () => onDeleteBudget(budget) : undefined}
         />
       ))}
     </div>

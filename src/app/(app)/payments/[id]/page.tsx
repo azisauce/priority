@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import ActionButton from "@/components/common/action-button";
+import ConfirmDialog from "@/components/dialogs/confirm-dialog";
 import PageHeader from "@/components/layout/page-header";
+import AddPaymentModal from "@/components/modals/payments/AddPaymentModal";
 import MarkAsPaidModal from "@/components/modals/payments/MarkAsPaidModal";
 import PaymentHistoryRow from "@/components/payments/PaymentHistoryRow";
 import ErrorState from "@/components/states/error-state";
@@ -12,7 +14,7 @@ import LoadingState from "@/components/states/loading-state";
 import { usePayments } from "@/hooks/usePayments";
 import { formatMonthYear } from "@/lib/utils";
 import { useModalStore } from "@/stores/modalStore";
-import type { MonthlyPayment } from "@/types/payment";
+import type { CreateMonthlyPaymentInput, MonthlyPayment } from "@/types/payment";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -24,13 +26,17 @@ export default function PaymentDetailPage() {
     const router = useRouter();
     const params = useParams<{ id: string }>();
 
-    const { getPayment, markPaymentAsPaid } = usePayments();
+    const { getPayment, markPaymentAsPaid, updatePayment, deletePayment } = usePayments();
     const { activeModal, openModal, closeModal } = useModalStore();
 
     const [payment, setPayment] = useState<MonthlyPayment | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
     const [marking, setMarking] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const paymentId = params.id;
 
@@ -79,11 +85,40 @@ export default function PaymentDetailPage() {
 
     const handleMarkAsPaid = async (targetPaymentId: string, data: { month: string; amount: number }) => {
         setMarking(true);
+        setActionError(null);
         try {
             await markPaymentAsPaid(targetPaymentId, data);
             await loadPayment();
+        } catch (markError) {
+            setActionError(markError instanceof Error ? markError.message : "Failed to mark payment as paid.");
+            throw markError;
         } finally {
             setMarking(false);
+        }
+    };
+
+    const handleUpdatePayment = async (data: CreateMonthlyPaymentInput) => {
+        if (!payment) return;
+
+        setActionError(null);
+        await updatePayment(payment.id, data);
+        await loadPayment();
+    };
+
+    const handleDeletePayment = async () => {
+        if (!payment) return;
+
+        setDeleting(true);
+        setActionError(null);
+
+        try {
+            await deletePayment(payment.id);
+            setDeleteDialogOpen(false);
+            router.push("/payments/overview");
+        } catch (deleteError) {
+            setActionError(deleteError instanceof Error ? deleteError.message : "Failed to delete payment.");
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -116,7 +151,24 @@ export default function PaymentDetailPage() {
                     onClick={() => openModal("MARK_AS_PAID")}
                     disabled={marking}
                 />
+                <ActionButton
+                    label="Edit"
+                    variant="outlined"
+                    icon={Pencil}
+                    onClick={() => setIsEditModalOpen(true)}
+                />
+                <ActionButton
+                    label="Delete"
+                    variant="outlined"
+                    icon={Trash2}
+                    onClick={() => setDeleteDialogOpen(true)}
+                    disabled={deleting}
+                />
             </div>
+
+            {actionError && (
+                <p className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">{actionError}</p>
+            )}
 
             <PageHeader
                 title={payment.name}
@@ -206,11 +258,35 @@ export default function PaymentDetailPage() {
                 )}
             </div>
 
+            <AddPaymentModal
+                open={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSubmit={handleUpdatePayment}
+                initialData={payment}
+                isEditing
+            />
+
             <MarkAsPaidModal
                 open={activeModal === "MARK_AS_PAID"}
                 payment={payment}
                 onClose={closeModal}
                 onSubmit={handleMarkAsPaid}
+            />
+
+            <ConfirmDialog
+                open={deleteDialogOpen}
+                onClose={() => {
+                    if (deleting) return;
+                    setDeleteDialogOpen(false);
+                }}
+                title="Delete Monthly Payment"
+                message="Are you sure you want to delete this monthly payment? This will also remove related payment history entries and cannot be undone."
+                confirmLabel="Delete Payment"
+                variant="destructive"
+                loading={deleting}
+                onConfirm={() => {
+                    void handleDeletePayment();
+                }}
             />
         </div>
     );
