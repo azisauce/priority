@@ -10,7 +10,7 @@ import {
   getCounterpartyRawBalances,
   getCounterpartyRecords,
   getPaymentsByDebtIds,
-  updateCounterpartyNameById,
+  updateCounterpartyById,
 } from "@/server/repositories/counterparties.repository";
 
 type ServiceResult<T> = {
@@ -20,8 +20,19 @@ type ServiceResult<T> = {
 
 export async function createCounterpartyForUser(
   userId: string,
-  data: { name: string }
-): Promise<ServiceResult<{ error: string } | { counterparty: { id: string; name: string; balance: number } }>> {
+  data: { name: string; type?: "person" | "bank" | "company" }
+): Promise<
+  ServiceResult<{
+    error: string;
+  } | {
+    counterparty: {
+      id: string;
+      name: string;
+      type?: "person" | "bank" | "company";
+      balance: number;
+    };
+  }>
+> {
   const existing = await findCounterpartyByUserAndName(userId, data.name);
 
   if (existing) {
@@ -34,6 +45,7 @@ export async function createCounterpartyForUser(
   const counterparty = await createCounterparty({
     name: data.name,
     user_id: userId,
+    type: data.type,
   });
 
   return {
@@ -42,6 +54,7 @@ export async function createCounterpartyForUser(
       counterparty: {
         id: counterparty.id,
         name: counterparty.name,
+        type: counterparty.type,
         balance: 0,
       },
     },
@@ -51,7 +64,7 @@ export async function createCounterpartyForUser(
 export async function updateCounterpartyForUser(
   userId: string,
   id: string,
-  data: { name?: string }
+  data: { name?: string; type?: "person" | "bank" | "company" }
 ): Promise<ServiceResult<{ error: string } | { counterparty: any }>> {
   const counterparty = await findCounterpartyById(id);
 
@@ -71,8 +84,14 @@ export async function updateCounterpartyForUser(
         body: { error: "Counterparty with that name already exists" },
       };
     }
+  }
 
-    await updateCounterpartyNameById(id, data.name);
+  const updateData: { name?: string; type?: "person" | "bank" | "company" } = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.type !== undefined) updateData.type = data.type;
+
+  if (Object.keys(updateData).length > 0) {
+    await updateCounterpartyById(id, updateData);
   }
 
   const updated = await findCounterpartyById(id);
@@ -118,25 +137,28 @@ export async function getCounterpartyRecordsForUser(
   const records = await getCounterpartyRecords(id, userId);
 
   const formattedRecords = records.map((row: any) => ({
+    direction: row.direction,
+    paidAmount: Number(row.paid_amount),
+    installmentAmount: row.installment_amount != null ? Number(row.installment_amount) : null,
+    // Legacy aliases kept for existing UI callers.
     id: row.id,
-    type: row.type,
+    type: row.direction === "they_owe" ? "asset" : "debt",
     amount: Number(row.total_amount),
     totalAmount: Number(row.total_amount),
-    remainingBalance: Number(row.remaining_balance),
+    remainingBalance: Math.max(Number(row.total_amount) - Number(row.paid_amount), 0),
     label: row.name,
     purpose: row.purpose,
     date: row.start_date,
     deadline: row.deadline,
     status: row.status,
     paymentPeriod: row.payment_period,
-    fixedInstallmentAmount:
-      row.fixed_installment_amount != null ? Number(row.fixed_installment_amount) : null,
+    fixedInstallmentAmount: row.installment_amount != null ? Number(row.installment_amount) : null,
     createdAt: row.created_at,
   }));
 
   let netBalance = 0;
   for (const record of formattedRecords) {
-    if (record.type === "asset") {
+    if (record.direction === "they_owe") {
       netBalance += record.remainingBalance;
     } else {
       netBalance -= record.remainingBalance;
@@ -167,6 +189,7 @@ export async function getCounterpartyRecordsForUser(
       counterparty: {
         id: counterparty.id,
         name: counterparty.name,
+        type: counterparty.type,
         balance: netBalance,
       },
       records: formattedRecords,
@@ -187,9 +210,9 @@ export async function getCounterpartySummaryForUser(
       balancesMap[row.counterparty_id] = { assets: 0, debts: 0 };
     }
 
-    if (row.type === "asset") {
+    if (row.direction === "they_owe") {
       balancesMap[row.counterparty_id].assets += Number(row.total || 0);
-    } else if (row.type === "debt") {
+    } else if (row.direction === "i_owe") {
       balancesMap[row.counterparty_id].debts += Number(row.total || 0);
     }
   }

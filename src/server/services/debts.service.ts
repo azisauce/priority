@@ -12,7 +12,7 @@ import {
   findDebtByIdWithCounterparty,
   findPaymentById,
   findPaymentByIdAndDebtId,
-  getDebtsByUserAndType,
+  getDebtsByUserAndDirection,
   getPaymentsByDebtId,
   getScheduledPaymentsForDebts,
   updateDebtById,
@@ -31,15 +31,14 @@ function formatDebt(row: any) {
     name: row.name,
     purpose: row.purpose,
     totalAmount: Number(row.total_amount),
-    remainingBalance: Number(row.remaining_balance),
+    paidAmount: Number(row.paid_amount),
     counterparty: row.counterparty,
-    type: row.type,
+    direction: row.direction,
     startDate: row.start_date,
     deadline: row.deadline,
     status: row.status,
     paymentPeriod: row.payment_period,
-    fixedInstallmentAmount:
-      row.fixed_installment_amount != null ? Number(row.fixed_installment_amount) : null,
+    installmentAmount: row.installment_amount != null ? Number(row.installment_amount) : null,
     notes: row.notes,
     userId: row.user_id,
     createdAt: row.created_at,
@@ -62,13 +61,17 @@ function formatPayment(row: any) {
 
 export async function getDebtsForUser(
   userId: string,
-  filters: { statusFilter?: string | null; typeFilter: string }
+  filters: { statusFilter?: string | null; directionFilter: string }
 ): Promise<ServiceResult<{ debts: any[] }>> {
   const today = new Date().toISOString().split("T")[0];
 
-  await updateOverdueDebts(userId, filters.typeFilter, today);
+  await updateOverdueDebts(userId, filters.directionFilter, today);
 
-  const debts = await getDebtsByUserAndType(userId, filters.typeFilter, filters.statusFilter);
+  const debts = await getDebtsByUserAndDirection(
+    userId,
+    filters.directionFilter,
+    filters.statusFilter
+  );
 
   const debtIds = debts.map((debt: any) => debt.id);
 
@@ -106,8 +109,11 @@ export async function createDebtForUser(
     deadline?: string | null;
     status?: "active" | "paid" | "overdue";
     paymentPeriod?: "weekly" | "monthly" | "custom";
-    fixedInstallmentAmount?: number | null;
+    installmentAmount?: number | null;
     notes?: string | null;
+    direction?: "i_owe" | "they_owe";
+    // Backward compatibility for callers not yet migrated to the new names.
+    fixedInstallmentAmount?: number | null;
     type?: "debt" | "asset";
   }
 ): Promise<ServiceResult<{ debt: any }>> {
@@ -120,14 +126,14 @@ export async function createDebtForUser(
     name: data.name,
     purpose: data.purpose || null,
     total_amount: data.totalAmount,
-    remaining_balance: data.totalAmount,
+    paid_amount: 0,
     counterparty_id: counterparty.id,
-    type: data.type || "debt",
+    direction: data.direction || (data.type === "asset" ? "they_owe" : "i_owe"),
     start_date: data.startDate,
     deadline: data.deadline || null,
     status: data.status || "active",
     payment_period: data.paymentPeriod || "monthly",
-    fixed_installment_amount: data.fixedInstallmentAmount ?? null,
+    installment_amount: data.installmentAmount ?? data.fixedInstallmentAmount ?? null,
     notes: data.notes || null,
     user_id: userId,
   });
@@ -190,8 +196,12 @@ export async function updateDebtForUser(
     deadline?: string | null;
     status?: "active" | "paid" | "overdue";
     paymentPeriod?: "weekly" | "monthly" | "custom";
-    fixedInstallmentAmount?: number | null;
+    installmentAmount?: number | null;
+    direction?: "i_owe" | "they_owe";
     notes?: string | null;
+    // Backward compatibility for callers not yet migrated to the new names.
+    fixedInstallmentAmount?: number | null;
+    type?: "debt" | "asset";
   }
 ): Promise<ServiceResult<{ error: string } | { debt: any }>> {
   const debt = await findDebtById(id);
@@ -211,8 +221,17 @@ export async function updateDebtForUser(
   if (data.deadline !== undefined) updateData.deadline = data.deadline;
   if (data.status !== undefined) updateData.status = data.status;
   if (data.paymentPeriod !== undefined) updateData.payment_period = data.paymentPeriod;
-  if (data.fixedInstallmentAmount !== undefined) {
-    updateData.fixed_installment_amount = data.fixedInstallmentAmount;
+  if (data.installmentAmount !== undefined || data.fixedInstallmentAmount !== undefined) {
+    updateData.installment_amount =
+      data.installmentAmount !== undefined ? data.installmentAmount : data.fixedInstallmentAmount;
+  }
+  if (data.direction !== undefined || data.type !== undefined) {
+    updateData.direction =
+      data.direction !== undefined
+        ? data.direction
+        : data.type === "asset"
+          ? "they_owe"
+          : "i_owe";
   }
   if (data.notes !== undefined) updateData.notes = data.notes;
 

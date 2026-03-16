@@ -157,13 +157,19 @@ export async function getItemsForUser(
         itemName: item.name,
         description: item.description,
         pricing: Number(item.price),
-        enabledEaseOption: Boolean(item.enabled_ease_option),
+        installmentEnabled: Boolean(item.installment_enabled),
+        enabledEaseOption: Boolean(item.installment_enabled),
+        totalPriceWithInterest:
+          item.total_price_with_interest !== null && item.total_price_with_interest !== undefined
+            ? Number(item.total_price_with_interest)
+            : null,
         priceWithInterest:
-          item.price_with_interest !== null && item.price_with_interest !== undefined
-            ? Number(item.price_with_interest)
+          item.total_price_with_interest !== null && item.total_price_with_interest !== undefined
+            ? Number(item.total_price_with_interest)
             : null,
         interestPercentage: Number(item.interest_percentage),
-        easePeriod: Number(item.ease_period),
+        installmentPeriodMonths: Number(item.installment_period_months),
+        easePeriod: Number(item.installment_period_months),
         isDone: Boolean(item.is_done),
         priority: Number(item.priority),
         value: Number(item.value),
@@ -195,9 +201,13 @@ export async function createItemForUser(
     description?: string | null;
     groupId: string;
     pricing: number;
+    installmentEnabled?: boolean | null;
+    installmentPeriodMonths?: number | null;
+    interestPercentage?: number | null;
+    totalPriceWithInterest?: number | null;
+    // Backward compatibility for callers not yet migrated to the new names.
     enabledEaseOption?: boolean | null;
     easePeriod?: number | null;
-    interestPercentage?: number | null;
     priceWithInterest?: number | null;
     priority?: number;
     value?: number;
@@ -237,10 +247,10 @@ export async function createItemForUser(
     description: description || null,
     group_id: groupId,
     price: pricing,
-    enabled_ease_option: data.enabledEaseOption ?? false,
-    price_with_interest: data.priceWithInterest ?? null,
+    installment_enabled: data.installmentEnabled ?? data.enabledEaseOption ?? false,
+    total_price_with_interest: data.totalPriceWithInterest ?? data.priceWithInterest ?? null,
     interest_percentage: data.interestPercentage ?? 0,
-    ease_period: data.easePeriod ?? 0,
+    installment_period_months: data.installmentPeriodMonths ?? data.easePeriod ?? 0,
     priority: computedPriority,
     value: computedValue,
     user_id: userId,
@@ -261,6 +271,18 @@ export async function createItemForUser(
         itemName: item.name,
         description: item?.description,
         pricing: Number(item.price),
+        installmentEnabled: Boolean(item.installment_enabled),
+        totalPriceWithInterest:
+          item.total_price_with_interest !== null && item.total_price_with_interest !== undefined
+            ? Number(item.total_price_with_interest)
+            : null,
+        installmentPeriodMonths: Number(item.installment_period_months),
+        enabledEaseOption: Boolean(item.installment_enabled),
+        priceWithInterest:
+          item.total_price_with_interest !== null && item.total_price_with_interest !== undefined
+            ? Number(item.total_price_with_interest)
+            : null,
+        easePeriod: Number(item.installment_period_months),
         priority: Number(item.priority),
         value: Number(item.value),
         userId: item.user_id,
@@ -304,13 +326,19 @@ export async function getItemForUserById(
         itemName: item.name,
         description: item.description,
         pricing: Number(item.price),
-        enabledEaseOption: Boolean(item.enabled_ease_option),
+        installmentEnabled: Boolean(item.installment_enabled),
+        enabledEaseOption: Boolean(item.installment_enabled),
+        totalPriceWithInterest:
+          item.total_price_with_interest !== null && item.total_price_with_interest !== undefined
+            ? Number(item.total_price_with_interest)
+            : null,
         priceWithInterest:
-          item.price_with_interest !== null && item.price_with_interest !== undefined
-            ? Number(item.price_with_interest)
+          item.total_price_with_interest !== null && item.total_price_with_interest !== undefined
+            ? Number(item.total_price_with_interest)
             : null,
         interestPercentage: Number(item.interest_percentage),
-        easePeriod: Number(item.ease_period),
+        installmentPeriodMonths: Number(item.installment_period_months),
+        easePeriod: Number(item.installment_period_months),
         priority: Number(item.priority),
         value: Number(item.value),
         isDone: Boolean(item.is_done),
@@ -338,9 +366,13 @@ export async function updateItemForUser(
     description?: string | null;
     groupId?: string;
     pricing?: number;
+    installmentEnabled?: boolean;
+    installmentPeriodMonths?: number | null;
+    interestPercentage?: number | null;
+    totalPriceWithInterest?: number | null;
+    // Backward compatibility for callers not yet migrated to the new names.
     enabledEaseOption?: boolean;
     easePeriod?: number | null;
-    interestPercentage?: number | null;
     priceWithInterest?: number | null;
     priority?: number;
     value?: number;
@@ -400,12 +432,24 @@ export async function updateItemForUser(
   if (description !== undefined) updateData.description = description;
   if (groupId !== undefined) updateData.group_id = groupId;
   if (pricing !== undefined) updateData.price = pricing;
-  if (data.enabledEaseOption !== undefined) {
-    updateData.enabled_ease_option = Boolean(data.enabledEaseOption);
+  if (data.installmentEnabled !== undefined || data.enabledEaseOption !== undefined) {
+    updateData.installment_enabled = Boolean(
+      data.installmentEnabled !== undefined ? data.installmentEnabled : data.enabledEaseOption
+    );
   }
-  if (data.priceWithInterest !== undefined) updateData.price_with_interest = data.priceWithInterest;
+  if (data.totalPriceWithInterest !== undefined || data.priceWithInterest !== undefined) {
+    updateData.total_price_with_interest =
+      data.totalPriceWithInterest !== undefined
+        ? data.totalPriceWithInterest
+        : data.priceWithInterest;
+  }
   if (data.interestPercentage !== undefined) updateData.interest_percentage = data.interestPercentage;
-  if (data.easePeriod !== undefined) updateData.ease_period = data.easePeriod;
+  if (data.installmentPeriodMonths !== undefined || data.easePeriod !== undefined) {
+    updateData.installment_period_months =
+      data.installmentPeriodMonths !== undefined
+        ? data.installmentPeriodMonths
+        : data.easePeriod;
+  }
   if (computedPriority !== undefined) updateData.priority = computedPriority;
   if (computedValue !== undefined) updateData.value = computedValue;
   if (isDonePayload !== undefined) updateData.is_done = Boolean(isDonePayload);

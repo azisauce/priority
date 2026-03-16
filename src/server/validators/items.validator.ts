@@ -5,9 +5,15 @@ export const createItemSchema = z.object({
   description: z.string().nullable().optional(),
   groupId: z.string().min(1, "Group ID is required"),
   pricing: z.number().positive("Price must be positive"),
+  installmentEnabled: z.boolean().nullable().optional(),
+  // Legacy alias kept temporarily for frontend compatibility.
   enabledEaseOption: z.boolean().nullable().optional(),
+  installmentPeriodMonths: z.number().int().nullable().optional(),
+  // Legacy alias kept temporarily for frontend compatibility.
   easePeriod: z.number().int().nullable().optional(),
   interestPercentage: z.number().nullable().optional(),
+  totalPriceWithInterest: z.number().nullable().optional(),
+  // Legacy alias kept temporarily for frontend compatibility.
   priceWithInterest: z.number().nullable().optional(),
   priority: z.number().optional(),
   value: z.number().optional(),
@@ -26,9 +32,15 @@ export const updateItemSchema = z.object({
   description: z.string().nullable().optional(),
   groupId: z.string().min(1).optional(),
   pricing: z.number().positive().optional(),
+  installmentEnabled: z.boolean().optional(),
+  // Legacy alias kept temporarily for frontend compatibility.
   enabledEaseOption: z.boolean().optional(),
+  installmentPeriodMonths: z.number().int().nullable().optional(),
+  // Legacy alias kept temporarily for frontend compatibility.
   easePeriod: z.number().int().nullable().optional(),
   interestPercentage: z.number().nullable().optional(),
+  totalPriceWithInterest: z.number().nullable().optional(),
+  // Legacy alias kept temporarily for frontend compatibility.
   priceWithInterest: z.number().nullable().optional(),
   priority: z.number().optional(),
   value: z.number().optional(),

@@ -62,38 +62,38 @@ export async function getItemsWithGroupsForUser(filters: GetItemsFilters) {
 }
 
 export async function getItemParamRows(itemId: string, userId: string) {
-  return db("item_priority_judgment_items")
+  return db("item_evaluations")
     .where({ item_id: itemId })
-    .join("priority_items", "item_priority_judgment_items.priority_item_id", "priority_items.id")
-    .join("judgment_items", "item_priority_judgment_items.judgment_item_id", "judgment_items.id")
+    .join("priority_params", "item_evaluations.priority_item_id", "priority_params.id")
+    .join("eval_options", "item_evaluations.judgment_item_id", "eval_options.id")
     .where(function () {
-      this.where("priority_items.user_id", userId).orWhereNull("priority_items.user_id");
+      this.where("priority_params.user_id", userId).orWhereNull("priority_params.user_id");
     })
     .andWhere(function () {
-      this.where("judgment_items.user_id", userId).orWhereNull("judgment_items.user_id");
+      this.where("eval_options.user_id", userId).orWhereNull("eval_options.user_id");
     })
     .select(
-      "priority_items.id as priority_id",
-      "priority_items.name as priority_name",
-      "priority_items.description as priority_description",
-      "priority_items.weight as priority_weight",
-      "priority_items.user_id as priority_user_id",
-      "priority_items.created_at as priority_created_at",
-      "priority_items.updated_at as priority_updated_at",
-      "judgment_items.id as eval_id",
-      "judgment_items.name as eval_name",
-      "judgment_items.description as eval_description",
-      "judgment_items.value as eval_value",
-      "judgment_items.user_id as eval_user_id",
-      "judgment_items.created_at as eval_created_at",
-      "judgment_items.updated_at as eval_updated_at",
-      "item_priority_judgment_items.id as junction_id"
+      "priority_params.id as priority_id",
+      "priority_params.name as priority_name",
+      "priority_params.description as priority_description",
+      "priority_params.weight as priority_weight",
+      "priority_params.user_id as priority_user_id",
+      "priority_params.created_at as priority_created_at",
+      "priority_params.updated_at as priority_updated_at",
+      "eval_options.id as eval_id",
+      "eval_options.name as eval_name",
+      "eval_options.description as eval_description",
+      "eval_options.value as eval_value",
+      "eval_options.user_id as eval_user_id",
+      "eval_options.created_at as eval_created_at",
+      "eval_options.updated_at as eval_updated_at",
+      "item_evaluations.id as junction_id"
     )
-    .orderBy("item_priority_judgment_items.created_at");
+    .orderBy("item_evaluations.created_at");
 }
 
 export async function getPriorityParamsByIdsForUser(priorityParamIds: string[], userId: string) {
-  return db("priority_items")
+  return db("priority_params")
     .whereIn("id", priorityParamIds)
     .where(function () {
       this.where({ user_id: userId }).orWhereNull("user_id");
@@ -102,7 +102,7 @@ export async function getPriorityParamsByIdsForUser(priorityParamIds: string[], 
 }
 
 export async function getEvalItemsByIdsForUser(evalItemIds: string[], userId: string) {
-  return db("judgment_items")
+  return db("eval_options")
     .whereIn("id", evalItemIds)
     .where(function () {
       this.where({ user_id: userId }).orWhereNull("user_id");
@@ -119,10 +119,10 @@ export async function createItem(data: {
   description: string | null;
   group_id: string;
   price: number;
-  enabled_ease_option: boolean;
-  price_with_interest: number | null;
+  installment_enabled: boolean;
+  total_price_with_interest: number | null;
   interest_percentage: number;
-  ease_period: number;
+  installment_period_months: number;
   priority: number;
   value: number;
   user_id: string;
@@ -138,7 +138,7 @@ export async function createItemParamAnswers(itemId: string, answers: ItemAnswer
       priority_item_id: a.priorityParamId,
       judgment_item_id: a.paramEvalItemId,
     }));
-    await trx("item_priority_judgment_items").insert(rows);
+    await trx("item_evaluations").insert(rows);
   });
 }
 
@@ -162,13 +162,13 @@ export async function findItemById(id: string) {
 
 export async function replaceItemParamAnswers(itemId: string, answers: ItemAnswerInput[]) {
   await db.transaction(async (trx) => {
-    await trx("item_priority_judgment_items").where({ item_id: itemId }).del();
+    await trx("item_evaluations").where({ item_id: itemId }).del();
     const rows = answers.map((a) => ({
       item_id: itemId,
       priority_item_id: a.priorityParamId,
       judgment_item_id: a.paramEvalItemId,
     }));
-    if (rows.length > 0) await trx("item_priority_judgment_items").insert(rows);
+    if (rows.length > 0) await trx("item_evaluations").insert(rows);
   });
 }
 

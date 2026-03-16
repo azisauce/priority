@@ -22,9 +22,9 @@ export async function getSimulationItems(
     "name",
     "price",
     "priority",
-    "enabled_ease_option",
-    "price_with_interest",
+    "installment_enabled",
+    "total_price_with_interest",
     "interest_percentage",
-    "ease_period"
+    "installment_period_months"
   );
 }

@@ -1,4 +1,4 @@
-export type DebtType = "debt" | "asset";
+export type DebtDirection = "i_owe" | "they_owe";
 export type DebtStatus = "active" | "paid" | "overdue";
 
 export interface DebtItem {
@@ -6,14 +6,14 @@ export interface DebtItem {
   name: string;
   purpose: string | null;
   totalAmount: number;
-  remainingBalance: number;
+  paidAmount: number;
   counterparty: string;
-  type: DebtType;
+  direction: DebtDirection;
   startDate: string;
   deadline: string | null;
   status: DebtStatus;
   paymentPeriod: "weekly" | "monthly" | "custom";
-  fixedInstallmentAmount: number | null;
+  installmentAmount: number | null;
   notes: string | null;
   createdAt: string;
   updatedAt?: string;
@@ -35,15 +35,15 @@ export interface PaymentRecord {
 export type BalanceSortBy =
   | "name"
   | "counterparty"
-  | "type"
+  | "direction"
   | "status"
-  | "remainingBalance"
+  | "paidAmount"
   | "createdAt";
 
 export type SortOrder = "asc" | "desc";
 
 export interface BalanceFiltersState {
-  type: "" | DebtType;
+  direction: "" | DebtDirection;
   status: "" | DebtStatus;
   minAmount: string;
   maxAmount: string;

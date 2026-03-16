@@ -34,7 +34,7 @@ interface DebtFormData {
   deadline: string;
   status: DebtItem["status"];
   paymentPeriod: DebtItem["paymentPeriod"];
-  fixedInstallmentAmount: string;
+  installmentAmount: string;
   notes: string;
 }
 
@@ -58,8 +58,8 @@ const formatDate = (dateString: string): string =>
     day: "numeric",
   });
 
-const getTypeBadgeClasses = (type: DebtItem["type"]): string => {
-  if (type === "asset") {
+const getTypeBadgeClasses = (direction: DebtItem["direction"]): string => {
+  if (direction === "they_owe") {
     return "bg-green-500/15 text-green-600 dark:text-green-400";
   }
   return "bg-red-500/15 text-red-600 dark:text-red-400";
@@ -103,7 +103,7 @@ export default function BalanceDetailPage() {
     deadline: "",
     status: "active",
     paymentPeriod: "monthly",
-    fixedInstallmentAmount: "",
+    installmentAmount: "",
     notes: "",
   });
 
@@ -170,7 +170,7 @@ export default function BalanceDetailPage() {
       deadline: toInputDate(debt.deadline),
       status: debt.status,
       paymentPeriod: debt.paymentPeriod,
-      fixedInstallmentAmount: debt.fixedInstallmentAmount?.toString() || "",
+      installmentAmount: debt.installmentAmount?.toString() || "",
       notes: debt.notes || "",
     });
     setIsDebtModalOpen(true);
@@ -186,13 +186,13 @@ export default function BalanceDetailPage() {
       return;
     }
 
-    const fixedInstallmentAmount = debtForm.fixedInstallmentAmount
-      ? parseFloat(debtForm.fixedInstallmentAmount)
+    const installmentAmount = debtForm.installmentAmount
+      ? parseFloat(debtForm.installmentAmount)
       : null;
 
     if (
-      fixedInstallmentAmount !== null &&
-      (Number.isNaN(fixedInstallmentAmount) || fixedInstallmentAmount <= 0)
+      installmentAmount !== null &&
+      (Number.isNaN(installmentAmount) || installmentAmount <= 0)
     ) {
       alert("Fixed installment must be a positive amount");
       return;
@@ -209,7 +209,7 @@ export default function BalanceDetailPage() {
         deadline: debtForm.deadline || null,
         status: debtForm.status,
         paymentPeriod: debtForm.paymentPeriod,
-        fixedInstallmentAmount,
+        installmentAmount,
         notes: debtForm.notes.trim() || null,
       };
 
@@ -498,9 +498,9 @@ export default function BalanceDetailPage() {
                     type="number"
                     min="0.01"
                     step="0.01"
-                    value={debtForm.fixedInstallmentAmount}
+                    value={debtForm.installmentAmount}
                     onChange={(e) =>
-                      setDebtForm((prev) => ({ ...prev, fixedInstallmentAmount: e.target.value }))
+                      setDebtForm((prev) => ({ ...prev, installmentAmount: e.target.value }))
                     }
                     placeholder="Leave empty for variable"
                     className="w-full rounded-lg bg-input border border-border px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
@@ -789,10 +789,10 @@ export default function BalanceDetailPage() {
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Type</p>
               <span
                 className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-xs font-medium uppercase ${getTypeBadgeClasses(
-                  debt.type
+                  debt.direction
                 )}`}
               >
-                {debt.type}
+                {debt.direction === "they_owe" ? "they owe" : "i owe"}
               </span>
             </div>
 
@@ -816,13 +816,13 @@ export default function BalanceDetailPage() {
               <p className="text-xs uppercase tracking-wider text-muted-foreground">Remaining Balance</p>
               <p
                 className={`mt-2 text-lg font-semibold ${
-                  debt.type === "asset"
+                  debt.direction === "they_owe"
                     ? "text-green-600 dark:text-green-400"
                     : "text-red-600 dark:text-red-400"
                 }`}
               >
-                {debt.type === "asset" ? "+" : "-"}
-                {formatCurrency(debt.remainingBalance)}
+                {debt.direction === "they_owe" ? "+" : "-"}
+                {formatCurrency(Math.max(debt.totalAmount - debt.paidAmount, 0))}
               </p>
             </div>
           </div>
@@ -855,7 +855,7 @@ export default function BalanceDetailPage() {
               <div className="rounded-lg bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Fixed Installment</p>
                 <p className="text-sm font-medium text-foreground">
-                  {debt.fixedInstallmentAmount ? formatCurrency(debt.fixedInstallmentAmount) : "Variable"}
+                  {debt.installmentAmount ? formatCurrency(debt.installmentAmount) : "Variable"}
                 </p>
               </div>
 

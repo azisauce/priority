@@ -35,11 +35,13 @@ export async function runSimulationForUser(
     itemName: item.name,
     pricing: Number(item.price),
     priority: Number(item.priority),
-    ease: item.enabled_ease_option
+    ease: item.installment_enabled
       ? {
-          priceWithInterest: item.price_with_interest ? Number(item.price_with_interest) : undefined,
+          priceWithInterest: item.total_price_with_interest
+            ? Number(item.total_price_with_interest)
+            : undefined,
           interestPercentage: item.interest_percentage ? Number(item.interest_percentage) : undefined,
-          easePeriod: Number(item.ease_period) || 0,
+          easePeriod: Number(item.installment_period_months) || 0,
         }
       : undefined,
   }));

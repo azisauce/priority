@@ -18,7 +18,7 @@ import type {
   BalanceFiltersState,
   BalanceSortBy,
   DebtItem,
-  DebtType,
+  DebtDirection,
   DebtStatus,
 } from "@/types/tracking";
 
@@ -39,11 +39,14 @@ const formatDate = (dateString: string): string =>
     day: "numeric",
   });
 
-const getSignedAmount = (amount: number, type: DebtType): string =>
-  `${type === "asset" ? "+" : "-"}${formatCurrency(amount)}`;
+const getSignedAmount = (amount: number, direction: DebtDirection): string =>
+  `${direction === "they_owe" ? "+" : "-"}${formatCurrency(amount)}`;
 
-const getTypeBadgeClasses = (type: DebtType): string => {
-  if (type === "asset") {
+const getRemainingAmount = (item: DebtItem): number =>
+  Math.max(item.totalAmount - item.paidAmount, 0);
+
+const getTypeBadgeClasses = (direction: DebtDirection): string => {
+  if (direction === "they_owe") {
     return "bg-green-500/15 text-green-600 dark:text-green-400";
   }
   return "bg-red-500/15 text-red-600 dark:text-red-400";
@@ -62,7 +65,7 @@ export default function BalanceOverviewPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<BalanceFiltersState>({
-    type: "",
+    direction: "",
     status: "",
     minAmount: "",
     maxAmount: "",
@@ -75,21 +78,21 @@ export default function BalanceOverviewPage() {
     setError(null);
 
     try {
-      const [debtRes, assetRes] = await Promise.all([
-        fetch("/api/debts?type=debt"),
-        fetch("/api/debts?type=asset"),
+      const [iOweRes, theyOweRes] = await Promise.all([
+        fetch("/api/debts?direction=i_owe"),
+        fetch("/api/debts?direction=they_owe"),
       ]);
 
-      if (!debtRes.ok || !assetRes.ok) {
+      if (!iOweRes.ok || !theyOweRes.ok) {
         throw new Error("Failed to fetch debt and asset items");
       }
 
-      const [debtData, assetData] = (await Promise.all([
-        debtRes.json(),
-        assetRes.json(),
+      const [iOweData, theyOweData] = (await Promise.all([
+        iOweRes.json(),
+        theyOweRes.json(),
       ])) as [DebtApiResponse, DebtApiResponse];
 
-      const merged = [...(debtData.debts || []), ...(assetData.debts || [])];
+      const merged = [...(iOweData.debts || []), ...(theyOweData.debts || [])];
 
       merged.sort(
         (a, b) =>
@@ -112,16 +115,16 @@ export default function BalanceOverviewPage() {
   const totalDebts = useMemo(
     () =>
       items
-        .filter((item) => item.type === "debt")
-        .reduce((sum, item) => sum + item.remainingBalance, 0),
+        .filter((item) => item.direction === "i_owe")
+        .reduce((sum, item) => sum + getRemainingAmount(item), 0),
     [items]
   );
 
   const totalAssets = useMemo(
     () =>
       items
-        .filter((item) => item.type === "asset")
-        .reduce((sum, item) => sum + item.remainingBalance, 0),
+        .filter((item) => item.direction === "they_owe")
+        .reduce((sum, item) => sum + getRemainingAmount(item), 0),
     [items]
   );
 
@@ -141,10 +144,11 @@ export default function BalanceOverviewPage() {
         if (!matchesQuery) return false;
       }
 
-      if (filters.type && item.type !== filters.type) return false;
+      if (filters.direction && item.direction !== filters.direction) return false;
       if (filters.status && item.status !== filters.status) return false;
-      if (minAmount !== null && item.remainingBalance < minAmount) return false;
-      if (maxAmount !== null && item.remainingBalance > maxAmount) return false;
+      const remainingAmount = getRemainingAmount(item);
+      if (minAmount !== null && remainingAmount < minAmount) return false;
+      if (maxAmount !== null && remainingAmount > maxAmount) return false;
       return true;
     });
 
@@ -152,8 +156,8 @@ export default function BalanceOverviewPage() {
       const direction = filters.sortOrder === "asc" ? 1 : -1;
 
       switch (filters.sortBy) {
-        case "remainingBalance":
-          return (a.remainingBalance - b.remainingBalance) * direction;
+        case "paidAmount":
+          return (getRemainingAmount(a) - getRemainingAmount(b)) * direction;
         case "createdAt":
           return (
             (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction
@@ -164,8 +168,8 @@ export default function BalanceOverviewPage() {
           return a.counterparty.localeCompare(b.counterparty) * direction;
         case "status":
           return a.status.localeCompare(b.status) * direction;
-        case "type":
-          return a.type.localeCompare(b.type) * direction;
+        case "direction":
+          return a.direction.localeCompare(b.direction) * direction;
         default:
           return 0;
       }
@@ -186,7 +190,7 @@ export default function BalanceOverviewPage() {
       return {
         ...prev,
         sortBy: field,
-        sortOrder: field === "createdAt" || field === "remainingBalance" ? "desc" : "asc",
+        sortOrder: field === "createdAt" || field === "paidAmount" ? "desc" : "asc",
       };
     });
   };
@@ -322,10 +326,10 @@ export default function BalanceOverviewPage() {
                       <div className="mb-2 flex flex-wrap items-center gap-2">
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${getTypeBadgeClasses(
-                            item.type
+                            item.direction
                           )}`}
                         >
-                          {item.type}
+                          {item.direction === "they_owe" ? "they owe" : "i owe"}
                         </span>
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${getStatusBadgeClasses(
@@ -348,12 +352,12 @@ export default function BalanceOverviewPage() {
                     <div className="shrink-0 text-right">
                       <p
                         className={`text-sm font-semibold ${
-                          item.type === "asset"
+                          item.direction === "they_owe"
                             ? "text-green-600 dark:text-green-400"
                             : "text-red-600 dark:text-red-400"
                         }`}
                       >
-                        {getSignedAmount(item.remainingBalance, item.type)}
+                        {getSignedAmount(getRemainingAmount(item), item.direction)}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         {formatDate(item.createdAt)}
@@ -371,9 +375,9 @@ export default function BalanceOverviewPage() {
                   <tr className="border-b border-border bg-muted/50">
                     <SortHeader field="name" label="Item" />
                     <SortHeader field="counterparty" label="Counterparty" />
-                    <SortHeader field="type" label="Type" />
+                    <SortHeader field="direction" label="Direction" />
                     <SortHeader field="status" label="Status" />
-                    <SortHeader field="remainingBalance" label="Remaining" align="right" />
+                    <SortHeader field="paidAmount" label="Remaining" align="right" />
                     <SortHeader field="createdAt" label="Created" />
                   </tr>
                 </thead>
@@ -396,10 +400,10 @@ export default function BalanceOverviewPage() {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${getTypeBadgeClasses(
-                            item.type
+                            item.direction
                           )}`}
                         >
-                          {item.type}
+                          {item.direction === "they_owe" ? "they owe" : "i owe"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -413,12 +417,12 @@ export default function BalanceOverviewPage() {
                       </td>
                       <td
                         className={`px-6 py-4 text-right text-sm font-semibold ${
-                          item.type === "asset"
+                          item.direction === "they_owe"
                             ? "text-green-600 dark:text-green-400"
                             : "text-red-600 dark:text-red-400"
                         }`}
                       >
-                        {getSignedAmount(item.remainingBalance, item.type)}
+                        {getSignedAmount(getRemainingAmount(item), item.direction)}
                       </td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">
                         {formatDate(item.createdAt)}

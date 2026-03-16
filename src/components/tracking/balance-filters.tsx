@@ -21,7 +21,7 @@ export default function BalanceFilters({
 
   const hasActiveFilters =
     Boolean(searchQuery) ||
-    Boolean(filters.type) ||
+    Boolean(filters.direction) ||
     Boolean(filters.status) ||
     Boolean(filters.minAmount) ||
     Boolean(filters.maxAmount);
@@ -35,7 +35,7 @@ export default function BalanceFilters({
 
   const clearFilters = () => {
     setFilters({
-      type: "",
+      direction: "",
       status: "",
       minAmount: "",
       maxAmount: "",
@@ -64,16 +64,16 @@ export default function BalanceFilters({
           <div className="flex rounded-lg border border-border bg-input p-1">
             {[
               { value: "", label: "All" },
-              { value: "debt", label: "Debts" },
-              { value: "asset", label: "Assets" },
+              { value: "i_owe", label: "I Owe" },
+              { value: "they_owe", label: "They Owe" },
             ].map((opt) => (
               <button
                 key={opt.label}
                 onClick={() =>
-                  handleFilterChange("type", opt.value as BalanceFiltersState["type"])
+                  handleFilterChange("direction", opt.value as BalanceFiltersState["direction"])
                 }
                 className={`flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors sm:flex-none ${
-                  filters.type === opt.value
+                  filters.direction === opt.value
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
@@ -156,11 +156,11 @@ export default function BalanceFilters({
                 className="w-full rounded-lg border border-border bg-input px-3 py-2 text-sm text-foreground focus:border-ring focus:ring-1 focus:ring-ring"
               >
                 <option value="createdAt">Created Date</option>
-                <option value="remainingBalance">Remaining Amount</option>
+                <option value="paidAmount">Paid Amount</option>
                 <option value="name">Item Name</option>
                 <option value="counterparty">Counterparty</option>
                 <option value="status">Status</option>
-                <option value="type">Type</option>
+                <option value="direction">Direction</option>
               </select>
             </div>
 

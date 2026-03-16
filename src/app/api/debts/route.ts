@@ -11,9 +11,12 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const statusFilter = searchParams.get("status");
-  const typeFilter = searchParams.get("type") || "debt";
+  const legacyTypeFilter = searchParams.get("type");
+  const directionFilter =
+    searchParams.get("direction") ||
+    (legacyTypeFilter === "asset" ? "they_owe" : "i_owe");
 
-  const result = await getDebtsForUser(userId, { statusFilter, typeFilter });
+  const result = await getDebtsForUser(userId, { statusFilter, directionFilter });
   return NextResponse.json(result.body, { status: result.status });
 }
 
