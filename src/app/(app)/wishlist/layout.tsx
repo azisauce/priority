@@ -19,11 +19,13 @@ export default function WishlistLayout({ children }: { children: React.ReactNode
 
     return (
         <>
-            <TabStrip
-                tabs={tabs}
-                activeTab={activeTab}
-                onTabChange={(key) => router.push(key)}
-            />
+            <div className="lg:hidden">
+                <TabStrip
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onTabChange={(key) => router.push(key)}
+                />
+            </div>
             {children}
         </>
     );
