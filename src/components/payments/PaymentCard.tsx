@@ -3,6 +3,7 @@
 import CardBase from "@/components/cards/card-base";
 import ActionButton from "@/components/common/action-button";
 import StatusBadge from "@/components/common/status-badge";
+import { formatMonthYear } from "@/lib/utils";
 import type { MonthlyPayment } from "@/types/payment";
 
 interface PaymentCardProps {
@@ -66,17 +67,9 @@ export default function PaymentCard({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Starts {new Date(`${payment.startMonth}T00:00:00.000Z`).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })}
+        Starts {formatMonthYear(payment.startMonth)}
         {payment.endMonth
-          ? ` • Ends ${new Date(`${payment.endMonth}T00:00:00.000Z`).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}`
+          ? ` • Ends ${formatMonthYear(payment.endMonth)}`
           : " • No end date"}
       </p>
 

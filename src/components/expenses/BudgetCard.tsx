@@ -3,6 +3,7 @@
 import { AlertTriangle, PiggyBank } from "lucide-react";
 import CardBase from "@/components/cards/card-base";
 import DashboardCard from "@/components/cards/dashboard-card";
+import { formatMonthYear } from "@/lib/utils";
 import type { Budget } from "@/types/budget";
 
 interface BudgetCardProps {
@@ -92,10 +93,7 @@ export default function BudgetCard({ budget, onClick, variant = "default" }: Bud
               marginTop: "2px",
             }}
           >
-            Month: {new Date(`${budget.month}T00:00:00.000Z`).toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
+            Month: {formatMonthYear(budget.month)}
           </p>
         </div>
 

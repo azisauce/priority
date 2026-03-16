@@ -1,6 +1,7 @@
 "use client";
 
 import CardBase from "@/components/cards/card-base";
+import { formatDate } from "@/lib/utils";
 import type { Expense } from "@/types/expense";
 
 interface ExpenseCardProps {
@@ -24,12 +25,7 @@ export default function ExpenseCard({ expense }: ExpenseCardProps) {
             {currencyFormatter.format(expense.amount)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {new Date(`${expense.date}T00:00:00.000Z`).toLocaleDateString("en-US", {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
+            {formatDate(expense.date)}
           </p>
         </div>
 

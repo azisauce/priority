@@ -10,6 +10,7 @@ import MarkAsPaidModal from "@/components/modals/payments/MarkAsPaidModal";
 import ErrorState from "@/components/states/error-state";
 import LoadingState from "@/components/states/loading-state";
 import { usePayments } from "@/hooks/usePayments";
+import { formatMonthYear } from "@/lib/utils";
 import { useModalStore } from "@/stores/modalStore";
 import type { CreateMonthlyPaymentInput, MonthSummary, MonthlyPayment } from "@/types/payment";
 
@@ -157,10 +158,7 @@ export default function PaymentsOverviewPage() {
             <div className="rounded-2xl border border-border bg-card p-4">
                 <p className="text-xs text-muted-foreground">Current Month</p>
                 <p className="text-sm text-foreground">
-                    {new Date(`${currentMonth}T00:00:00.000Z`).toLocaleDateString("en-US", {
-                        month: "long",
-                        year: "numeric",
-                    })}
+                    {formatMonthYear(currentMonth)}
                 </p>
             </div>
 

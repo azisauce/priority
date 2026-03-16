@@ -1,6 +1,7 @@
 "use client";
 
 import StatusBadge from "@/components/common/status-badge";
+import { formatMonthYear } from "@/lib/utils";
 
 interface PaymentHistoryRowProps {
   entry: {
@@ -22,10 +23,7 @@ export default function PaymentHistoryRow({ entry }: PaymentHistoryRowProps) {
   return (
     <tr key={entry.id} className="border-b border-border/50 last:border-b-0">
       <td className="px-4 py-3 text-sm text-foreground">
-        {new Date(`${entry.month}T00:00:00.000Z`).toLocaleDateString("en-US", {
-          month: "long",
-          year: "numeric",
-        })}
+        {formatMonthYear(entry.month)}
       </td>
       <td className="px-4 py-3 text-sm text-foreground">{currencyFormatter.format(entry.expectedAmount)}</td>
       <td className="px-4 py-3 text-sm text-foreground">

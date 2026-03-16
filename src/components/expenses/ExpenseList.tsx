@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { ReceiptText } from "lucide-react";
 import EmptyState from "@/components/states/empty-state";
 import ExpenseCard from "@/components/expenses/ExpenseCard";
+import { formatDate } from "@/lib/utils";
 import type { Expense } from "@/types/expense";
 
 interface ExpenseListProps {
@@ -59,12 +60,7 @@ export default function ExpenseList({ expenses }: ExpenseListProps) {
               margin: 0,
             }}
           >
-            {new Date(`${date}T00:00:00.000Z`).toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
+            {formatDate(date)}
           </h3>
 
           <div className="space-y-2">

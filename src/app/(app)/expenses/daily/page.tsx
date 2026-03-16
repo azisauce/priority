@@ -9,6 +9,7 @@ import ErrorState from "@/components/states/error-state";
 import LoadingState from "@/components/states/loading-state";
 import { useBudgets } from "@/hooks/useBudgets";
 import { useExpenses } from "@/hooks/useExpenses";
+import { formatMonthYear } from "@/lib/utils";
 import { useModalStore } from "@/stores/modalStore";
 import type { CreateExpenseInput } from "@/types/expense";
 
@@ -81,10 +82,7 @@ export default function ExpensesDailyPage() {
                 </div>
 
                 <p className="text-sm text-muted-foreground">
-                    {new Date(`${month}T00:00:00.000Z`).toLocaleDateString("en-US", {
-                        month: "long",
-                        year: "numeric",
-                    })}
+                    {formatMonthYear(month)}
                 </p>
             </div>
 

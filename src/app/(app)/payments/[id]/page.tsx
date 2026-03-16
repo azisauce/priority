@@ -10,6 +10,7 @@ import PaymentHistoryRow from "@/components/payments/PaymentHistoryRow";
 import ErrorState from "@/components/states/error-state";
 import LoadingState from "@/components/states/loading-state";
 import { usePayments } from "@/hooks/usePayments";
+import { formatMonthYear } from "@/lib/utils";
 import { useModalStore } from "@/stores/modalStore";
 import type { MonthlyPayment } from "@/types/payment";
 
@@ -154,17 +155,9 @@ export default function PaymentDetailPage() {
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
-                Starts {new Date(`${payment.startMonth}T00:00:00.000Z`).toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                })}
+                Starts {formatMonthYear(payment.startMonth)}
                 {payment.endMonth
-                    ? ` • Ends ${new Date(`${payment.endMonth}T00:00:00.000Z`).toLocaleDateString("en-US", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                        })}`
+                    ? ` • Ends ${formatMonthYear(payment.endMonth)}`
                     : " • No end date"}
             </div>
 
