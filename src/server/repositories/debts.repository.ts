@@ -18,6 +18,48 @@ export async function getDebtsByUserAndDirection(
   return query.orderBy("debts.created_at", "desc");
 }
 
+export async function findSummaryByUser(userId: string) {
+  const totalsByDirection = await db("debts")
+    .where("debts.user_id", userId)
+    .select("debts.direction")
+    .sum({
+      total_remaining: db.raw("GREATEST(debts.total_amount - debts.paid_amount, 0)"),
+    })
+    .groupBy("debts.direction");
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const nextThirtyDays = new Date(today);
+  nextThirtyDays.setDate(nextThirtyDays.getDate() + 30);
+
+  const todayIso = today.toISOString().split("T")[0];
+  const nextThirtyDaysIso = nextThirtyDays.toISOString().split("T")[0];
+
+  const upcomingDues = await db("debts")
+    .join("counterparties", "debts.counterparty_id", "counterparties.id")
+    .where("debts.user_id", userId)
+    .whereNotNull("debts.deadline")
+    .where("debts.deadline", ">=", todayIso)
+    .where("debts.deadline", "<=", nextThirtyDaysIso)
+    .whereNot("debts.status", "paid")
+    .orderBy("debts.deadline", "asc")
+    .select(
+      "debts.id",
+      "debts.name",
+      "debts.direction",
+      "debts.total_amount",
+      "debts.paid_amount",
+      "debts.deadline",
+      "counterparties.name as counterparty"
+    );
+
+  return {
+    totalsByDirection,
+    upcomingDues,
+  };
+}
+
 export async function updateOverdueDebts(userId: string, directionFilter: string, today: string) {
   return db("debts")
     .where("user_id", userId)

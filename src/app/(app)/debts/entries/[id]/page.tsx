@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import PageHeader from "@/components/layout/page-header";
-import type { DebtItem, PaymentRecord, PaymentStatus } from "@/types/tracking";
+import type { DebtItem, PaymentRecord, PaymentStatus } from "@/types/debt";
 
 interface DebtDetail extends DebtItem {
   payments: PaymentRecord[];

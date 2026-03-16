@@ -2,7 +2,7 @@
 
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { Filter, Search } from "lucide-react";
-import type { BalanceFiltersState } from "@/types/tracking";
+import type { BalanceFiltersState } from "@/types/debt";
 
 type Props = {
   filters: BalanceFiltersState;

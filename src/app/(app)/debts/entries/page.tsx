@@ -20,7 +20,7 @@ import type {
   DebtItem,
   DebtDirection,
   DebtStatus,
-} from "@/types/tracking";
+} from "@/types/debt";
 
 interface DebtApiResponse {
   debts?: DebtItem[];

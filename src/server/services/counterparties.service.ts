@@ -137,31 +137,27 @@ export async function getCounterpartyRecordsForUser(
   const records = await getCounterpartyRecords(id, userId);
 
   const formattedRecords = records.map((row: any) => ({
-    direction: row.direction,
-    paidAmount: Number(row.paid_amount),
-    installmentAmount: row.installment_amount != null ? Number(row.installment_amount) : null,
-    // Legacy aliases kept for existing UI callers.
     id: row.id,
-    type: row.direction === "they_owe" ? "asset" : "debt",
-    amount: Number(row.total_amount),
-    totalAmount: Number(row.total_amount),
-    remainingBalance: Math.max(Number(row.total_amount) - Number(row.paid_amount), 0),
-    label: row.name,
+    name: row.name,
     purpose: row.purpose,
-    date: row.start_date,
+    direction: row.direction,
+    totalAmount: Number(row.total_amount),
+    paidAmount: Number(row.paid_amount),
+    remainingAmount: Math.max(Number(row.total_amount) - Number(row.paid_amount), 0),
+    startDate: row.start_date,
     deadline: row.deadline,
     status: row.status,
     paymentPeriod: row.payment_period,
-    fixedInstallmentAmount: row.installment_amount != null ? Number(row.installment_amount) : null,
+    installmentAmount: row.installment_amount != null ? Number(row.installment_amount) : null,
     createdAt: row.created_at,
   }));
 
   let netBalance = 0;
   for (const record of formattedRecords) {
     if (record.direction === "they_owe") {
-      netBalance += record.remainingBalance;
+      netBalance += record.remainingAmount;
     } else {
-      netBalance -= record.remainingBalance;
+      netBalance -= record.remainingAmount;
     }
   }
 

@@ -14,8 +14,6 @@ export const createDebtSchema = z.object({
   fixedInstallmentAmount: z.number().positive().nullable().optional(),
   notes: z.string().nullable().optional(),
   direction: z.enum(["i_owe", "they_owe"]).optional().default("i_owe"),
-  // Legacy alias kept temporarily for frontend compatibility.
-  type: z.enum(["debt", "asset"]).optional(),
 });
 
 export const updateDebtSchema = z.object({
@@ -32,8 +30,6 @@ export const updateDebtSchema = z.object({
   fixedInstallmentAmount: z.number().positive().nullable().optional(),
   notes: z.string().nullable().optional(),
   direction: z.enum(["i_owe", "they_owe"]).optional(),
-  // Legacy alias kept temporarily for frontend compatibility.
-  type: z.enum(["debt", "asset"]).optional(),
 });
 
 export const createPaymentSchema = z.object({

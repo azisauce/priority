@@ -12,6 +12,7 @@ import {
   findDebtByIdWithCounterparty,
   findPaymentById,
   findPaymentByIdAndDebtId,
+  findSummaryByUser,
   getDebtsByUserAndDirection,
   getPaymentsByDebtId,
   getScheduledPaymentsForDebts,
@@ -59,6 +60,19 @@ function formatPayment(row: any) {
   };
 }
 
+function daysUntil(dateString: string) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const target = new Date(dateString);
+  target.setHours(0, 0, 0, 0);
+
+  const millisecondsInDay = 1000 * 60 * 60 * 24;
+  const diff = Math.ceil((target.getTime() - today.getTime()) / millisecondsInDay);
+
+  return Math.max(diff, 0);
+}
+
 export async function getDebtsForUser(
   userId: string,
   filters: { statusFilter?: string | null; directionFilter: string }
@@ -98,6 +112,66 @@ export async function getDebtsForUser(
   };
 }
 
+export async function getSummary(
+  userId: string
+): Promise<
+  ServiceResult<{
+    total_i_owe: number;
+    total_they_owe: number;
+    net_balance: number;
+    upcoming_dues: Array<{
+      id: string;
+      name: string;
+      counterparty: string;
+      direction: "i_owe" | "they_owe";
+      deadline: string;
+      remaining_amount: number;
+      days_until_deadline: number;
+    }>;
+  }>
+> {
+  const { totalsByDirection, upcomingDues } = await findSummaryByUser(userId);
+
+  let totalIOwe = 0;
+  let totalTheyOwe = 0;
+
+  for (const row of totalsByDirection as Array<{
+    direction: "i_owe" | "they_owe";
+    total_remaining: string | number | null;
+  }>) {
+    const value = Number(row.total_remaining || 0);
+    if (row.direction === "i_owe") {
+      totalIOwe += value;
+    } else if (row.direction === "they_owe") {
+      totalTheyOwe += value;
+    }
+  }
+
+  const formattedUpcomingDues = (upcomingDues as Array<any>).map((row) => {
+    const remainingAmount = Math.max(Number(row.total_amount) - Number(row.paid_amount), 0);
+
+    return {
+      id: row.id,
+      name: row.name,
+      counterparty: row.counterparty,
+      direction: row.direction,
+      deadline: row.deadline,
+      remaining_amount: remainingAmount,
+      days_until_deadline: daysUntil(row.deadline),
+    };
+  });
+
+  return {
+    status: 200,
+    body: {
+      total_i_owe: totalIOwe,
+      total_they_owe: totalTheyOwe,
+      net_balance: totalTheyOwe - totalIOwe,
+      upcoming_dues: formattedUpcomingDues,
+    },
+  };
+}
+
 export async function createDebtForUser(
   userId: string,
   data: {
@@ -112,9 +186,8 @@ export async function createDebtForUser(
     installmentAmount?: number | null;
     notes?: string | null;
     direction?: "i_owe" | "they_owe";
-    // Backward compatibility for callers not yet migrated to the new names.
+    // Backward compatibility for callers not yet migrated to installmentAmount.
     fixedInstallmentAmount?: number | null;
-    type?: "debt" | "asset";
   }
 ): Promise<ServiceResult<{ debt: any }>> {
   let counterparty = await findCounterpartyByUserAndName(userId, data.counterparty);
@@ -128,7 +201,7 @@ export async function createDebtForUser(
     total_amount: data.totalAmount,
     paid_amount: 0,
     counterparty_id: counterparty.id,
-    direction: data.direction || (data.type === "asset" ? "they_owe" : "i_owe"),
+    direction: data.direction || "i_owe",
     start_date: data.startDate,
     deadline: data.deadline || null,
     status: data.status || "active",
@@ -199,9 +272,8 @@ export async function updateDebtForUser(
     installmentAmount?: number | null;
     direction?: "i_owe" | "they_owe";
     notes?: string | null;
-    // Backward compatibility for callers not yet migrated to the new names.
+    // Backward compatibility for callers not yet migrated to installmentAmount.
     fixedInstallmentAmount?: number | null;
-    type?: "debt" | "asset";
   }
 ): Promise<ServiceResult<{ error: string } | { debt: any }>> {
   const debt = await findDebtById(id);
@@ -225,13 +297,8 @@ export async function updateDebtForUser(
     updateData.installment_amount =
       data.installmentAmount !== undefined ? data.installmentAmount : data.fixedInstallmentAmount;
   }
-  if (data.direction !== undefined || data.type !== undefined) {
-    updateData.direction =
-      data.direction !== undefined
-        ? data.direction
-        : data.type === "asset"
-          ? "they_owe"
-          : "i_owe";
+  if (data.direction !== undefined) {
+    updateData.direction = data.direction;
   }
   if (data.notes !== undefined) updateData.notes = data.notes;
 
