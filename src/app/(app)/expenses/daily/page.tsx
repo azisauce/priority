@@ -47,10 +47,20 @@ export default function ExpensesDailyPage() {
 
     return (
         <div className="space-y-6 py-4">
-            <PageHeader
-                title="Daily Expenses"
-                description="Track daily spending grouped by day and tied to monthly budgets."
-            />
+            <div className="flex items-center justify-between gap-3">
+                <PageHeader
+                    title="Daily Expenses"
+                    description="Track daily spending grouped by day and tied to monthly budgets."
+                />
+                <button
+                    onClick={() => openModal("ADD_EXPENSE")}
+                    className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Add Expense</span>
+                    <span className="sm:hidden">Add</span>
+                </button>
+            </div>
 
             <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="space-y-1">
@@ -98,18 +108,6 @@ export default function ExpensesDailyPage() {
             ) : (
                 <ExpenseList expenses={expenses} />
             )}
-
-            <button
-                onClick={() => openModal("ADD_EXPENSE")}
-                className="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition hover:opacity-90"
-                style={{
-                    backgroundColor: "rgb(var(--m3-primary))",
-                    color: "rgb(var(--m3-on-primary))",
-                }}
-                aria-label="Add expense"
-            >
-                <Plus className="h-6 w-6" />
-            </button>
 
             <AddExpenseModal
                 open={activeModal === "ADD_EXPENSE"}

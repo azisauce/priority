@@ -88,10 +88,20 @@ export default function ExpensesBudgetsPage() {
 
     return (
         <div className="space-y-6 py-4">
-            <PageHeader
-                title="Budgets"
-                description="Allocate monthly limits and monitor spending progress by category."
-            />
+            <div className="flex items-center justify-between gap-3">
+                <PageHeader
+                    title="Budgets"
+                    description="Allocate monthly limits and monitor spending progress by category."
+                />
+                <button
+                    onClick={() => openModal("ADD_BUDGET")}
+                    className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Add Budget</span>
+                    <span className="sm:hidden">Add</span>
+                </button>
+            </div>
 
             <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="space-y-1">
@@ -150,18 +160,6 @@ export default function ExpensesBudgetsPage() {
                     onBudgetClick={(budget) => router.push(`/expenses/budgets/${budget.id}?month=${month}`)}
                 />
             )}
-
-            <button
-                onClick={() => openModal("ADD_BUDGET")}
-                className="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition hover:opacity-90"
-                style={{
-                    backgroundColor: "rgb(var(--m3-primary))",
-                    color: "rgb(var(--m3-on-primary))",
-                }}
-                aria-label="Add budget"
-            >
-                <Plus className="h-6 w-6" />
-            </button>
 
             <AddBudgetModal
                 open={activeModal === "ADD_BUDGET"}

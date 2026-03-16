@@ -139,10 +139,20 @@ export default function PaymentsOverviewPage() {
 
     return (
         <div className="space-y-6 py-4">
-            <PageHeader
-                title="Payments Overview"
-                description="Track your recurring monthly income and expenses in one place."
-            />
+            <div className="flex items-center justify-between gap-3">
+                <PageHeader
+                    title="Payments Overview"
+                    description="Track your recurring monthly income and expenses in one place."
+                />
+                <button
+                    onClick={() => openModal("ADD_PAYMENT")}
+                    className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Add Payment</span>
+                    <span className="sm:hidden">Add</span>
+                </button>
+            </div>
 
             <div className="rounded-2xl border border-border bg-card p-4">
                 <p className="text-xs text-muted-foreground">Current Month</p>
@@ -232,18 +242,6 @@ export default function PaymentsOverviewPage() {
                     </section>
                 </div>
             )}
-
-            <button
-                onClick={() => openModal("ADD_PAYMENT")}
-                className="fixed bottom-24 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition hover:opacity-90"
-                style={{
-                    backgroundColor: "rgb(var(--m3-primary))",
-                    color: "rgb(var(--m3-on-primary))",
-                }}
-                aria-label="Add monthly payment"
-            >
-                <Plus className="h-6 w-6" />
-            </button>
 
             <AddPaymentModal
                 open={activeModal === "ADD_PAYMENT"}
