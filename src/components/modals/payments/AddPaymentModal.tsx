@@ -225,6 +225,9 @@ export default function AddPaymentModal({ open, onClose, onSubmit }: AddPaymentM
             onChange={(event) => setDayOfMonth(event.target.value)}
             className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/40"
           />
+          <p className="text-xs text-muted-foreground">
+            The day of the month this payment is typically due or received (e.g. 1 for rent on the 1st).
+          </p>
         </div>
       </div>
 

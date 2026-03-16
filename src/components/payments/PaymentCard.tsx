@@ -3,7 +3,7 @@
 import CardBase from "@/components/cards/card-base";
 import ActionButton from "@/components/common/action-button";
 import StatusBadge from "@/components/common/status-badge";
-import { formatMonthYear } from "@/lib/utils";
+import { formatMonthYear, getOrdinal } from "@/lib/utils";
 import type { MonthlyPayment } from "@/types/payment";
 
 interface PaymentCardProps {
@@ -61,8 +61,10 @@ export default function PaymentCard({
           <p className="font-medium text-foreground">{currencyFormatter.format(payment.defaultAmount)}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Day of month</p>
-          <p className="font-medium text-foreground">{payment.dayOfMonth}</p>
+          <p className="text-xs text-muted-foreground">
+            {payment.type === "income" ? "Paid on the" : "Due on the"}
+          </p>
+          <p className="font-medium text-foreground">{getOrdinal(payment.dayOfMonth)} of each month</p>
         </div>
       </div>
 

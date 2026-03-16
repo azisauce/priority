@@ -50,3 +50,28 @@ export function formatDate(dateStr: string): string {
         year: "numeric",
     });
 }
+
+export function getOrdinal(n: number): string {
+    const absolute = Math.abs(Math.trunc(n));
+    const remainder100 = absolute % 100;
+
+    if (remainder100 >= 11 && remainder100 <= 13) {
+        return `${absolute}th`;
+    }
+
+    const remainder10 = absolute % 10;
+
+    if (remainder10 === 1) {
+        return `${absolute}st`;
+    }
+
+    if (remainder10 === 2) {
+        return `${absolute}nd`;
+    }
+
+    if (remainder10 === 3) {
+        return `${absolute}rd`;
+    }
+
+    return `${absolute}th`;
+}
